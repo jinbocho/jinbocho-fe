@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Indaco — light theme (channel triplets so Tailwind alpha utilities work) */
+  :root {
+    --c-paper: 245 246 248;
+    --c-surface: 255 255 255;
+    --c-ink: 30 35 48;
+    --c-ink-soft: 91 100 115;
+    --c-brand: 59 91 169;
+    --c-brand-soft: 110 138 208;
+    --c-sage: 94 148 136;
+    --c-amber: 208 138 44;
+    --c-stone: 138 147 163;
+    --c-line: 226 229 235;
+    --c-danger: 194 69 47;
+    --shadow-card: 0 1px 3px rgb(30 35 48 / 0.08);
+    color-scheme: light;
+  }
+
+  /* Indaco — dark theme */
+  .dark {
+    --c-paper: 20 23 31;
+    --c-surface: 30 34 45;
+    --c-ink: 231 233 238;
+    --c-ink-soft: 154 163 178;
+    --c-brand: 124 155 224;
+    --c-brand-soft: 143 168 224;
+    --c-sage: 111 168 154;
+    --c-amber: 224 160 64;
+    --c-stone: 138 147 163;
+    --c-line: 44 49 61;
+    --c-danger: 224 100 76;
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.45);
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    margin: 0;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-ink;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-paper;
+  }
+}
