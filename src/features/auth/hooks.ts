@@ -6,9 +6,11 @@ import { refreshOnce } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/features/auth/store";
 import type {
+  ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
   RegisterResponse,
+  ResetPasswordRequest,
   TokenResponse,
 } from "@/types/api";
 
@@ -64,6 +66,20 @@ export function useLogout() {
       clear();
       queryClient.clear();
     },
+  });
+}
+
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: (body: ForgotPasswordRequest) =>
+      authApi.post("v1/auth/forgot-password", { json: body }).then(() => undefined),
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (body: ResetPasswordRequest) =>
+      authApi.post("v1/auth/reset-password", { json: body }).then(() => undefined),
   });
 }
 

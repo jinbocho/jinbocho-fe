@@ -5,7 +5,15 @@ import { BookCover } from "@/components/ui/BookCover";
 import { useReaderName } from "@/features/users/hooks";
 import type { BookView } from "@/types/api";
 
-export function BookListItem({ view, roomName }: { view: BookView; roomName?: string }) {
+export function BookListItem({
+  view,
+  roomName,
+  onLoan,
+}: {
+  view: BookView;
+  roomName?: string;
+  onLoan?: boolean;
+}) {
   const { book, record } = view;
   const title = record?.title ?? "Untitled";
   const author = record?.main_author;
@@ -22,6 +30,7 @@ export function BookListItem({ view, roomName }: { view: BookView; roomName?: st
         {author && <p className="truncate text-sm text-ink-soft">{author}</p>}
         {roomName && <p className="mt-0.5 truncate text-xs text-stone">📍 {roomName}</p>}
         {reader && <p className="mt-0.5 truncate text-xs text-amber">📖 {reader}</p>}
+        {onLoan && <p className="mt-0.5 truncate text-xs text-amber">📤 In prestito</p>}
       </div>
       <div className="shrink-0">
         <ReadingStatusControl bookId={book.id} status={book.reading_status} />

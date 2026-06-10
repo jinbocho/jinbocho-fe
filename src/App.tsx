@@ -1,4 +1,5 @@
 import { createBrowserRouter, Link, RouterProvider } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
@@ -7,24 +8,30 @@ import { RequireAuth, RequireRole } from "@/features/auth/guards";
 import { useBootSession } from "@/features/auth/hooks";
 import { LoginPage } from "@/routes/auth/LoginPage";
 import { RegisterPage } from "@/routes/auth/RegisterPage";
+import { ForgotPasswordPage } from "@/routes/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/routes/auth/ResetPasswordPage";
 import { DashboardPage } from "@/routes/DashboardPage";
 import { BookCatalogPage } from "@/routes/books/BookCatalogPage";
 import { AddBookPage } from "@/routes/books/AddBookPage";
+import { ShelfAddPage } from "@/routes/books/ShelfAddPage";
 import { BookDetailPage } from "@/routes/books/BookDetailPage";
 import { LocationsPage } from "@/routes/locations/LocationsPage";
 import { BookcaseMapPage } from "@/routes/locations/BookcaseMapPage";
 import { UsersPage } from "@/routes/users/UsersPage";
 import { SettingsPage } from "@/routes/settings/SettingsPage";
+import { OnLoanPage } from "@/routes/loans/OnLoanPage";
+import { StatsBookListPage } from "@/routes/stats/StatsBookListPage";
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
     <div className="grid min-h-dvh place-items-center px-4">
       <EmptyState
-        title="Page not found"
-        description="The page you're looking for doesn't exist."
+        title={t("common.pageNotFound")}
+        description={t("common.pageNotFoundDesc")}
         action={
           <Link to="/">
-            <Button>Go home</Button>
+            <Button>{t("common.goHome")}</Button>
           </Link>
         }
       />
@@ -35,6 +42,8 @@ function NotFound() {
 const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  { path: "/forgot-password", element: <ForgotPasswordPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     element: (
       <RequireAuth>
@@ -52,7 +61,17 @@ const router = createBrowserRouter([
           </RequireRole>
         ),
       },
+      {
+        path: "/books/add/shelf",
+        element: (
+          <RequireRole roles={["admin", "editor"]}>
+            <ShelfAddPage />
+          </RequireRole>
+        ),
+      },
       { path: "/books/:id", element: <BookDetailPage /> },
+      { path: "/loans", element: <OnLoanPage /> },
+      { path: "/stats/books", element: <StatsBookListPage /> },
       { path: "/locations", element: <LocationsPage /> },
       { path: "/locations/bookcase/:id", element: <BookcaseMapPage /> },
       { path: "/settings", element: <SettingsPage /> },

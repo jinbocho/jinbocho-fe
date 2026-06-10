@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -33,6 +34,7 @@ import {
 } from "@/features/locations/hooks";
 
 export function LocationsPage() {
+  const { t } = useTranslation();
   const rooms = useRooms();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
@@ -43,12 +45,12 @@ export function LocationsPage() {
   return (
     <>
       <PageHeader
-        title="Rooms & shelves"
-        description="Organise where your books live."
+        title={t("locations.title")}
+        description={t("locations.description")}
         actions={
           canEdit && (
             <Button size="sm" onClick={() => setRoomModal(true)}>
-              Add room
+              {t("locations.addRoomButton")}
             </Button>
           )
         }
@@ -63,9 +65,9 @@ export function LocationsPage() {
       ) : (rooms.data?.length ?? 0) === 0 ? (
         <EmptyState
           icon="🏠"
-          title="No rooms yet"
-          description="Add a room to start organising your shelves."
-          action={canEdit && <Button onClick={() => setRoomModal(true)}>Add room</Button>}
+          title={t("locations.emptyTitle")}
+          description={t("locations.emptyDescription")}
+          action={canEdit && <Button onClick={() => setRoomModal(true)}>{t("locations.emptyAction")}</Button>}
         />
       ) : (
         <div className="space-y-3">
@@ -77,13 +79,13 @@ export function LocationsPage() {
 
       {roomModal && (
         <EntityModal
-          title="Add room"
-          fields={[{ name: "name", label: "Name", required: true }, { name: "description", label: "Description" }]}
+          title={t("locations.addRoomModalTitle")}
+          fields={[{ name: "name", label: t("common.name"), required: true }, { name: "description", label: t("common.description") }]}
           submitting={createRoom.isPending}
           onClose={() => setRoomModal(false)}
           onSubmit={async (v) => {
             await createRoom.mutateAsync({ name: v.name!, description: v.description || null });
-            toast.success("Room added.");
+            toast.success(t("locations.roomAdded"));
             setRoomModal(false);
           }}
         />
@@ -94,6 +96,7 @@ export function LocationsPage() {
 
 // ---- Room ----
 function RoomNode({ room, canEdit }: { room: { id: string; name: string; description: string | null }; canEdit: boolean }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -120,13 +123,13 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
           {bookcases.isLoading ? (
             <Skeleton className="h-10" />
           ) : (bookcases.data?.length ?? 0) === 0 ? (
-            <p className="text-sm text-ink-soft">No bookcases yet.</p>
+            <p className="text-sm text-ink-soft">{t("locations.noBookcases")}</p>
           ) : (
             bookcases.data!.map((bc) => <BookcaseNode key={bc.id} bookcase={bc} canEdit={canEdit} />)
           )}
           {canEdit && (
             <Button size="sm" variant="ghost" onClick={() => setAddOpen(true)}>
-              + Add bookcase
+              {t("locations.addBookcaseButton")}
             </Button>
           )}
         </div>
@@ -134,45 +137,45 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
 
       {edit && (
         <EntityModal
-          title="Edit room"
+          title={t("locations.editRoomTitle")}
           initial={{ name: room.name, description: room.description ?? "" }}
-          fields={[{ name: "name", label: "Name", required: true }, { name: "description", label: "Description" }]}
+          fields={[{ name: "name", label: t("common.name"), required: true }, { name: "description", label: t("common.description") }]}
           submitting={update.isPending}
           onClose={() => setEdit(false)}
           onSubmit={async (v) => {
             await update.mutateAsync({ id: room.id, body: { name: v.name, description: v.description || null } });
-            toast.success("Saved.");
+            toast.success(t("common.saved"));
             setEdit(false);
           }}
         />
       )}
       {addOpen && (
         <EntityModal
-          title="Add bookcase"
-          fields={[{ name: "name", label: "Name", required: true }, { name: "type", label: "Type (e.g. shelving)" }]}
+          title={t("locations.addBookcaseModalTitle")}
+          fields={[{ name: "name", label: t("common.name"), required: true }, { name: "type", label: t("locations.bookcaseType") }]}
           submitting={create.isPending}
           onClose={() => setAddOpen(false)}
           onSubmit={async (v) => {
             await create.mutateAsync({ room_id: room.id, name: v.name!, type: v.type || null });
-            toast.success("Bookcase added.");
+            toast.success(t("locations.bookcaseAdded"));
             setAddOpen(false);
           }}
         />
       )}
       <ConfirmDialog
         open={confirm}
-        title="Delete room?"
-        message="The room must be empty (no bookcases or books) first."
+        title={t("locations.deleteRoomTitle")}
+        message={t("locations.deleteRoomMessage")}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={del.isPending}
         onClose={() => setConfirm(false)}
         onConfirm={async () => {
           try {
             await del.mutateAsync(room.id);
-            toast.success("Room deleted.");
+            toast.success(t("locations.roomDeleted"));
           } catch {
-            toast.error("Couldn't delete — move or remove its contents first.");
+            toast.error(t("locations.deleteRoomFailed"));
           }
           setConfirm(false);
         }}
@@ -189,6 +192,7 @@ function BookcaseNode({
   bookcase: { id: string; name: string; type: string | null };
   canEdit: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -210,7 +214,7 @@ function BookcaseNode({
         onDelete={() => setConfirm(true)}
         extra={
           <Link to={`/locations/bookcase/${bookcase.id}`} className="text-xs text-brand hover:underline">
-            View map
+            {t("locations.viewMapLink")}
           </Link>
         }
       />
@@ -219,7 +223,7 @@ function BookcaseNode({
           {sections.isLoading ? (
             <Skeleton className="h-8" />
           ) : (sections.data?.length ?? 0) === 0 ? (
-            <p className="text-sm text-ink-soft">No sections yet.</p>
+            <p className="text-sm text-ink-soft">{t("locations.noSections")}</p>
           ) : (
             sections.data!.map((s) => <SectionNode key={s.id} section={s} canEdit={canEdit} />)
           )}
@@ -233,10 +237,10 @@ function BookcaseNode({
                   bookcase_id: bookcase.id,
                   section_index: sections.data?.length ?? 0,
                 });
-                toast.success("Section added.");
+                toast.success(t("locations.sectionAdded"));
               }}
             >
-              + Add section
+              {t("locations.addSectionButton")}
             </Button>
           )}
         </div>
@@ -244,32 +248,32 @@ function BookcaseNode({
 
       {edit && (
         <EntityModal
-          title="Edit bookcase"
+          title={t("locations.editBookcaseTitle")}
           initial={{ name: bookcase.name, type: bookcase.type ?? "" }}
-          fields={[{ name: "name", label: "Name", required: true }, { name: "type", label: "Type" }]}
+          fields={[{ name: "name", label: t("common.name"), required: true }, { name: "type", label: t("common.type") }]}
           submitting={update.isPending}
           onClose={() => setEdit(false)}
           onSubmit={async (v) => {
             await update.mutateAsync({ id: bookcase.id, body: { name: v.name, type: v.type || null } });
-            toast.success("Saved.");
+            toast.success(t("common.saved"));
             setEdit(false);
           }}
         />
       )}
       <ConfirmDialog
         open={confirm}
-        title="Delete bookcase?"
-        message="It must be empty first."
+        title={t("locations.deleteBookcaseTitle")}
+        message={t("locations.deleteBookcaseMessage")}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={del.isPending}
         onClose={() => setConfirm(false)}
         onConfirm={async () => {
           try {
             await del.mutateAsync(bookcase.id);
-            toast.success("Bookcase deleted.");
+            toast.success(t("locations.bookcaseDeleted"));
           } catch {
-            toast.error("Couldn't delete — remove its contents first.");
+            toast.error(t("locations.deleteBookcaseFailed"));
           }
           setConfirm(false);
         }}
@@ -286,6 +290,7 @@ function SectionNode({
   section: { id: string; section_index: number; label: string | null };
   canEdit: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -299,12 +304,12 @@ function SectionNode({
     <div className="rounded-md bg-paper/60 px-3 py-2">
       <div className="flex items-center justify-between">
         <button type="button" onClick={() => setOpen((o) => !o)} className="text-sm font-medium text-ink">
-          {open ? "▾" : "▸"} {section.label ?? `Section ${section.section_index + 1}`}
+          {open ? "▾" : "▸"} {section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`}
         </button>
         {canEdit && (
           <div className="flex shrink-0 items-center gap-1">
-            <IconButton label="Rename section" onClick={() => setEdit(true)}>✎</IconButton>
-            <IconButton label="Delete section" onClick={() => setConfirm(true)}>🗑</IconButton>
+            <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>✎</IconButton>
+            <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>🗑</IconButton>
           </div>
         )}
       </div>
@@ -313,7 +318,7 @@ function SectionNode({
           {shelves.isLoading ? (
             <Skeleton className="h-6" />
           ) : (shelves.data?.length ?? 0) === 0 ? (
-            <p className="text-xs text-ink-soft">No shelves yet.</p>
+            <p className="text-xs text-ink-soft">{t("locations.noShelves")}</p>
           ) : (
             shelves.data!.map((sh) => <ShelfRow key={sh.id} shelf={sh} canEdit={canEdit} />)
           )}
@@ -324,10 +329,10 @@ function SectionNode({
               loading={create.isPending}
               onClick={async () => {
                 await create.mutateAsync({ section_id: section.id, shelf_index: shelves.data?.length ?? 0 });
-                toast.success("Shelf added.");
+                toast.success(t("locations.shelfAdded"));
               }}
             >
-              + Add shelf
+              {t("locations.addShelfButton")}
             </Button>
           )}
         </div>
@@ -335,32 +340,32 @@ function SectionNode({
 
       {edit && (
         <EntityModal
-          title="Rename section"
+          title={t("locations.renameSectionTitle")}
           initial={{ label: section.label ?? "" }}
-          fields={[{ name: "label", label: "Section name" }]}
+          fields={[{ name: "label", label: t("locations.sectionName") }]}
           submitting={update.isPending}
           onClose={() => setEdit(false)}
           onSubmit={async (v) => {
             await update.mutateAsync({ id: section.id, body: { label: v.label || null } });
-            toast.success("Saved.");
+            toast.success(t("common.saved"));
             setEdit(false);
           }}
         />
       )}
       <ConfirmDialog
         open={confirm}
-        title="Delete section?"
-        message="It must be empty first."
+        title={t("locations.deleteSectionTitle")}
+        message={t("locations.deleteSectionMessage")}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={del.isPending}
         onClose={() => setConfirm(false)}
         onConfirm={async () => {
           try {
             await del.mutateAsync(section.id);
-            toast.success("Section deleted.");
+            toast.success(t("locations.sectionDeleted"));
           } catch {
-            toast.error("Couldn't delete — remove its shelves first.");
+            toast.error(t("locations.deleteSectionFailed"));
           }
           setConfirm(false);
         }}
@@ -377,6 +382,7 @@ function ShelfRow({
   shelf: { id: string; shelf_index: number; notes: string | null };
   canEdit: boolean;
 }) {
+  const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
   const update = useUpdateShelf();
   const del = useDeleteShelf();
@@ -385,20 +391,20 @@ function ShelfRow({
   return (
     <div className="flex items-center justify-between gap-2 text-sm text-ink">
       <span className="min-w-0 truncate">
-        Shelf {shelf.shelf_index + 1}
+        {t("locations.shelfLabel")} {shelf.shelf_index + 1}
         {shelf.notes && <span className="text-ink-soft"> — {shelf.notes}</span>}
       </span>
       {canEdit && (
         <div className="flex shrink-0 items-center gap-1">
-          <IconButton label="Rename shelf" onClick={() => setEdit(true)}>✎</IconButton>
+          <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>✎</IconButton>
           <IconButton
-            label="Delete shelf"
+            label={t("locations.deleteShelfButton")}
             onClick={async () => {
               try {
                 await del.mutateAsync(shelf.id);
-                toast.success("Shelf deleted.");
+                toast.success(t("locations.shelfDeleted"));
               } catch {
-                toast.error("Couldn't delete shelf.");
+                toast.error(t("locations.deleteShelfFailed"));
               }
             }}
           >
@@ -409,14 +415,14 @@ function ShelfRow({
 
       {edit && (
         <EntityModal
-          title="Rename shelf"
+          title={t("locations.renameShelfTitle")}
           initial={{ notes: shelf.notes ?? "" }}
-          fields={[{ name: "notes", label: "Shelf note" }]}
+          fields={[{ name: "notes", label: t("locations.shelfNote") }]}
           submitting={update.isPending}
           onClose={() => setEdit(false)}
           onSubmit={async (v) => {
             await update.mutateAsync({ id: shelf.id, body: { notes: v.notes || null } });
-            toast.success("Saved.");
+            toast.success(t("common.saved"));
             setEdit(false);
           }}
         />
@@ -445,6 +451,7 @@ function Row({
   onDelete: () => void;
   extra?: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between gap-2 px-4 py-3">
       <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2 text-left">
@@ -457,10 +464,10 @@ function Row({
       <div className="flex shrink-0 items-center gap-1">
         {extra}
         {canEdit && onEdit && (
-          <IconButton label="Edit" onClick={onEdit}>✎</IconButton>
+          <IconButton label={t("common.edit")} onClick={onEdit}>✎</IconButton>
         )}
         {canEdit && (
-          <IconButton label="Delete" onClick={onDelete}>🗑</IconButton>
+          <IconButton label={t("common.delete")} onClick={onDelete}>🗑</IconButton>
         )}
       </div>
     </div>
@@ -488,6 +495,7 @@ function EntityModal({
   onClose: () => void;
   onSubmit: (values: Partial<Record<FieldDef["name"], string>>) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const { register, handleSubmit, formState } = useForm<Record<string, string>>({
     defaultValues: initial as Record<string, string>,
   });
@@ -497,7 +505,7 @@ function EntityModal({
     try {
       await onSubmit(values);
     } catch {
-      toast.error("Something went wrong.");
+      toast.error(t("common.defaultErrorMessage"));
     }
   });
 
@@ -509,10 +517,10 @@ function EntityModal({
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" loading={submitting} onClick={submit}>
-            Save
+            {t("common.save")}
           </Button>
         </>
       }
@@ -522,7 +530,7 @@ function EntityModal({
           <Input
             key={f.name}
             label={f.label}
-            error={f.required && formState.errors[f.name] ? `${f.label} is required` : undefined}
+            error={f.required && formState.errors[f.name] ? `${f.label} ${t("validation.fieldRequired")}` : undefined}
             {...register(f.name, { required: f.required })}
           />
         ))}

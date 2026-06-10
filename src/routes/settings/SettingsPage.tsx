@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { ExportMenu } from "@/components/books/ExportMenu";
 import { Button } from "@/components/ui/Button";
@@ -11,35 +12,39 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
+import { type Lang, SUPPORTED_LANGS } from "@/features/i18n/config";
+import { useLangStore } from "@/features/i18n/store";
 import { useFamily, useUpdateFamily } from "@/features/family/hooks";
 import { type ThemePref, useThemeStore } from "@/features/theme/store";
-import { useCurrentUser, useUpdateUser } from "@/features/users/hooks";
+import { useCurrentUser, useUpdateMe } from "@/features/users/hooks";
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const role = useAuthStore((s) => s.user?.role);
   const logout = useLogout();
 
   return (
     <>
-      <PageHeader title="Settings" />
+      <PageHeader title={t("settings.title")} />
       <div className="space-y-6">
         <FamilySection canEdit={role === "admin"} />
         <ProfileSection />
         <AppearanceSection />
+        <LanguageSection />
         <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
-            <h2 className="font-display text-lg font-semibold">Export library</h2>
-            <p className="text-sm text-ink-soft">Download your full catalog.</p>
+            <h2 className="font-display text-lg font-semibold">{t("settings.exportLibrary.title")}</h2>
+            <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>
           </div>
           <ExportMenu />
         </Card>
         <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
-            <h2 className="font-display text-lg font-semibold">Sign out</h2>
-            <p className="text-sm text-ink-soft">End your session on this device.</p>
+            <h2 className="font-display text-lg font-semibold">{t("settings.signOut.title")}</h2>
+            <p className="text-sm text-ink-soft">{t("settings.signOut.description")}</p>
           </div>
           <Button variant="secondary" onClick={() => logout.mutate()}>
-            Log out
+            {t("settings.signOut.button")}
           </Button>
         </Card>
       </div>
@@ -47,20 +52,21 @@ export function SettingsPage() {
   );
 }
 
-const THEME_OPTIONS: { value: ThemePref; label: string; icon: string }[] = [
-  { value: "light", label: "Light", icon: "☀️" },
-  { value: "dark", label: "Dark", icon: "🌙" },
-  { value: "system", label: "System", icon: "🖥️" },
+const THEME_OPTIONS: { value: ThemePref; labelKey: string; icon: string }[] = [
+  { value: "light", labelKey: "enums.theme.light", icon: "☀️" },
+  { value: "dark", labelKey: "enums.theme.dark", icon: "🌙" },
+  { value: "system", labelKey: "enums.theme.system", icon: "🖥️" },
 ];
 
 function AppearanceSection() {
+  const { t } = useTranslation();
   const pref = useThemeStore((s) => s.pref);
   const setPref = useThemeStore((s) => s.setPref);
 
   return (
     <Card className="p-5">
-      <h2 className="font-display text-lg font-semibold">Appearance</h2>
-      <p className="mb-3 text-sm text-ink-soft">Choose a light or dark theme.</p>
+      <h2 className="font-display text-lg font-semibold">{t("settings.appearance.title")}</h2>
+      <p className="mb-3 text-sm text-ink-soft">{t("settings.appearance.description")}</p>
       <div className="inline-flex rounded-md border border-line bg-paper p-1">
         {THEME_OPTIONS.map((o) => (
           <button
@@ -73,7 +79,46 @@ function AppearanceSection() {
             }`}
           >
             <span aria-hidden="true">{o.icon}</span>
-            {o.label}
+            {t(o.labelKey)}
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+const LANG_OPTIONS: { value: Lang; labelKey: string }[] = SUPPORTED_LANGS.map((l) => ({
+  value: l,
+  labelKey: `enums.lang.${l}`,
+}));
+
+function LanguageSection() {
+  const { t } = useTranslation();
+  const lang = useLangStore((s) => s.lang);
+  const setLang = useLangStore((s) => s.setLang);
+  const update = useUpdateMe();
+
+  const handleChange = (l: Lang) => {
+    setLang(l);
+    update.mutate({ language: l });
+  };
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-display text-lg font-semibold">{t("settings.language.title")}</h2>
+      <p className="mb-3 text-sm text-ink-soft">{t("settings.language.description")}</p>
+      <div className="inline-flex rounded-md border border-line bg-paper p-1">
+        {LANG_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => handleChange(o.value)}
+            aria-pressed={lang === o.value}
+            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+              lang === o.value ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"
+            }`}
+          >
+            {t(o.labelKey)}
           </button>
         ))}
       </div>
@@ -82,6 +127,7 @@ function AppearanceSection() {
 }
 
 function FamilySection({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const family = useFamily();
   const update = useUpdateFamily();
   const toast = useToast();
@@ -94,27 +140,27 @@ function FamilySection({ canEdit }: { canEdit: boolean }) {
   const submit = handleSubmit(async (values) => {
     try {
       await update.mutateAsync({ name: values.name, description: values.description || undefined });
-      toast.success("Family updated.");
+      toast.success(t("settings.family.updated"));
     } catch {
-      toast.error("Couldn't save.");
+      toast.error(t("common.saveFailed"));
     }
   });
 
   return (
     <Card className="p-5">
-      <h2 className="mb-4 font-display text-lg font-semibold">Family</h2>
+      <h2 className="mb-4 font-display text-lg font-semibold">{t("settings.family.title")}</h2>
       {family.isLoading ? (
         <Skeleton className="h-24" />
       ) : (
         <form onSubmit={submit} className="space-y-3">
-          <Input label="Family name" disabled={!canEdit} {...register("name")} />
-          <Textarea label="Description" disabled={!canEdit} {...register("description")} />
+          <Input label={t("common.familyName")} disabled={!canEdit} {...register("name")} />
+          <Textarea label={t("common.description")} disabled={!canEdit} {...register("description")} />
           {canEdit && (
             <Button type="submit" size="sm" loading={update.isPending}>
-              Save
+              {t("common.save")}
             </Button>
           )}
-          {!canEdit && <p className="text-xs text-ink-soft">Only admins can edit family details.</p>}
+          {!canEdit && <p className="text-xs text-ink-soft">{t("settings.family.adminOnly")}</p>}
         </form>
       )}
     </Card>
@@ -122,36 +168,55 @@ function FamilySection({ canEdit }: { canEdit: boolean }) {
 }
 
 function ProfileSection() {
+  const { t } = useTranslation();
   const me = useCurrentUser();
-  const update = useUpdateUser();
+  const update = useUpdateMe();
   const toast = useToast();
-  const { register, handleSubmit, reset } = useForm<{ full_name: string }>();
+  const setLang = useLangStore((s) => s.setLang);
+  const { register, handleSubmit, reset } = useForm<{ full_name: string; annual_reading_goal: string }>();
 
   useEffect(() => {
-    if (me.data) reset({ full_name: me.data.full_name });
-  }, [me.data, reset]);
+    if (me.data) {
+      reset({
+        full_name: me.data.full_name,
+        annual_reading_goal: me.data.annual_reading_goal?.toString() ?? "",
+      });
+      // Sync language from backend on load (cross-device sync).
+      if (me.data.language) setLang(me.data.language);
+    }
+  }, [me.data, reset, setLang]);
 
   const submit = handleSubmit(async (values) => {
     if (!me.data) return;
     try {
-      await update.mutateAsync({ id: me.data.id, body: { full_name: values.full_name } });
-      toast.success("Profile updated.");
+      await update.mutateAsync({
+        full_name: values.full_name,
+        annual_reading_goal: values.annual_reading_goal ? Number(values.annual_reading_goal) : null,
+      });
+      toast.success(t("settings.profile.updated"));
     } catch {
-      toast.error("Couldn't save.");
+      toast.error(t("common.saveFailed"));
     }
   });
 
   return (
     <Card className="p-5">
-      <h2 className="mb-4 font-display text-lg font-semibold">Your profile</h2>
+      <h2 className="mb-4 font-display text-lg font-semibold">{t("settings.profile.title")}</h2>
       {me.isLoading ? (
         <Skeleton className="h-20" />
       ) : (
         <form onSubmit={submit} className="space-y-3">
-          <Input label="Full name" {...register("full_name")} />
-          <Input label="Email" value={me.data?.email ?? ""} disabled readOnly />
+          <Input label={t("common.fullName")} {...register("full_name")} />
+          <Input label={t("common.email")} value={me.data?.email ?? ""} disabled readOnly />
+          <Input
+            label={t("settings.profile.annualReadingGoal")}
+            type="number"
+            min={1}
+            hint={t("settings.profile.annualReadingGoalHint")}
+            {...register("annual_reading_goal")}
+          />
           <Button type="submit" size="sm" loading={update.isPending}>
-            Save
+            {t("common.save")}
           </Button>
         </form>
       )}

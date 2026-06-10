@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/Button";
 import { useExport } from "@/features/export/useExport";
 import { useToast } from "@/components/ui/Toast";
 
 export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
+  const { t } = useTranslation();
   const { exportBooks, isExporting } = useExport();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -14,7 +16,7 @@ export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
     try {
       await exportBooks(format);
     } catch {
-      toast.error("Export failed. Please try again.");
+      toast.error(t("export.failed"));
     }
   }
 
@@ -27,7 +29,7 @@ export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
         loading={isExporting}
         onClick={() => setOpen((o) => !o)}
       >
-        Export
+        {t("export.button")}
       </Button>
       {open && (
         <>
@@ -38,14 +40,14 @@ export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
               className="block w-full px-3 py-2 text-left text-sm hover:bg-paper"
               onClick={() => run("csv")}
             >
-              Download CSV
+              {t("export.downloadCsv")}
             </button>
             <button
               type="button"
               className="block w-full px-3 py-2 text-left text-sm hover:bg-paper"
               onClick={() => run("json")}
             >
-              Download JSON
+              {t("export.downloadJson")}
             </button>
           </div>
         </>

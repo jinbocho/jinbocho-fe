@@ -19,6 +19,7 @@ function book(id: string, recordId: string): OwnedBook {
     source: null,
     reading_status: "to_read",
     current_reader_id: null,
+    owner_id: null,
     notes: null,
     tags: [],
     created_at: "2026-01-01T00:00:00Z",

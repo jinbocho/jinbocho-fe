@@ -3,37 +3,37 @@
 @tailwind utilities;
 
 @layer base {
-  /* Indaco — light theme (channel triplets so Tailwind alpha utilities work) */
+  /* Pergamena — light theme (channel triplets so Tailwind alpha utilities work) */
   :root {
-    --c-paper: 245 246 248;
-    --c-surface: 255 255 255;
-    --c-ink: 30 35 48;
-    --c-ink-soft: 91 100 115;
-    --c-brand: 59 91 169;
-    --c-brand-soft: 110 138 208;
-    --c-sage: 94 148 136;
-    --c-amber: 208 138 44;
-    --c-stone: 138 147 163;
-    --c-line: 226 229 235;
-    --c-danger: 194 69 47;
-    --shadow-card: 0 1px 3px rgb(30 35 48 / 0.08);
+    --c-paper: 246 241 232;
+    --c-surface: 253 249 243;
+    --c-ink: 42 31 18;
+    --c-ink-soft: 122 100 80;
+    --c-brand: 168 90 56;
+    --c-brand-soft: 196 136 106;
+    --c-sage: 110 142 88;
+    --c-amber: 200 148 14;
+    --c-stone: 154 140 124;
+    --c-line: 226 216 204;
+    --c-danger: 184 60 50;
+    --shadow-card: 0 1px 3px rgb(42 31 18 / 0.08);
     color-scheme: light;
   }
 
-  /* Indaco — dark theme */
+  /* Pergamena — dark theme */
   .dark {
-    --c-paper: 20 23 31;
-    --c-surface: 30 34 45;
-    --c-ink: 231 233 238;
-    --c-ink-soft: 154 163 178;
-    --c-brand: 124 155 224;
-    --c-brand-soft: 143 168 224;
-    --c-sage: 111 168 154;
-    --c-amber: 224 160 64;
-    --c-stone: 138 147 163;
-    --c-line: 44 49 61;
-    --c-danger: 224 100 76;
-    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.45);
+    --c-paper: 30 25 18;
+    --c-surface: 44 36 24;
+    --c-ink: 237 229 216;
+    --c-ink-soft: 176 152 126;
+    --c-brand: 196 136 106;
+    --c-brand-soft: 212 164 138;
+    --c-sage: 142 170 116;
+    --c-amber: 222 176 48;
+    --c-stone: 154 140 124;
+    --c-line: 60 48 34;
+    --c-danger: 212 100 80;
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.50);
     color-scheme: dark;
   }
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -17,13 +18,8 @@ import { useAuthStore } from "@/features/auth/store";
 import { useCreateUser, useDeleteUser, useUpdateUser, useUsers } from "@/features/users/hooks";
 import type { Role, User } from "@/types/api";
 
-const ROLE_OPTIONS = [
-  { value: "admin", label: "Admin" },
-  { value: "editor", label: "Editor" },
-  { value: "viewer", label: "Viewer" },
-];
-
 export function UsersPage() {
+  const { t } = useTranslation();
   const users = useUsers();
   const me = useAuthStore((s) => s.user);
   const [createOpen, setCreateOpen] = useState(false);
@@ -35,17 +31,17 @@ export function UsersPage() {
   return (
     <>
       <PageHeader
-        title="Users"
-        description="Manage who can access your family library."
+        title={t("users.title")}
+        description={t("users.description")}
         actions={
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            Invite user
+            {t("users.inviteButton")}
           </Button>
         }
       />
 
       {users.isError ? (
-        <ErrorState message="Couldn't load users." onRetry={users.refetch} />
+        <ErrorState message={t("users.loadError")} onRetry={users.refetch} />
       ) : users.isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -60,19 +56,19 @@ export function UsersPage() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-ink">
                   {u.full_name}
-                  {u.id === me?.id && <span className="ml-2 text-xs text-ink-soft">(you)</span>}
+                  {u.id === me?.id && <span className="ml-2 text-xs text-ink-soft">{t("users.youLabel")}</span>}
                 </p>
                 <p className="truncate text-sm text-ink-soft">{u.email}</p>
               </div>
               <Badge tone="bg-brand/10 text-brand">{u.role}</Badge>
-              {!u.is_active && <Badge tone="bg-stone/20 text-stone">inactive</Badge>}
+              {!u.is_active && <Badge tone="bg-stone/20 text-stone">{t("users.inactiveLabel")}</Badge>}
               <div className="flex gap-1">
                 <Button size="sm" variant="ghost" onClick={() => setEditing(u)}>
-                  Edit
+                  {t("common.edit")}
                 </Button>
                 {u.id !== me?.id && (
                   <Button size="sm" variant="ghost" onClick={() => setDeleting(u)}>
-                    Delete
+                    {t("common.delete")}
                   </Button>
                 )}
               </div>
@@ -85,19 +81,19 @@ export function UsersPage() {
       {editing && <EditUserModal user={editing} onClose={() => setEditing(null)} />}
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="Remove user?"
-        message={`${deleting?.full_name} will lose access to the library.`}
+        title={t("users.removeConfirmTitle")}
+        message={`${deleting?.full_name} ${t("users.removeConfirmMessage")}`}
         destructive
-        confirmLabel="Remove"
+        confirmLabel={t("users.removeButton")}
         loading={del.isPending}
         onClose={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return;
           try {
             await del.mutateAsync(deleting.id);
-            toast.success("User removed.");
+            toast.success(t("users.removed"));
           } catch {
-            toast.error("Couldn't remove user.");
+            toast.error(t("users.removeFailed"));
           }
           setDeleting(null);
         }}
@@ -107,6 +103,7 @@ export function UsersPage() {
 }
 
 function CreateUserModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const create = useCreateUser();
   const toast = useToast();
   const { register, handleSubmit, formState } = useForm<{
@@ -116,13 +113,19 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     role: Role;
   }>({ defaultValues: { role: "viewer" } });
 
+  const roleOptions = [
+    { value: "admin", label: t("enums.role.admin") },
+    { value: "editor", label: t("enums.role.editor") },
+    { value: "viewer", label: t("enums.role.viewer") },
+  ];
+
   const submit = handleSubmit(async (values) => {
     try {
       await create.mutateAsync(values);
-      toast.success("User invited.");
+      toast.success(t("users.invited"));
       onClose();
     } catch {
-      toast.error("That email may already be registered.");
+      toast.error(t("users.inviteFailed"));
     }
   });
 
@@ -130,35 +133,36 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     <Modal
       open
       onClose={onClose}
-      title="Invite user"
+      title={t("users.inviteModalTitle")}
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" loading={create.isPending} onClick={submit}>
-            Invite
+            {t("users.inviteModalButton")}
           </Button>
         </>
       }
     >
       <div className="space-y-3">
-        <Input label="Full name" error={formState.errors.full_name && "Required"} {...register("full_name", { required: true })} />
-        <Input label="Email" type="email" error={formState.errors.email && "Required"} {...register("email", { required: true })} />
+        <Input label={t("common.fullName")} error={formState.errors.full_name && t("validation.required")} {...register("full_name", { required: true })} />
+        <Input label={t("common.email")} type="email" error={formState.errors.email && t("validation.required")} {...register("email", { required: true })} />
         <Input
-          label="Password"
+          label={t("common.password")}
           type="password"
-          hint="At least 8 characters"
-          error={formState.errors.password && "At least 8 characters"}
+          hint={t("auth.register.passwordHint")}
+          error={formState.errors.password && t("auth.register.passwordHint")}
           {...register("password", { required: true, minLength: 8 })}
         />
-        <Select label="Role" options={ROLE_OPTIONS} {...register("role")} />
+        <Select label={t("users.roleLabel")} options={roleOptions} {...register("role")} />
       </div>
     </Modal>
   );
 }
 
 function EditUserModal({ user, onClose }: { user: User; onClose: () => void }) {
+  const { t } = useTranslation();
   const update = useUpdateUser();
   const me = useAuthStore((s) => s.user);
   const toast = useToast();
@@ -167,13 +171,19 @@ function EditUserModal({ user, onClose }: { user: User; onClose: () => void }) {
     defaultValues: { full_name: user.full_name, role: user.role, is_active: user.is_active },
   });
 
+  const roleOptions = [
+    { value: "admin", label: t("enums.role.admin") },
+    { value: "editor", label: t("enums.role.editor") },
+    { value: "viewer", label: t("enums.role.viewer") },
+  ];
+
   const submit = handleSubmit(async (values) => {
     try {
       await update.mutateAsync({ id: user.id, body: values });
-      toast.success("Saved.");
+      toast.success(t("common.saved"));
       onClose();
     } catch {
-      toast.error("Couldn't save.");
+      toast.error(t("common.saveFailed"));
     }
   });
 
@@ -181,28 +191,28 @@ function EditUserModal({ user, onClose }: { user: User; onClose: () => void }) {
     <Modal
       open
       onClose={onClose}
-      title="Edit user"
+      title={t("users.editModalTitle")}
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" loading={update.isPending} onClick={submit}>
-            Save
+            {t("common.save")}
           </Button>
         </>
       }
     >
       <div className="space-y-3">
-        <Input label="Full name" {...register("full_name")} />
-        <Select label="Role" options={ROLE_OPTIONS} disabled={isSelf} {...register("role")} />
+        <Input label={t("common.fullName")} {...register("full_name")} />
+        <Select label={t("users.roleLabel")} options={roleOptions} disabled={isSelf} {...register("role")} />
         {!isSelf && (
           <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" className="h-4 w-4 rounded border-line text-brand" {...register("is_active")} />
-            Active
+            {t("users.activeLabel")}
           </label>
         )}
-        {isSelf && <p className="text-xs text-ink-soft">You can't change your own role or active status.</p>}
+        {isSelf && <p className="text-xs text-ink-soft">{t("users.editSelfNote")}</p>}
       </div>
     </Modal>
   );

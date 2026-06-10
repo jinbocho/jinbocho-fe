@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -6,7 +7,7 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useBookcaseMap } from "@/features/map/hooks";
-import { READING_STATUS_LABEL } from "@/lib/format";
+import { readingStatusLabel } from "@/lib/format";
 import type { BookOnShelf } from "@/types/api";
 
 const SPINE_COLOR: Record<string, string> = {
@@ -16,6 +17,7 @@ const SPINE_COLOR: Record<string, string> = {
 };
 
 export function BookcaseMapPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const map = useBookcaseMap(id);
@@ -24,7 +26,7 @@ export function BookcaseMapPage() {
   if (map.isLoading || !map.data) {
     return (
       <>
-        <PageHeader title="Bookcase" />
+        <PageHeader title={t("locations.bookcaseTitle")} />
         <Skeleton className="h-64" />
       </>
     );
@@ -36,17 +38,17 @@ export function BookcaseMapPage() {
   return (
     <>
       <Link to="/locations" className="mb-4 inline-block text-sm text-brand hover:underline">
-        ← Back to rooms
+        {t("locations.backLink")}
       </Link>
-      <PageHeader title={data.bookcase_name} description="Visual map of this bookcase." />
+      <PageHeader title={data.bookcase_name} description={t("locations.mapDescription")} />
 
       {data.sections.length === 0 ? (
         <EmptyState
-          title="No sections"
-          description="Add sections and shelves to this bookcase from the rooms page."
+          title={t("locations.noSectionsTitle")}
+          description={t("locations.noSectionsDescription")}
           action={
             <Link to="/locations" className="text-brand hover:underline">
-              Go to rooms
+              {t("locations.goToRoomsLink")}
             </Link>
           }
         />
@@ -56,12 +58,12 @@ export function BookcaseMapPage() {
             {(["to_read", "reading", "read"] as const).map((s) => (
               <span key={s} className="flex items-center gap-1.5 text-ink-soft">
                 <span className={`inline-block h-3 w-3 rounded-sm ${SPINE_COLOR[s]}`} />
-                {READING_STATUS_LABEL[s]}
+                {readingStatusLabel(s, t)}
               </span>
             ))}
           </div>
 
-          {empty && <p className="mb-4 text-sm text-ink-soft">This bookcase has no books yet.</p>}
+          {empty && <p className="mb-4 text-sm text-ink-soft">{t("locations.bookcaseEmpty")}</p>}
 
           <div className="space-y-4">
             {data.sections
@@ -70,7 +72,7 @@ export function BookcaseMapPage() {
               .map((section) => (
                 <Card key={section.section_id} className="p-4">
                   <h2 className="mb-3 text-sm font-semibold text-ink-soft">
-                    Section {section.section_index + 1}
+                    {t("locations.sectionLabel")} {section.section_index + 1}
                   </h2>
                   <div className="space-y-3">
                     {section.shelves
@@ -87,7 +89,7 @@ export function BookcaseMapPage() {
                               ))
                             )}
                           </div>
-                          <p className="mt-1 text-xs text-stone">Shelf {shelf.shelf_index + 1}</p>
+                          <p className="mt-1 text-xs text-stone">{t("locations.shelfLabel")} {shelf.shelf_index + 1}</p>
                         </div>
                       ))}
                   </div>

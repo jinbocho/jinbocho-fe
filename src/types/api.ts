@@ -3,6 +3,7 @@
 
 export type Role = "admin" | "editor" | "viewer";
 export type ReadingStatus = "to_read" | "reading" | "read";
+export type Lang = "en" | "it" | "es" | "fr";
 // Must match the backend DB enums (catalog enums.py) exactly.
 export type BookCondition = "new" | "good" | "fair" | "poor";
 export type BookSource = "purchased" | "gift" | "borrowed" | "other";
@@ -32,6 +33,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
 // Claims encoded in the JWT access token.
 export interface JwtClaims {
   sub: string; // user_id
@@ -50,6 +60,8 @@ export interface User {
   full_name: string;
   role: Role;
   is_active: boolean;
+  annual_reading_goal: number | null;
+  language: Lang | null;
 }
 
 export interface UserCreate {
@@ -63,6 +75,13 @@ export interface UserUpdate {
   full_name?: string;
   role?: Role;
   is_active?: boolean;
+  annual_reading_goal?: number | null;
+}
+
+export interface MeUpdate {
+  full_name?: string;
+  annual_reading_goal?: number | null;
+  language?: Lang | null;
 }
 
 export interface Family {
@@ -125,6 +144,7 @@ export interface OwnedBook {
   source: string | null;
   reading_status: ReadingStatus;
   current_reader_id: string | null;
+  owner_id: string | null;
   notes: string | null;
   tags: string[];
   created_at: string;
@@ -146,6 +166,7 @@ export interface OwnedBookCreate {
   purchase_price?: number;
   source?: BookSource;
   reading_status?: ReadingStatus;
+  owner_id?: string;
   notes?: string;
   tags?: string[];
 }
@@ -161,8 +182,29 @@ export interface OwnedBookUpdate {
   purchase_price?: number | null;
   source?: BookSource | null;
   reading_status?: ReadingStatus | null;
+  owner_id?: string | null;
   tags?: string[] | null;
   notes?: string | null;
+}
+
+export interface BookRead {
+  owned_book_id: string;
+  user_id: string;
+  read_at: string;
+}
+
+export interface BookLoan {
+  id: string;
+  owned_book_id: string;
+  borrower_name: string;
+  loaned_at: string;
+  due_date: string | null;
+  returned_at: string | null;
+}
+
+export interface BookLoanCreate {
+  borrower_name: string;
+  due_date?: string | null;
 }
 
 // The joined view the UI actually renders.

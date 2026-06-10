@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/Badge";
 import { useUpdateReadingStatus } from "@/features/books/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { READING_STATUS_CLASS, READING_STATUS_LABEL, READING_STATUSES } from "@/lib/format";
+import { READING_STATUS_CLASS, READING_STATUSES, readingStatusLabel } from "@/lib/format";
 import type { ReadingStatus } from "@/types/api";
 
 // Display-only badge for viewers; an inline status changer (optimistic) for
@@ -13,12 +15,13 @@ export function ReadingStatusControl({
   bookId: string;
   status: ReadingStatus;
 }) {
+  const { t } = useTranslation();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
   const mutation = useUpdateReadingStatus();
 
   if (!canEdit) {
-    return <Badge tone={READING_STATUS_CLASS[status]}>{READING_STATUS_LABEL[status]}</Badge>;
+    return <Badge tone={READING_STATUS_CLASS[status]}>{readingStatusLabel(status, t)}</Badge>;
   }
 
   return (
@@ -32,7 +35,7 @@ export function ReadingStatusControl({
     >
       {READING_STATUSES.map((s) => (
         <option key={s} value={s}>
-          {READING_STATUS_LABEL[s]}
+          {readingStatusLabel(s, t)}
         </option>
       ))}
     </select>

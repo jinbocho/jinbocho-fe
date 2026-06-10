@@ -1,25 +1,5 @@
+import { useLangStore } from "@/features/i18n/store";
 import type { BookCondition, BookSource, ReadingStatus } from "@/types/api";
-
-export const READING_STATUS_LABEL: Record<ReadingStatus, string> = {
-  to_read: "To read",
-  reading: "Reading",
-  read: "Read",
-};
-
-// Selectable options (values must match the backend DB enums).
-export const BOOK_CONDITIONS: { value: BookCondition; label: string }[] = [
-  { value: "new", label: "New" },
-  { value: "good", label: "Good" },
-  { value: "fair", label: "Fair" },
-  { value: "poor", label: "Poor" },
-];
-
-export const BOOK_SOURCES: { value: BookSource; label: string }[] = [
-  { value: "purchased", label: "Purchased" },
-  { value: "gift", label: "Gift" },
-  { value: "borrowed", label: "Borrowed" },
-  { value: "other", label: "Other" },
-];
 
 // Tailwind classes for the status badge (background + text).
 export const READING_STATUS_CLASS: Record<ReadingStatus, string> = {
@@ -30,18 +10,22 @@ export const READING_STATUS_CLASS: Record<ReadingStatus, string> = {
 
 export const READING_STATUSES: ReadingStatus[] = ["to_read", "reading", "read"];
 
+function activeLang(): string {
+  return useLangStore.getState().lang;
+}
+
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  return d.toLocaleDateString(activeLang(), { year: "numeric", month: "short", day: "numeric" });
 }
 
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(activeLang(), {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -54,7 +38,7 @@ export function formatPrice(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "string" ? Number(value) : value;
   if (Number.isNaN(n)) return "—";
-  return n.toLocaleString(undefined, { style: "currency", currency: "EUR" });
+  return n.toLocaleString(activeLang(), { style: "currency", currency: "EUR" });
 }
 
 export function initials(name: string): string {
@@ -64,4 +48,47 @@ export function initials(name: string): string {
     .slice(0, 2)
     .map((p) => p[0]!.toUpperCase())
     .join("");
+}
+
+export function readingStatusLabel(
+  status: ReadingStatus,
+  t: (key: string) => string,
+): string {
+  return t(`enums.readingStatus.${status}`);
+}
+
+export function bookConditionLabel(
+  condition: BookCondition,
+  t: (key: string) => string,
+): string {
+  return t(`enums.bookCondition.${condition}`);
+}
+
+export function bookSourceLabel(
+  source: BookSource,
+  t: (key: string) => string,
+): string {
+  return t(`enums.bookSource.${source}`);
+}
+
+export function bookConditions(
+  t: (key: string) => string,
+): { value: BookCondition; label: string }[] {
+  return [
+    { value: "new", label: t("enums.bookCondition.new") },
+    { value: "good", label: t("enums.bookCondition.good") },
+    { value: "fair", label: t("enums.bookCondition.fair") },
+    { value: "poor", label: t("enums.bookCondition.poor") },
+  ];
+}
+
+export function bookSources(
+  t: (key: string) => string,
+): { value: BookSource; label: string }[] {
+  return [
+    { value: "purchased", label: t("enums.bookSource.purchased") },
+    { value: "gift", label: t("enums.bookSource.gift") },
+    { value: "borrowed", label: t("enums.bookSource.borrowed") },
+    { value: "other", label: t("enums.bookSource.other") },
+  ];
 }

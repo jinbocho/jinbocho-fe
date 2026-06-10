@@ -7,7 +7,7 @@ import {
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store";
 import { USERS } from "@/lib/paths";
-import type { User, UserCreate, UserUpdate } from "@/types/api";
+import type { MeUpdate, User, UserCreate, UserUpdate } from "@/types/api";
 
 // Calls /v1/users via the gateway (proxy added + validated end-to-end).
 
@@ -45,6 +45,17 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: (body: UserCreate) => api.post(`${USERS}/`, { json: body }).json<User>(),
     onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.all }),
+  });
+}
+
+export function useUpdateMe() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: MeUpdate) => api.patch(`${USERS}/me`, { json: body }).json<User>(),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: userKeys.me });
+      void qc.invalidateQueries({ queryKey: userKeys.all });
+    },
   });
 }
 

@@ -11,6 +11,9 @@ import { fetchAllPages } from "@/lib/paginate";
 import { BOOKS, RECORDS } from "@/lib/paths";
 import type {
   BibliographicRecord,
+  BookLoan,
+  BookLoanCreate,
+  BookRead,
   BookView,
   OwnedBook,
   OwnedBookCreate,
@@ -159,6 +162,98 @@ export function useBookHistory(id: string | undefined) {
     queryKey: [...bookKeys.detail(id ?? ""), "history"],
     queryFn: () => api.get(`${BOOKS}/${id}/history`).json<unknown[]>(),
     enabled: Boolean(id),
+  });
+}
+
+export const bookReadKeys = {
+  family: ["book-reads", "family"] as const,
+  book: (id: string) => ["book-reads", "book", id] as const,
+};
+
+export function useFamilyReads() {
+  return useQuery({
+    queryKey: bookReadKeys.family,
+    queryFn: () => api.get(`${BOOKS}/reads`).json<BookRead[]>(),
+  });
+}
+
+export function useBookReads(bookId: string | undefined) {
+  return useQuery({
+    queryKey: bookReadKeys.book(bookId ?? ""),
+    queryFn: () => api.get(`${BOOKS}/${bookId}/reads`).json<BookRead[]>(),
+    enabled: Boolean(bookId),
+  });
+}
+
+export function useMarkBookRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
+      api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>(),
+    onSuccess: (_data, { bookId }) => {
+      void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
+      void qc.invalidateQueries({ queryKey: bookReadKeys.family });
+    },
+  });
+}
+
+export function useUnmarkBookRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
+      api.delete(`${BOOKS}/${bookId}/reads/${userId}`).then(() => undefined),
+    onSuccess: (_data, { bookId }) => {
+      void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
+      void qc.invalidateQueries({ queryKey: bookReadKeys.family });
+    },
+  });
+}
+
+// ----- Book loans (external lending) -----
+
+export const bookLoanKeys = {
+  active: ["books", "loans", "active"] as const,
+  book: (id: string) => ["books", "loans", "book", id] as const,
+};
+
+export function useActiveLoans() {
+  return useQuery({
+    queryKey: bookLoanKeys.active,
+    queryFn: () => api.get(`${BOOKS}/loans/active`).json<BookLoan[]>(),
+  });
+}
+
+export function useBookLoans(bookId: string | undefined) {
+  return useQuery({
+    queryKey: bookLoanKeys.book(bookId ?? ""),
+    queryFn: () => api.get(`${BOOKS}/${bookId}/loans`).json<BookLoan[]>(),
+    enabled: Boolean(bookId),
+  });
+}
+
+export function useLendBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId, body }: { bookId: string; body: BookLoanCreate }) =>
+      api.post(`${BOOKS}/${bookId}/loans`, { json: body }).json<BookLoan>(),
+    onSuccess: (_data, { bookId }) => {
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.book(bookId) });
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.active });
+      void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
+    },
+  });
+}
+
+export function useReturnBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookId }: { bookId: string }) =>
+      api.post(`${BOOKS}/${bookId}/loans/return`).json<BookLoan>(),
+    onSuccess: (_data, { bookId }) => {
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.book(bookId) });
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.active });
+      void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
+    },
   });
 }
 

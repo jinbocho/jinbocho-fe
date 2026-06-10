@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { BookListItem } from "@/components/books/BookListItem";
 import { ExportMenu } from "@/components/books/ExportMenu";
@@ -10,21 +11,30 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useBookViews } from "@/features/books/hooks";
+import { useActiveLoans, useBookViews } from "@/features/books/hooks";
 import { useRooms } from "@/features/locations/hooks";
+import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useDebounce } from "@/hooks/useDebounce";
-import { READING_STATUS_LABEL, READING_STATUSES } from "@/lib/format";
+import { READING_STATUSES, readingStatusLabel } from "@/lib/format";
 
 export function BookCatalogPage() {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { data, isLoading, isError, refetch } = useBookViews();
   const rooms = useRooms();
+  const users = useUsers();
+  const activeLoans = useActiveLoans();
+  const onLoanIds = useMemo(
+    () => new Set((activeLoans.data ?? []).map((l) => l.owned_book_id)),
+    [activeLoans.data],
+  );
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
 
   const roomFilter = params.get("room") ?? "";
   const statusFilter = params.get("status") ?? "";
+  const ownerFilter = params.get("owner") ?? "";
   const [query, setQuery] = useState(params.get("q") ?? "");
   const debouncedQuery = useDebounce(query, 250);
 
@@ -38,13 +48,14 @@ export function BookCatalogPage() {
     return data.filter(({ book, record }) => {
       if (roomFilter && book.room_id !== roomFilter) return false;
       if (statusFilter && book.reading_status !== statusFilter) return false;
+      if (ownerFilter && book.owner_id !== ownerFilter) return false;
       if (q) {
         const hay = `${record?.title ?? ""} ${record?.main_author ?? ""} ${record?.isbn ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [data, roomFilter, statusFilter, debouncedQuery]);
+  }, [data, roomFilter, statusFilter, ownerFilter, debouncedQuery]);
 
   function setParam(key: string, value: string) {
     setParams((prev) => {
@@ -58,23 +69,28 @@ export function BookCatalogPage() {
   return (
     <>
       <PageHeader
-        title="Books"
-        description={data.length ? `${data.length} in your library` : undefined}
+        title={t("books.catalog.title")}
+        description={data.length ? `${data.length} ${t("books.catalog.countDesc")}` : undefined}
         actions={
           <>
             <ExportMenu disabled={data.length === 0} />
             {canEdit && (
-              <Link to="/books/add">
-                <Button size="sm">Add book</Button>
-              </Link>
+              <>
+                <Link to="/books/add/shelf">
+                  <Button size="sm" variant="secondary">{t("books.catalog.shelfModeButton")}</Button>
+                </Link>
+                <Link to="/books/add">
+                  <Button size="sm">{t("books.catalog.addButton")}</Button>
+                </Link>
+              </>
             )}
           </>
         }
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto]">
         <SearchInput
-          label="Search title, author, ISBN"
+          label={t("books.catalog.searchPlaceholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -83,22 +99,29 @@ export function BookCatalogPage() {
         />
         <Select
           aria-label="Filter by room"
-          placeholder="All rooms"
+          placeholder={t("books.catalog.filterRooms")}
           value={roomFilter}
           options={(rooms.data ?? []).map((r) => ({ value: r.id, label: r.name }))}
           onChange={(e) => setParam("room", e.target.value)}
         />
         <Select
           aria-label="Filter by status"
-          placeholder="All statuses"
+          placeholder={t("books.catalog.filterStatuses")}
           value={statusFilter}
-          options={READING_STATUSES.map((s) => ({ value: s, label: READING_STATUS_LABEL[s] }))}
+          options={READING_STATUSES.map((s) => ({ value: s, label: readingStatusLabel(s, t) }))}
           onChange={(e) => setParam("status", e.target.value)}
+        />
+        <Select
+          aria-label="Filter by owner"
+          placeholder={t("books.catalog.filterOwners")}
+          value={ownerFilter}
+          options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
+          onChange={(e) => setParam("owner", e.target.value)}
         />
       </div>
 
       {isError ? (
-        <ErrorState message="Couldn't load your books." onRetry={refetch} />
+        <ErrorState message={t("books.catalog.loadError")} onRetry={refetch} />
       ) : isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -108,18 +131,18 @@ export function BookCatalogPage() {
       ) : data.length === 0 ? (
         <EmptyState
           icon="📚"
-          title="No books yet"
-          description={canEdit ? "Add your first book to start your catalog." : "No books have been added yet."}
+          title={t("books.catalog.emptyTitle")}
+          description={canEdit ? t("books.catalog.emptyDescEditor") : t("books.catalog.emptyDescViewer")}
           action={
             canEdit && (
               <Link to="/books/add">
-                <Button>Add a book</Button>
+                <Button>{t("books.catalog.emptyAction")}</Button>
               </Link>
             )
           }
         />
       ) : filtered.length === 0 ? (
-        <EmptyState title="No matches" description="Try adjusting your search or filters." />
+        <EmptyState title={t("books.catalog.noMatchesTitle")} description={t("books.catalog.noMatchesDesc")} />
       ) : (
         <ul className="space-y-3">
           {filtered.map((view) => (
@@ -127,6 +150,7 @@ export function BookCatalogPage() {
               <BookListItem
                 view={view}
                 roomName={view.book.room_id ? roomNames.get(view.book.room_id) : undefined}
+                onLoan={onLoanIds.has(view.book.id)}
               />
             </li>
           ))}
