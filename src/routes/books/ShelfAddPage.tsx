@@ -75,7 +75,7 @@ function ReviewCard({ draft, isSaving, onAdd, onSkip }: ReviewCardProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Input label={t("common.title")} {...form.register("title", { required: true })} />
           <Input label={t("books.add.author")} {...form.register("main_author")} />
-          <Input label={t("books.add.isbn")} {...form.register("isbn")} />
+          <Input label={t("books.add.isbn")} inputMode="numeric" {...form.register("isbn")} />
           <Input label={t("books.add.publisher")} {...form.register("publisher")} />
           <Input label={t("books.add.year")} type="number" {...form.register("publication_year")} />
           <Input label={t("books.add.genre")} {...form.register("genre")} />
@@ -148,7 +148,7 @@ function ManualCard({ initialDraft, isSaving, onAdd, onSkip }: ManualCardProps) 
           {...form.register("title", { required: true })}
         />
         <Input label={t("books.add.author")} {...form.register("main_author")} />
-        <Input label={t("books.add.isbn")} {...form.register("isbn")} />
+        <Input label={t("books.add.isbn")} inputMode="numeric" {...form.register("isbn")} />
         <Input label={t("books.add.publisher")} {...form.register("publisher")} />
         <Input label={t("books.add.year")} type="number" {...form.register("publication_year")} />
         <Input label={t("books.add.genre")} {...form.register("genre")} />
@@ -441,6 +441,7 @@ export function ShelfAddPage() {
                   placeholder={t("books.shelfAdd.isbnPlaceholder")}
                   value={isbn}
                   onChange={(e) => setIsbn(e.target.value)}
+                  inputMode="numeric"
                   className="flex-1"
                 />
                 <Button

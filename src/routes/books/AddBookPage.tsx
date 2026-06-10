@@ -129,6 +129,7 @@ export function AddBookPage() {
                 placeholder={t("books.add.isbnPlaceholder")}
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
+                inputMode="numeric"
                 className="flex-1"
               />
               <Button type="submit" loading={lookup.isPending} className="shrink-0 whitespace-nowrap">
@@ -167,7 +168,7 @@ export function AddBookPage() {
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <Input label={t("books.add.author")} {...form.register("main_author")} />
-              <Input label={t("books.add.isbn")} {...form.register("isbn")} />
+              <Input label={t("books.add.isbn")} inputMode="numeric" {...form.register("isbn")} />
               <Input label={t("books.add.publisher")} {...form.register("publisher")} />
               <Input label={t("books.add.year")} type="number" {...form.register("publication_year")} />
               <Input label={t("books.add.genre")} {...form.register("genre")} />

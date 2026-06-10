@@ -396,7 +396,7 @@ function EditBookModal({
           <div className="grid gap-3 sm:grid-cols-2">
             <Input label={t("books.add.author")} disabled={!record} {...register("main_author")} />
             <Input label={t("books.detail.editSection.otherAuthors")} hint={t("books.detail.editSection.separateCommas")} disabled={!record} {...register("other_authors")} />
-            <Input label={t("books.detail.isbn")} disabled={!record} {...register("isbn")} />
+            <Input label={t("books.detail.isbn")} disabled={!record} inputMode="numeric" {...register("isbn")} />
             <Input label={t("books.detail.publisher")} disabled={!record} {...register("publisher")} />
             <Input label={t("books.detail.year")} type="number" disabled={!record} {...register("publication_year")} />
             <Input label={t("books.detail.language")} disabled={!record} {...register("language")} />
