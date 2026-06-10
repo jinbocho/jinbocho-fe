@@ -311,6 +311,7 @@ export interface ShelfMap {
 export interface SectionMap {
   section_id: string;
   section_index: number;
+  label: string | null;
   shelves: ShelfMap[];
 }
 

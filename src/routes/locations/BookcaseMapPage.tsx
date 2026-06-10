@@ -72,7 +72,7 @@ export function BookcaseMapPage() {
               .map((section) => (
                 <Card key={section.section_id} className="p-4">
                   <h2 className="mb-3 text-sm font-semibold text-ink-soft">
-                    {t("locations.sectionLabel")} {section.section_index + 1}
+                    {section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`}
                   </h2>
                   <div className="space-y-3">
                     {section.shelves
