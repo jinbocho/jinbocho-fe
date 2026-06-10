@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -9,8 +10,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useLibraryStats } from "@/features/stats/useLibraryStats";
+import { useActiveLoans, useBookViews } from "@/features/books/hooks";
+import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
+import { formatDate, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
 import type { ReadingStatus } from "@/types/api";
 
 const STATUS_ORDER: ReadingStatus[] = ["to_read", "reading", "read"];
@@ -18,8 +21,12 @@ const STATUS_ORDER: ReadingStatus[] = ["to_read", "reading", "read"];
 export function DashboardPage() {
   const { t } = useTranslation();
   const { data, isLoading } = useLibraryStats();
+  const loans = useActiveLoans();
+  const bookViews = useBookViews();
+  const users = useUsers();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
+  const [pickSeed, setPickSeed] = useState(() => Math.floor(Math.random() * 1000));
 
   if (isLoading) {
     return (
@@ -54,7 +61,12 @@ export function DashboardPage() {
     );
   }
 
-  const maxRoom = Math.max(...data.byRoom.map((r) => r.count), 1);
+  const userMap = new Map((users.data ?? []).map((u) => [u.id, u]));
+  const bookViewMap = new Map(bookViews.data.map((v) => [v.book.id, v]));
+  const activeLoans = (loans.data ?? []).filter((l) => !l.returned_at);
+  const now = new Date();
+  const toRead = data.toReadBooks;
+  const pick = toRead.length > 0 ? toRead[pickSeed % toRead.length] : null;
 
   return (
     <>
@@ -71,7 +83,7 @@ export function DashboardPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label={t("dashboard.totalBooksLabel")} value={data.total} tone="bg-brand/15 text-brand" />
+        <StatCard label={t("dashboard.totalBooksLabel")} value={data.total} />
         {STATUS_ORDER.map((s) => (
           <StatCard
             key={s}
@@ -83,30 +95,75 @@ export function DashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Currently Reading */}
         <Card className="min-w-0 p-5">
-          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.byRoomTitle")}</h2>
-          {data.byRoom.length === 0 ? (
-            <p className="text-sm text-ink-soft">{t("dashboard.noRoomsYet")}</p>
+          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.currentlyReadingTitle")}</h2>
+          {data.currentlyReading.length === 0 ? (
+            <p className="text-sm text-ink-soft">{t("dashboard.currentlyReadingEmpty")}</p>
           ) : (
             <ul className="space-y-3">
-              {data.byRoom.map((r) => (
-                <li key={r.roomId ?? "unassigned"}>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span className="text-ink">{r.roomName}</span>
-                    <span className="text-ink-soft">{r.count}</span>
+              {data.currentlyReading.map((v) => (
+                <li key={v.book.id} className="flex min-w-0 items-center gap-3">
+                  <BookCover url={v.record?.cover_url} title={v.record?.title} className="h-12 w-9 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <Link to={`/books/${v.book.id}`} className="block truncate font-medium text-ink hover:text-brand">
+                      {v.record?.title ?? t("common.untitled")}
+                    </Link>
+                    {v.record?.main_author && (
+                      <p className="truncate text-sm text-ink-soft">{v.record.main_author}</p>
+                    )}
+                    {v.book.current_reader_id && (
+                      <p className="truncate text-xs text-brand">
+                        {userMap.get(v.book.current_reader_id)?.full_name}
+                      </p>
+                    )}
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-paper">
-                    <div
-                      className="h-full rounded-full bg-brand"
-                      style={{ width: `${(r.count / maxRoom) * 100}%` }}
-                    />
-                  </div>
+                  <ReadingStatusControl bookId={v.book.id} status={v.book.reading_status} />
                 </li>
               ))}
             </ul>
           )}
         </Card>
 
+        {/* On Loan */}
+        <Card className="min-w-0 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">{t("dashboard.onLoanTitle")}</h2>
+            {activeLoans.length > 0 && (
+              <Link to="/loans" className="text-xs text-brand hover:underline">
+                {t("dashboard.onLoanViewAll")} →
+              </Link>
+            )}
+          </div>
+          {activeLoans.length === 0 ? (
+            <p className="text-sm text-ink-soft">{t("dashboard.onLoanEmpty")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {activeLoans.slice(0, 5).map((loan) => {
+                const view = bookViewMap.get(loan.owned_book_id);
+                const isOverdue = loan.due_date && new Date(loan.due_date) < now;
+                return (
+                  <li key={loan.id} className="flex min-w-0 items-center gap-3">
+                    <BookCover url={view?.record?.cover_url} title={view?.record?.title} className="h-12 w-9 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <Link to={`/books/${loan.owned_book_id}`} className="block truncate font-medium text-ink hover:text-brand">
+                        {view?.record?.title ?? t("common.untitled")}
+                      </Link>
+                      <p className="truncate text-sm text-ink-soft">{loan.borrower_name}</p>
+                      {loan.due_date && (
+                        <p className={`text-xs ${isOverdue ? "font-medium text-amber" : "text-ink-soft"}`}>
+                          {isOverdue ? t("dashboard.onLoanOverdue") : t("dashboard.onLoanDue")}: {formatDate(loan.due_date)}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+
+        {/* Recently Added */}
         <Card className="min-w-0 p-5">
           <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.recentlyAddedTitle")}</h2>
           <ul className="space-y-3">
@@ -115,7 +172,7 @@ export function DashboardPage() {
                 <BookCover url={v.record?.cover_url} title={v.record?.title} className="h-12 w-9 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <Link to={`/books/${v.book.id}`} className="block truncate font-medium text-ink hover:text-brand">
-                    {v.record?.title ?? "Untitled"}
+                    {v.record?.title ?? t("common.untitled")}
                   </Link>
                   {v.record?.main_author && (
                     <p className="truncate text-sm text-ink-soft">{v.record.main_author}</p>
@@ -127,44 +184,36 @@ export function DashboardPage() {
           </ul>
         </Card>
 
-        {data.ownedByMember.length > 0 && (
-          <Card className="min-w-0 p-5">
-            <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.ownedByMemberTitle")}</h2>
-            <ul className="space-y-2 text-sm">
-              {data.ownedByMember.map((m) => (
-                <li key={m.userId} className="flex justify-between">
-                  <span className="text-ink">{m.name}</span>
-                  <Link
-                    to={`/stats/books?filter=owned&user=${m.userId}`}
-                    className="font-medium text-brand hover:underline"
-                  >
-                    {m.count}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        )}
+        {/* What to read next */}
+        <Card className="min-w-0 p-5">
+          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.nextReadTitle")}</h2>
+          {pick ? (
+            <div className="flex gap-4">
+              <BookCover url={pick.record?.cover_url} title={pick.record?.title} className="h-28 w-20 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <Link to={`/books/${pick.book.id}`} className="block font-medium leading-snug text-ink hover:text-brand">
+                  {pick.record?.title ?? t("common.untitled")}
+                </Link>
+                {pick.record?.main_author && (
+                  <p className="mt-1 text-sm text-ink-soft">{pick.record.main_author}</p>
+                )}
+                {pick.record?.genre && (
+                  <p className="mt-1 text-xs text-ink-soft/70">{pick.record.genre}</p>
+                )}
+                <button
+                  onClick={() => setPickSeed((s) => s + 1)}
+                  className="mt-3 text-xs text-brand hover:underline"
+                >
+                  🎲 {t("dashboard.nextReadShuffle")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-ink-soft">{t("dashboard.nextReadEmpty")}</p>
+          )}
+        </Card>
 
-        {data.readByMember.length > 0 && (
-          <Card className="min-w-0 p-5">
-            <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.readByMemberTitle")}</h2>
-            <ul className="space-y-2 text-sm">
-              {data.readByMember.map((m) => (
-                <li key={m.userId} className="flex justify-between">
-                  <span className="text-ink">{m.name}</span>
-                  <Link
-                    to={`/stats/books?filter=read&user=${m.userId}`}
-                    className="font-medium text-brand hover:underline"
-                  >
-                    {m.count}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        )}
-
+        {/* Unread by anyone */}
         <Card className="min-w-0 p-5">
           <h2 className="mb-2 font-display text-lg font-semibold">{t("dashboard.unreadByAnyoneTitle")}</h2>
           <Link
@@ -174,13 +223,44 @@ export function DashboardPage() {
             {data.unreadByAnyone}
           </Link>
           <p className="mt-1 text-sm text-ink-soft">
-            {data.unreadByAnyone === 1 ? t("dashboard.bookLabel") : t("dashboard.booksLabel")} {t("dashboard.unreadByAnyoneDesc")}
+            {data.unreadByAnyone === 1 ? t("dashboard.bookLabel") : t("dashboard.booksLabel")}{" "}
+            {t("dashboard.unreadByAnyoneDesc")}
           </p>
         </Card>
 
+        {/* Family Favorites */}
+        <Card className="min-w-0 p-5">
+          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.familyFavoritesTitle")}</h2>
+          {data.sharedFavorites.length === 0 ? (
+            <p className="text-sm text-ink-soft">{t("dashboard.familyFavoritesEmpty")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {data.sharedFavorites.map(({ view, readCount }) => (
+                <li key={view.book.id} className="flex min-w-0 items-center gap-3">
+                  <BookCover url={view.record?.cover_url} title={view.record?.title} className="h-12 w-9 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <Link to={`/books/${view.book.id}`} className="block truncate font-medium text-ink hover:text-brand">
+                      {view.record?.title ?? t("common.untitled")}
+                    </Link>
+                    {view.record?.main_author && (
+                      <p className="truncate text-sm text-ink-soft">{view.record.main_author}</p>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-sage">
+                    {readCount} {t("dashboard.familyFavoritesReadBy")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        {/* Reading Goals */}
         {data.goalProgress.length > 0 && (
           <Card className="min-w-0 p-5 lg:col-span-2">
-            <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.readingGoalsTitle")} {new Date().getFullYear()}</h2>
+            <h2 className="mb-4 font-display text-lg font-semibold">
+              {t("dashboard.readingGoalsTitle")} {new Date().getFullYear()}
+            </h2>
             <ul className="space-y-4">
               {data.goalProgress.map((g) => {
                 const pct = Math.min(100, Math.round((g.readThisYear / g.goal) * 100));
@@ -188,7 +268,9 @@ export function DashboardPage() {
                   <li key={g.userId}>
                     <div className="mb-1 flex justify-between text-sm">
                       <span className="text-ink">{g.name}</span>
-                      <span className="text-ink-soft">{g.readThisYear} / {g.goal} {t("dashboard.goalBooksLabel")} ({pct}%)</span>
+                      <span className="text-ink-soft">
+                        {g.readThisYear} / {g.goal} {t("dashboard.goalBooksLabel")} ({pct}%)
+                      </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-paper">
                       <div

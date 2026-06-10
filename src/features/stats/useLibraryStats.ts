@@ -18,6 +18,11 @@ export interface GoalProgress {
   readThisYear: number;
 }
 
+export interface SharedFavorite {
+  view: BookView;
+  readCount: number;
+}
+
 export interface LibraryStats {
   total: number;
   byStatus: Record<ReadingStatus, number>;
@@ -25,6 +30,9 @@ export interface LibraryStats {
   byGenre: { genre: string; count: number; pct: number }[];
   topAuthors: { author: string; count: number }[];
   recentlyAdded: BookView[];
+  currentlyReading: BookView[];
+  toReadBooks: BookView[];
+  sharedFavorites: SharedFavorite[];
   ownedByMember: MemberCount[];
   readByMember: MemberCount[];
   unreadByAnyone: number;
@@ -135,7 +143,22 @@ export function computeLibraryStats(
     .slice(0, 5)
     .map(([author, count]) => ({ author, count }));
 
-  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, ownedByMember, readByMember, unreadByAnyone, goalProgress };
+  const currentlyReading = views.filter((v) => v.book.reading_status === "reading");
+  const toReadBooks = views.filter((v) => v.book.reading_status === "to_read");
+
+  const readUsersByBook = new Map<string, Set<string>>();
+  for (const r of reads) {
+    const s = readUsersByBook.get(r.owned_book_id) ?? new Set<string>();
+    s.add(r.user_id);
+    readUsersByBook.set(r.owned_book_id, s);
+  }
+  const sharedFavorites: SharedFavorite[] = views
+    .filter((v) => (readUsersByBook.get(v.book.id)?.size ?? 0) >= 2)
+    .map((v) => ({ view: v, readCount: readUsersByBook.get(v.book.id)!.size }))
+    .sort((a, b) => b.readCount - a.readCount)
+    .slice(0, 5);
+
+  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, toReadBooks, sharedFavorites, ownedByMember, readByMember, unreadByAnyone, goalProgress };
 }
 
 // The backend has no stats endpoint — derive everything from loaded data.

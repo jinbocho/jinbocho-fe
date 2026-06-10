@@ -402,7 +402,20 @@
     "booksLabel": "books",
     "unreadByAnyoneDesc": "no member has read yet",
     "readingGoalsTitle": "Reading goals",
-    "goalBooksLabel": "books"
+    "goalBooksLabel": "books",
+    "currentlyReadingTitle": "Currently reading",
+    "currentlyReadingEmpty": "Nothing being read right now",
+    "onLoanTitle": "On loan",
+    "onLoanEmpty": "All books are home",
+    "onLoanDue": "Due",
+    "onLoanOverdue": "Overdue",
+    "onLoanViewAll": "View all",
+    "nextReadTitle": "What to read next?",
+    "nextReadEmpty": "No books in your to-read list",
+    "nextReadShuffle": "Another one",
+    "familyFavoritesTitle": "Family favorites",
+    "familyFavoritesEmpty": "No book has been read by more than one member yet",
+    "familyFavoritesReadBy": "members"
   },
   "stats": {
     "pageTitle": "Statistics",

@@ -402,7 +402,20 @@
     "booksLabel": "livres",
     "unreadByAnyoneDesc": "aucun membre n'a encore lu",
     "readingGoalsTitle": "Objectifs de lecture",
-    "goalBooksLabel": "livres"
+    "goalBooksLabel": "livres",
+    "currentlyReadingTitle": "En lecture",
+    "currentlyReadingEmpty": "Personne ne lit rien en ce moment",
+    "onLoanTitle": "En prêt",
+    "onLoanEmpty": "Tous les livres sont à la maison",
+    "onLoanDue": "Échéance",
+    "onLoanOverdue": "En retard",
+    "onLoanViewAll": "Voir tout",
+    "nextReadTitle": "Que lire ensuite ?",
+    "nextReadEmpty": "Aucun livre dans la liste à lire",
+    "nextReadShuffle": "Un autre",
+    "familyFavoritesTitle": "Favoris de la famille",
+    "familyFavoritesEmpty": "Aucun livre lu par plus d'un membre",
+    "familyFavoritesReadBy": "membres"
   },
   "stats": {
     "pageTitle": "Statistiques",
