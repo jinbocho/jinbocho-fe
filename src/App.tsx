@@ -21,6 +21,7 @@ import { UsersPage } from "@/routes/users/UsersPage";
 import { SettingsPage } from "@/routes/settings/SettingsPage";
 import { OnLoanPage } from "@/routes/loans/OnLoanPage";
 import { StatsBookListPage } from "@/routes/stats/StatsBookListPage";
+import { StatsPage } from "@/routes/stats/StatsPage";
 
 function NotFound() {
   const { t } = useTranslation();
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
       },
       { path: "/books/:id", element: <BookDetailPage /> },
       { path: "/loans", element: <OnLoanPage /> },
+      { path: "/stats", element: <StatsPage /> },
       { path: "/stats/books", element: <StatsBookListPage /> },
       { path: "/locations", element: <LocationsPage /> },
       { path: "/locations/bookcase/:id", element: <BookcaseMapPage /> },

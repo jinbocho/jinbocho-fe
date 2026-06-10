@@ -25,6 +25,7 @@ export function AppShell() {
     { to: "/books", label: t("nav.books"), icon: "📚" },
     { to: "/loans", label: t("nav.onLoan"), icon: "📤" },
     { to: "/locations", label: t("nav.rooms"), icon: "🗄" },
+    { to: "/stats", label: t("nav.stats"), icon: "📊" },
     { to: "/users", label: t("nav.users"), icon: "👥", adminOnly: true },
     { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
   ];

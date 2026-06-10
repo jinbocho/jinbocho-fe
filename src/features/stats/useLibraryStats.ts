@@ -22,6 +22,8 @@ export interface LibraryStats {
   total: number;
   byStatus: Record<ReadingStatus, number>;
   byRoom: { roomId: string | null; roomName: string; count: number }[];
+  byGenre: { genre: string; count: number; pct: number }[];
+  topAuthors: { author: string; count: number }[];
   recentlyAdded: BookView[];
   ownedByMember: MemberCount[];
   readByMember: MemberCount[];
@@ -109,7 +111,31 @@ export function computeLibraryStats(
       readThisYear: thisYearReads.get(u.id) ?? 0,
     }));
 
-  return { total: views.length, byStatus, byRoom, recentlyAdded, ownedByMember, readByMember, unreadByAnyone, goalProgress };
+  // Genre distribution (from bibliographic records).
+  const genreCounts = new Map<string, number>();
+  for (const { record } of views) {
+    if (record?.genre) {
+      genreCounts.set(record.genre, (genreCounts.get(record.genre) ?? 0) + 1);
+    }
+  }
+  const totalForPct = views.length || 1;
+  const byGenre = [...genreCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .map(([genre, count]) => ({ genre, count, pct: Math.round((count / totalForPct) * 100) }));
+
+  // Top 5 authors by number of owned books.
+  const authorCounts = new Map<string, number>();
+  for (const { record } of views) {
+    if (record?.main_author) {
+      authorCounts.set(record.main_author, (authorCounts.get(record.main_author) ?? 0) + 1);
+    }
+  }
+  const topAuthors = [...authorCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([author, count]) => ({ author, count }));
+
+  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, ownedByMember, readByMember, unreadByAnyone, goalProgress };
 }
 
 // The backend has no stats endpoint — derive everything from loaded data.
