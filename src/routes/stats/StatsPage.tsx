@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useLibraryStats } from "@/features/stats/useLibraryStats";
 import { useUsers } from "@/features/users/hooks";
+import { genreLabel } from "@/lib/format";
 
 export function StatsPage() {
   const { t } = useTranslation();
@@ -158,7 +159,7 @@ export function StatsPage() {
               {stats.byGenre.map(({ genre, count, pct }) => (
                 <div key={genre}>
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="font-medium text-ink">{genre}</span>
+                    <span className="font-medium text-ink">{genreLabel(genre, t)}</span>
                     <span className="text-ink-soft">
                       {count} {count === 1 ? t("stats.bookSingular") : t("stats.bookPlural")} · {pct}%
                     </span>

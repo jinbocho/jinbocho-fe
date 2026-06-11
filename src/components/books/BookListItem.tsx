@@ -20,21 +20,23 @@ export function BookListItem({
   const reader = useReaderName(book.reading_status === "reading" ? book.current_reader_id : null);
 
   return (
-    <Link
-      to={`/books/${book.id}`}
-      className="flex items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-brand-soft"
-    >
-      <BookCover url={record?.cover_url} title={record?.title} className="h-16 w-12 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-ink">{title}</p>
-        {author && <p className="truncate text-sm text-ink-soft">{author}</p>}
-        {roomName && <p className="mt-0.5 truncate text-xs text-stone">📍 {roomName}</p>}
-        {reader && <p className="mt-0.5 truncate text-xs text-amber">📖 {reader}</p>}
-        {onLoan && <p className="mt-0.5 truncate text-xs text-amber">📤 In prestito</p>}
-      </div>
+    <div className="flex items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-brand-soft">
+      <Link
+        to={`/books/${book.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
+        <BookCover url={record?.cover_url} title={record?.title} className="h-16 w-12 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium text-ink">{title}</p>
+          {author && <p className="truncate text-sm text-ink-soft">{author}</p>}
+          {roomName && <p className="mt-0.5 truncate text-xs text-stone">📍 {roomName}</p>}
+          {reader && <p className="mt-0.5 truncate text-xs text-amber">📖 {reader}</p>}
+          {onLoan && <p className="mt-0.5 truncate text-xs text-amber">📤 In prestito</p>}
+        </div>
+      </Link>
       <div className="shrink-0">
         <ReadingStatusControl bookId={book.id} status={book.reading_status} />
       </div>
-    </Link>
+    </div>
   );
 }

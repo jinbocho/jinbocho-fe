@@ -1,4 +1,5 @@
 import { useLangStore } from "@/features/i18n/store";
+import { GENRE_CODES } from "@/types/api";
 import type { BookCondition, BookSource, ReadingStatus } from "@/types/api";
 
 // Tailwind classes for the status badge (background + text).
@@ -55,6 +56,11 @@ export function readingStatusLabel(
   t: (key: string) => string,
 ): string {
   return t(`enums.readingStatus.${status}`);
+}
+
+// Translate a normalized genre code; unknown/legacy values fall back to the raw text.
+export function genreLabel(genre: string, t: (key: string) => string): string {
+  return (GENRE_CODES as readonly string[]).includes(genre) ? t(`enums.genre.${genre}`) : genre;
 }
 
 export function bookConditionLabel(

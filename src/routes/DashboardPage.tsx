@@ -13,7 +13,7 @@ import { useLibraryStats } from "@/features/stats/useLibraryStats";
 import { useActiveLoans, useBookViews } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { formatDate, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
+import { formatDate, genreLabel, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
 import type { ReadingStatus } from "@/types/api";
 
 const STATUS_ORDER: ReadingStatus[] = ["to_read", "reading", "read"];
@@ -198,7 +198,7 @@ export function DashboardPage() {
                   <p className="mt-1 text-sm text-ink-soft">{pick.record.main_author}</p>
                 )}
                 {pick.record?.genre && (
-                  <p className="mt-1 text-xs text-ink-soft/70">{pick.record.genre}</p>
+                  <p className="mt-1 text-xs text-ink-soft/70">{genreLabel(pick.record.genre, t)}</p>
                 )}
                 <button
                   onClick={() => setPickSeed((s) => s + 1)}

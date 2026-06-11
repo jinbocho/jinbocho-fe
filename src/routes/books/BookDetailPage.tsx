@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { BookPresentation } from "@/components/books/BookPresentation";
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { LocationPicker, type LocationSelection } from "@/components/locations/LocationPicker";
 import { BookCover } from "@/components/ui/BookCover";
@@ -33,7 +34,7 @@ import { useRecord, useUpdateRecord } from "@/features/records/hooks";
 import { useRooms } from "@/features/locations/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { bookConditions, bookSources, formatDate, formatDateTime } from "@/lib/format";
+import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
 
 interface HistoryEntry {
@@ -131,7 +132,7 @@ export function BookDetailPage() {
           <Field label={t("books.detail.isbn")} value={r?.isbn} />
           <Field label={t("books.detail.publisher")} value={r?.publisher} />
           <Field label={t("books.detail.year")} value={r?.publication_year?.toString()} />
-          <Field label={t("books.detail.genre")} value={r?.genre} />
+          <Field label={t("books.detail.genre")} value={r?.genre ? genreLabel(r.genre, t) : null} />
           <Field label={t("books.detail.language")} value={r?.language} />
           <Field label={t("books.detail.condition")} value={b.condition} />
           <Field label={t("books.detail.source")} value={b.source} />
@@ -161,6 +162,8 @@ export function BookDetailPage() {
           </div>
         )}
       </Card>
+
+      {r && <BookPresentation record={r} canEdit={canEdit} />}
 
       <Card className="mt-6 p-5">
         <h2 className="mb-3 font-display text-lg font-semibold">{t("books.detail.history")}</h2>

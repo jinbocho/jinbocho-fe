@@ -16,7 +16,7 @@ import { useRooms } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useDebounce } from "@/hooks/useDebounce";
-import { READING_STATUSES, readingStatusLabel } from "@/lib/format";
+import { genreLabel, READING_STATUSES, readingStatusLabel } from "@/lib/format";
 
 export function BookCatalogPage() {
   const { t } = useTranslation();
@@ -35,6 +35,7 @@ export function BookCatalogPage() {
   const roomFilter = params.get("room") ?? "";
   const statusFilter = params.get("status") ?? "";
   const ownerFilter = params.get("owner") ?? "";
+  const genreFilter = params.get("genre") ?? "";
   const [query, setQuery] = useState(params.get("q") ?? "");
   const debouncedQuery = useDebounce(query, 250);
 
@@ -43,19 +44,31 @@ export function BookCatalogPage() {
     [rooms.data],
   );
 
+  // Genres actually present in the library, sorted by translated label.
+  const genreOptions = useMemo(() => {
+    const present = new Set<string>();
+    for (const { record } of data) {
+      if (record?.genre) present.add(record.genre);
+    }
+    return [...present]
+      .map((g) => ({ value: g, label: genreLabel(g, t) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [data, t]);
+
   const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
     return data.filter(({ book, record }) => {
       if (roomFilter && book.room_id !== roomFilter) return false;
       if (statusFilter && book.reading_status !== statusFilter) return false;
       if (ownerFilter && book.owner_id !== ownerFilter) return false;
+      if (genreFilter && record?.genre !== genreFilter) return false;
       if (q) {
         const hay = `${record?.title ?? ""} ${record?.main_author ?? ""} ${record?.isbn ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [data, roomFilter, statusFilter, ownerFilter, debouncedQuery]);
+  }, [data, roomFilter, statusFilter, ownerFilter, genreFilter, debouncedQuery]);
 
   function setParam(key: string, value: string) {
     setParams((prev) => {
@@ -88,7 +101,7 @@ export function BookCatalogPage() {
         }
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto]">
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto_auto]">
         <SearchInput
           label={t("books.catalog.searchPlaceholder")}
           value={query}
@@ -117,6 +130,13 @@ export function BookCatalogPage() {
           value={ownerFilter}
           options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
           onChange={(e) => setParam("owner", e.target.value)}
+        />
+        <Select
+          aria-label="Filter by genre"
+          placeholder={t("books.catalog.filterGenres")}
+          value={genreFilter}
+          options={genreOptions}
+          onChange={(e) => setParam("genre", e.target.value)}
         />
       </div>
 

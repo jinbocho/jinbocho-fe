@@ -16,6 +16,9 @@ export const INGESTION = "v1/catalog/ingestion";
 export const MAP = "v1/catalog/map";
 export const EXPORT = "v1/catalog/export";
 
+// AI domain — gateway proxies /v1/ai/{path} → ai-service /v1/suggestions/{path}
+export const AI = "v1/ai";
+
 // Location domain (same backend service, different gateway prefix)
 export const ROOMS = "v1/location/rooms";
 export const BOOKCASES = "v1/location/bookcases";

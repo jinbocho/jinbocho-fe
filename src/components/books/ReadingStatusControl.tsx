@@ -29,7 +29,6 @@ export function ReadingStatusControl({
       aria-label="Reading status"
       value={status}
       disabled={mutation.isPending}
-      onClick={(e) => e.stopPropagation()}
       onChange={(e) => mutation.mutate({ id: bookId, status: e.target.value as ReadingStatus })}
       className={`shrink-0 rounded-full border-0 px-2.5 py-0.5 text-xs font-medium ${READING_STATUS_CLASS[status]}`}
     >

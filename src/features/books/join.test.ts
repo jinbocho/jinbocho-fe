@@ -39,6 +39,7 @@ function record(id: string, title: string): BibliographicRecord {
     publication_year: null,
     language: null,
     genre: null,
+    genre_raw: null,
     cover_url: null,
     notes: null,
     created_at: "2026-01-01T00:00:00Z",
