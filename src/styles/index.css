@@ -2,110 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme CSS custom properties live OUTSIDE @layer base so they are
+  unlayered author styles. Unlayered styles have higher cascade priority
+  than any @layer rule (base/components/utilities), making the theme
+  switching deterministic regardless of how PostCSS/Tailwind reorders
+  rules inside layers.
+
+  Specificity ladder:
+    :root                   → 0,1,0  (Pergamena light — always the fallback)
+    html.dark               → 0,1,1  (Pergamena dark)
+    html.theme-akabeni      → 0,1,1  (Akabeni light  — ties with html.dark, but comes later so wins)
+    html.theme-akabeni.dark → 0,2,1  (Akabeni dark   — highest, wins over everything)
+    (same pattern for Sumi)
+*/
+
+/* ─── Pergamena — light ────────────────────────────────────────────────────── */
+:root {
+  --c-paper: 246 241 232;
+  --c-surface: 253 249 243;
+  --c-ink: 42 31 18;
+  --c-ink-soft: 122 100 80;
+  --c-brand: 168 90 56;
+  --c-brand-soft: 196 136 106;
+  --c-sage: 110 142 88;
+  --c-amber: 200 148 14;
+  --c-stone: 154 140 124;
+  --c-line: 226 216 204;
+  --c-danger: 184 60 50;
+  --shadow-card: 0 1px 3px rgb(42 31 18 / 0.08);
+  color-scheme: light;
+}
+
+/* ─── Pergamena — dark ─────────────────────────────────────────────────────── */
+html.dark {
+  --c-paper: 30 25 18;
+  --c-surface: 44 36 24;
+  --c-ink: 237 229 216;
+  --c-ink-soft: 176 152 126;
+  --c-brand: 196 136 106;
+  --c-brand-soft: 212 164 138;
+  --c-sage: 142 170 116;
+  --c-amber: 222 176 48;
+  --c-stone: 154 140 124;
+  --c-line: 60 48 34;
+  --c-danger: 212 100 80;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.50);
+  color-scheme: dark;
+}
+
+/* ─── Akabeni (赤紅) — light ───────────────────────────────────────────────── */
+html.theme-akabeni {
+  --c-paper: 248 247 244;
+  --c-surface: 255 255 255;
+  --c-ink: 17 17 17;
+  --c-ink-soft: 119 119 119;
+  --c-brand: 188 0 45;
+  --c-brand-soft: 212 0 58;
+  --c-sage: 46 125 50;
+  --c-amber: 199 119 0;
+  --c-stone: 136 136 136;
+  --c-line: 229 227 222;
+  --c-danger: 188 0 45;
+  --shadow-card: 0 1px 3px rgb(17 17 17 / 0.08);
+  color-scheme: light;
+}
+
+/* ─── Akabeni (赤紅) — dark ────────────────────────────────────────────────── */
+html.theme-akabeni.dark {
+  --c-paper: 26 26 26;
+  --c-surface: 36 36 36;
+  --c-ink: 240 238 235;
+  --c-ink-soft: 154 154 154;
+  --c-brand: 255 77 109;
+  --c-brand-soft: 255 143 163;
+  --c-sage: 128 207 169;
+  --c-amber: 255 204 68;
+  --c-stone: 136 136 136;
+  --c-line: 51 51 51;
+  --c-danger: 255 77 109;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.50);
+  color-scheme: dark;
+}
+
+/* ─── Sumi (墨) — light ────────────────────────────────────────────────────── */
+html.theme-sumi {
+  --c-paper: 245 243 240;
+  --c-surface: 250 250 248;
+  --c-ink: 28 35 51;
+  --c-ink-soft: 90 100 128;
+  --c-brand: 184 134 11;
+  --c-brand-soft: 212 160 23;
+  --c-sage: 45 106 79;
+  --c-amber: 200 150 12;
+  --c-stone: 138 138 154;
+  --c-line: 220 218 237;
+  --c-danger: 192 57 43;
+  --shadow-card: 0 1px 4px rgb(28 35 51 / 0.10);
+  color-scheme: light;
+}
+
+/* ─── Sumi (墨) — dark ─────────────────────────────────────────────────────── */
+html.theme-sumi.dark {
+  --c-paper: 15 21 35;
+  --c-surface: 24 34 53;
+  --c-ink: 232 228 216;
+  --c-ink-soft: 138 150 180;
+  --c-brand: 240 192 64;
+  --c-brand-soft: 245 208 112;
+  --c-sage: 82 183 136;
+  --c-amber: 232 184 75;
+  --c-stone: 106 112 144;
+  --c-line: 37 48 80;
+  --c-danger: 231 76 60;
+  --shadow-card: 0 1px 4px rgb(0 0 0 / 0.50);
+  color-scheme: dark;
+}
+
 @layer base {
-  /* ─── Pergamena — light (default, :root) ────────────────────────────────── */
-  :root {
-    --c-paper: 246 241 232;
-    --c-surface: 253 249 243;
-    --c-ink: 42 31 18;
-    --c-ink-soft: 122 100 80;
-    --c-brand: 168 90 56;
-    --c-brand-soft: 196 136 106;
-    --c-sage: 110 142 88;
-    --c-amber: 200 148 14;
-    --c-stone: 154 140 124;
-    --c-line: 226 216 204;
-    --c-danger: 184 60 50;
-    --shadow-card: 0 1px 3px rgb(42 31 18 / 0.08);
-    color-scheme: light;
-  }
-
-  /* ─── Pergamena — dark ───────────────────────────────────────────────────── */
-  .dark {
-    --c-paper: 30 25 18;
-    --c-surface: 44 36 24;
-    --c-ink: 237 229 216;
-    --c-ink-soft: 176 152 126;
-    --c-brand: 196 136 106;
-    --c-brand-soft: 212 164 138;
-    --c-sage: 142 170 116;
-    --c-amber: 222 176 48;
-    --c-stone: 154 140 124;
-    --c-line: 60 48 34;
-    --c-danger: 212 100 80;
-    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.50);
-    color-scheme: dark;
-  }
-
-  /* ─── Akabeni (赤紅) — light ─────────────────────────────────────────────── */
-  /* html.theme-* (specificity 0,1,1) beats :root (0,1,0) regardless of source order. */
-  html.theme-akabeni {
-    --c-paper: 248 247 244;
-    --c-surface: 255 255 255;
-    --c-ink: 17 17 17;
-    --c-ink-soft: 119 119 119;
-    --c-brand: 188 0 45;
-    --c-brand-soft: 212 0 58;
-    --c-sage: 46 125 50;
-    --c-amber: 199 119 0;
-    --c-stone: 136 136 136;
-    --c-line: 229 227 222;
-    --c-danger: 188 0 45;
-    --shadow-card: 0 1px 3px rgb(17 17 17 / 0.08);
-    color-scheme: light;
-  }
-
-  /* ─── Akabeni (赤紅) — dark ──────────────────────────────────────────────── */
-  html.theme-akabeni.dark {
-    --c-paper: 26 26 26;
-    --c-surface: 36 36 36;
-    --c-ink: 240 238 235;
-    --c-ink-soft: 154 154 154;
-    --c-brand: 255 77 109;
-    --c-brand-soft: 255 143 163;
-    --c-sage: 128 207 169;
-    --c-amber: 255 204 68;
-    --c-stone: 136 136 136;
-    --c-line: 51 51 51;
-    --c-danger: 255 77 109;
-    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.50);
-    color-scheme: dark;
-  }
-
-  /* ─── Sumi (墨) — light ──────────────────────────────────────────────────── */
-  html.theme-sumi {
-    --c-paper: 245 243 240;
-    --c-surface: 250 250 248;
-    --c-ink: 28 35 51;
-    --c-ink-soft: 90 100 128;
-    --c-brand: 184 134 11;
-    --c-brand-soft: 212 160 23;
-    --c-sage: 45 106 79;
-    --c-amber: 200 150 12;
-    --c-stone: 138 138 154;
-    --c-line: 220 218 237;
-    --c-danger: 192 57 43;
-    --shadow-card: 0 1px 4px rgb(28 35 51 / 0.10);
-    color-scheme: light;
-  }
-
-  /* ─── Sumi (墨) — dark ───────────────────────────────────────────────────── */
-  html.theme-sumi.dark {
-    --c-paper: 15 21 35;
-    --c-surface: 24 34 53;
-    --c-ink: 232 228 216;
-    --c-ink-soft: 138 150 180;
-    --c-brand: 240 192 64;
-    --c-brand-soft: 245 208 112;
-    --c-sage: 82 183 136;
-    --c-amber: 232 184 75;
-    --c-stone: 106 112 144;
-    --c-line: 37 48 80;
-    --c-danger: 231 76 60;
-    --shadow-card: 0 1px 4px rgb(0 0 0 / 0.50);
-    color-scheme: dark;
-  }
-
   html {
     -webkit-text-size-adjust: 100%;
   }
