@@ -38,8 +38,8 @@
   }
 
   /* ─── Akabeni (赤紅) — light ─────────────────────────────────────────────── */
-  /* Mirrors the jinbocho landing page and documentation palette. */
-  .theme-akabeni {
+  /* html.theme-* (specificity 0,1,1) beats :root (0,1,0) regardless of source order. */
+  html.theme-akabeni {
     --c-paper: 248 247 244;
     --c-surface: 255 255 255;
     --c-ink: 17 17 17;
@@ -56,7 +56,7 @@
   }
 
   /* ─── Akabeni (赤紅) — dark ──────────────────────────────────────────────── */
-  .theme-akabeni.dark {
+  html.theme-akabeni.dark {
     --c-paper: 26 26 26;
     --c-surface: 36 36 36;
     --c-ink: 240 238 235;
@@ -73,8 +73,7 @@
   }
 
   /* ─── Sumi (墨) — light ──────────────────────────────────────────────────── */
-  /* Avorio caldo, navy profondo, oro: estetica giapponese dell'inchiostro. */
-  .theme-sumi {
+  html.theme-sumi {
     --c-paper: 245 243 240;
     --c-surface: 250 250 248;
     --c-ink: 28 35 51;
@@ -91,7 +90,7 @@
   }
 
   /* ─── Sumi (墨) — dark ───────────────────────────────────────────────────── */
-  .theme-sumi.dark {
+  html.theme-sumi.dark {
     --c-paper: 15 21 35;
     --c-surface: 24 34 53;
     --c-ink: 232 228 216;
