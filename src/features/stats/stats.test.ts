@@ -48,6 +48,8 @@ function user(id: string, name: string, annualGoal?: number): User {
     is_active: true,
     annual_reading_goal: annualGoal ?? null,
     language: null,
+    theme_name: null,
+    theme_mode: null,
   };
 }
 

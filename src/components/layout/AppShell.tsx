@@ -6,18 +6,27 @@ import { IconButton } from "@/components/ui/IconButton";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useLangStore } from "@/features/i18n/store";
+import { useThemeStore } from "@/features/theme/store";
 import { useCurrentUser } from "@/features/users/hooks";
 
 export function AppShell() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const setLang = useLangStore((s) => s.setLang);
+  const setName = useThemeStore((s) => s.setName);
+  const setPref = useThemeStore((s) => s.setPref);
   const me = useCurrentUser();
 
   // Sync language from backend on app boot — backend is the cross-device source of truth.
   useEffect(() => {
     if (me.data?.language) setLang(me.data.language);
   }, [me.data?.language, setLang]);
+
+  // Sync theme from backend on app boot.
+  useEffect(() => {
+    if (me.data?.theme_name) setName(me.data.theme_name);
+    if (me.data?.theme_mode) setPref(me.data.theme_mode);
+  }, [me.data?.theme_name, me.data?.theme_mode, setName, setPref]);
   const logout = useLogout();
 
   const NAV = [

@@ -100,6 +100,17 @@ function AppearanceSection() {
   const setName = useThemeStore((s) => s.setName);
   const pref = useThemeStore((s) => s.pref);
   const setPref = useThemeStore((s) => s.setPref);
+  const update = useUpdateMe();
+
+  function handleSetName(value: string) {
+    setName(value as Parameters<typeof setName>[0]);
+    update.mutate({ theme_name: value as "pergamena" | "akabeni" | "sumi" });
+  }
+
+  function handleSetPref(value: string) {
+    setPref(value as Parameters<typeof setPref>[0]);
+    update.mutate({ theme_mode: value as "light" | "dark" | "system" });
+  }
 
   return (
     <Card className="p-5">
@@ -115,7 +126,7 @@ function AppearanceSection() {
           <button
             key={o.value}
             type="button"
-            onClick={() => setName(o.value)}
+            onClick={() => handleSetName(o.value)}
             aria-pressed={name === o.value}
             className={`flex items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
               name === o.value
@@ -141,7 +152,7 @@ function AppearanceSection() {
           <button
             key={o.value}
             type="button"
-            onClick={() => setPref(o.value)}
+            onClick={() => handleSetPref(o.value)}
             aria-pressed={pref === o.value}
             className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
               pref === o.value ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"

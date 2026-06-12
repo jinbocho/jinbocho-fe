@@ -62,6 +62,8 @@ export interface User {
   is_active: boolean;
   annual_reading_goal: number | null;
   language: Lang | null;
+  theme_name: "pergamena" | "akabeni" | "sumi" | null;
+  theme_mode: "light" | "dark" | "system" | null;
 }
 
 export interface UserCreate {
@@ -82,6 +84,8 @@ export interface MeUpdate {
   full_name?: string;
   annual_reading_goal?: number | null;
   language?: Lang | null;
+  theme_name?: "pergamena" | "akabeni" | "sumi" | null;
+  theme_mode?: "light" | "dark" | "system" | null;
 }
 
 export interface Family {
