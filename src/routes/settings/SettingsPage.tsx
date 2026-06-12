@@ -15,7 +15,7 @@ import { useAuthStore } from "@/features/auth/store";
 import { type Lang, SUPPORTED_LANGS } from "@/features/i18n/config";
 import { useLangStore } from "@/features/i18n/store";
 import { useFamily, useUpdateFamily } from "@/features/family/hooks";
-import { type ThemePref, useThemeStore } from "@/features/theme/store";
+import { type ThemeName, type ThemePref, useThemeStore } from "@/features/theme/store";
 import { useCurrentUser, useUpdateMe } from "@/features/users/hooks";
 
 export function SettingsPage() {
@@ -52,23 +52,92 @@ export function SettingsPage() {
   );
 }
 
-const THEME_OPTIONS: { value: ThemePref; labelKey: string; icon: string }[] = [
+const THEME_NAME_OPTIONS: {
+  value: ThemeName;
+  labelKey: string;
+  descKey: string;
+  swatches: [string, string, string];
+}[] = [
+  {
+    value: "pergamena",
+    labelKey: "enums.themeName.pergamena",
+    descKey: "enums.themeDesc.pergamena",
+    swatches: ["rgb(246,241,232)", "rgb(168,90,56)", "rgb(110,142,88)"],
+  },
+  {
+    value: "akabeni",
+    labelKey: "enums.themeName.akabeni",
+    descKey: "enums.themeDesc.akabeni",
+    swatches: ["rgb(248,247,244)", "rgb(188,0,45)", "rgb(46,125,50)"],
+  },
+  {
+    value: "sumi",
+    labelKey: "enums.themeName.sumi",
+    descKey: "enums.themeDesc.sumi",
+    swatches: ["rgb(245,243,240)", "rgb(184,134,11)", "rgb(28,35,51)"],
+  },
+];
+
+const MODE_OPTIONS: { value: ThemePref; labelKey: string; icon: string }[] = [
   { value: "light", labelKey: "enums.theme.light", icon: "☀️" },
   { value: "dark", labelKey: "enums.theme.dark", icon: "🌙" },
   { value: "system", labelKey: "enums.theme.system", icon: "🖥️" },
 ];
 
+function ThemeSwatch({ colors }: { colors: [string, string, string] }) {
+  return (
+    <span className="flex gap-0.5" aria-hidden="true">
+      {colors.map((c, i) => (
+        <span key={i} className="inline-block h-3 w-3 rounded-full border border-line/60" style={{ background: c }} />
+      ))}
+    </span>
+  );
+}
+
 function AppearanceSection() {
   const { t } = useTranslation();
+  const name = useThemeStore((s) => s.name);
+  const setName = useThemeStore((s) => s.setName);
   const pref = useThemeStore((s) => s.pref);
   const setPref = useThemeStore((s) => s.setPref);
 
   return (
     <Card className="p-5">
       <h2 className="font-display text-lg font-semibold">{t("settings.appearance.title")}</h2>
-      <p className="mb-3 text-sm text-ink-soft">{t("settings.appearance.description")}</p>
+      <p className="mb-4 text-sm text-ink-soft">{t("settings.appearance.description")}</p>
+
+      {/* Theme picker */}
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+        {t("settings.appearance.themeLabel")}
+      </p>
+      <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {THEME_NAME_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => setName(o.value)}
+            aria-pressed={name === o.value}
+            className={`flex items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
+              name === o.value
+                ? "border-brand bg-brand/10 text-ink"
+                : "border-line bg-surface text-ink-soft hover:border-brand/40 hover:text-ink"
+            }`}
+          >
+            <ThemeSwatch colors={o.swatches} />
+            <span>
+              <span className="block font-medium leading-tight">{t(o.labelKey)}</span>
+              <span className="block text-xs text-ink-soft">{t(o.descKey)}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Mode toggle */}
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+        {t("settings.appearance.modeLabel")}
+      </p>
       <div className="inline-flex rounded-md border border-line bg-paper p-1">
-        {THEME_OPTIONS.map((o) => (
+        {MODE_OPTIONS.map((o) => (
           <button
             key={o.value}
             type="button"

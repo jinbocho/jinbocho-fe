@@ -107,7 +107,9 @@
     },
     "appearance": {
       "title": "Aspetto",
-      "description": "Scegli un tema chiaro o scuro."
+      "description": "Scegli il tema grafico e la modalità colore.",
+      "themeLabel": "Tema",
+      "modeLabel": "Modalità"
     },
     "language": {
       "title": "Lingua",
@@ -130,6 +132,16 @@
       "light": "Chiaro",
       "dark": "Scuro",
       "system": "Sistema"
+    },
+    "themeName": {
+      "pergamena": "Pergamena",
+      "akabeni": "Akabeni",
+      "sumi": "Sumi"
+    },
+    "themeDesc": {
+      "pergamena": "Carta calda",
+      "akabeni": "Rosso giapponese",
+      "sumi": "Inchiostro e oro"
     },
     "lang": {
       "en": "English",

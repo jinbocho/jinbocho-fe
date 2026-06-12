@@ -107,7 +107,9 @@
     },
     "appearance": {
       "title": "Appearance",
-      "description": "Choose a light or dark theme."
+      "description": "Choose your theme and colour mode.",
+      "themeLabel": "Theme",
+      "modeLabel": "Mode"
     },
     "language": {
       "title": "Language",
@@ -130,6 +132,16 @@
       "light": "Light",
       "dark": "Dark",
       "system": "System"
+    },
+    "themeName": {
+      "pergamena": "Pergamena",
+      "akabeni": "Akabeni",
+      "sumi": "Sumi"
+    },
+    "themeDesc": {
+      "pergamena": "Warm parchment",
+      "akabeni": "Japanese red",
+      "sumi": "Ink & gold"
     },
     "lang": {
       "en": "English",

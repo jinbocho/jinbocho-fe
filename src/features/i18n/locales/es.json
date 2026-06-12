@@ -107,7 +107,9 @@
     },
     "appearance": {
       "title": "Apariencia",
-      "description": "Elige un tema claro u oscuro."
+      "description": "Elige tu tema y modo de color.",
+      "themeLabel": "Tema",
+      "modeLabel": "Modo"
     },
     "language": {
       "title": "Idioma",
@@ -130,6 +132,16 @@
       "light": "Claro",
       "dark": "Oscuro",
       "system": "Sistema"
+    },
+    "themeName": {
+      "pergamena": "Pergamena",
+      "akabeni": "Akabeni",
+      "sumi": "Sumi"
+    },
+    "themeDesc": {
+      "pergamena": "Pergamino cálido",
+      "akabeni": "Rojo japonés",
+      "sumi": "Tinta y oro"
     },
     "lang": {
       "en": "English",
