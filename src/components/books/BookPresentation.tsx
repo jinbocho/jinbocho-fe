@@ -102,11 +102,13 @@ export function BookPresentation({
           )}
           {canEdit && (
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" onClick={handleGenerate} disabled={busy}>
-                {generateAI.isPending
-                  ? t("books.detail.presentation.generating")
-                  : t("books.detail.presentation.generateAI")}
-              </Button>
+              {!text && (
+                <Button size="sm" variant="secondary" onClick={handleGenerate} disabled={busy}>
+                  {generateAI.isPending
+                    ? t("books.detail.presentation.generating")
+                    : t("books.detail.presentation.generateAI")}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="secondary"
