@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
+import { useExtractBookCover } from "@/features/books/hooks";
 import { useShelfAddSession } from "@/features/books/useShelfAddSession";
 import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
@@ -32,7 +33,7 @@ type ScanTab = "scan" | "type";
 
 const EMPTY_DRAFT: BibliographicRecordCreate = { title: "", other_authors: [] };
 
-// ── Position breadcrumb ────────────────────────────────────────────────────
+// ── Position breadcrumb ───────────────────────────────────────────────────────────────────
 
 function useLocationLabel(loc: LocationSelection) {
   const rooms = useRooms();
@@ -54,7 +55,7 @@ function useLocationLabel(loc: LocationSelection) {
   ].join(" › ");
 }
 
-// ── Quick-review card ──────────────────────────────────────────────────────
+// ── Quick-review card ───────────────────────────────────────────────────────────────
 
 interface ReviewCardProps {
   draft: BibliographicRecordCreate;
@@ -126,7 +127,7 @@ function ReviewCard({ draft, isSaving, onAdd, onSkip }: ReviewCardProps) {
   );
 }
 
-// ── Manual entry card (no ISBN match) ─────────────────────────────────────
+// ── Manual entry card (no ISBN match) ─────────────────────────────────────────────────
 
 interface ManualCardProps {
   initialDraft: BibliographicRecordCreate;
@@ -137,10 +138,46 @@ interface ManualCardProps {
 
 function ManualCard({ initialDraft, isSaving, onAdd, onSkip }: ManualCardProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const form = useForm<BibliographicRecordCreate>({ values: initialDraft });
+  const extractCover = useExtractBookCover();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    try {
+      const result = await extractCover.mutateAsync(file);
+      if (result.title) form.setValue("title", result.title);
+      if (result.author) form.setValue("main_author", result.author);
+      toast.success(t("books.shelfAdd.ocrSuccess"));
+    } catch {
+      toast.error(t("books.shelfAdd.ocrFailed"));
+    }
+  }
+
   return (
     <Card className="space-y-4 p-5">
       <p className="text-sm text-ink-soft">{t("books.shelfAdd.noMatch")}</p>
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => void handleFileChange(e)}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          loading={extractCover.isPending}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {t("books.shelfAdd.ocrScanButton")}
+        </Button>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Input
           label={t("common.title")}
@@ -169,7 +206,7 @@ function ManualCard({ initialDraft, isSaving, onAdd, onSkip }: ManualCardProps) 
   );
 }
 
-// ── Session list ───────────────────────────────────────────────────────────
+// ── Session list ──────────────────────────────────────────────────────────────────────
 
 interface SessionListProps {
   books: { book: { id: string }; record: { title: string; main_author: string | null; cover_url: string | null } }[];
@@ -209,7 +246,7 @@ function SessionList({ books, isRemoving, onRemove }: SessionListProps) {
   );
 }
 
-// ── TabButton (same as AddBookPage) ────────────────────────────────────────
+// ── TabButton (same as AddBookPage) ─────────────────────────────────────────────────────
 
 function TabButton({
   active,
@@ -233,7 +270,7 @@ function TabButton({
   );
 }
 
-// ── Main page ──────────────────────────────────────────────────────────────
+// ── Main page ──────────────────────────────────────────────────────────────────────
 
 export function ShelfAddPage() {
   const { t } = useTranslation();
@@ -293,7 +330,7 @@ export function ShelfAddPage() {
     setScanKey((k) => k + 1);
   }
 
-  // ── Phase 1: setup ─────────────────────────────────────────────────────
+  // ── Phase 1: setup ──────────────────────────────────────────────────────────────────
 
   if (phase === "setup") {
     return (
@@ -342,7 +379,7 @@ export function ShelfAddPage() {
     );
   }
 
-  // ── Phase 2: scan loop ─────────────────────────────────────────────────
+  // ── Phase 2: scan loop ─────────────────────────────────────────────────────────────────
 
   const reviewOpen = draft !== null;
 
