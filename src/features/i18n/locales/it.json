@@ -348,7 +348,11 @@
       "undoButton": "Annulla",
       "invalidIsbn": "Questo non sembra un ISBN valido.",
       "bookAdded": "Libro aggiunto.",
-      "addFailed": "Impossibile aggiungere il libro."
+      "addFailed": "Impossibile aggiungere il libro.",
+      "ocrScanButton": "Scansiona copertina con OCR",
+      "ocrScanning": "Scansione in corso…",
+      "ocrSuccess": "Copertina scansionata — campi precompilati.",
+      "ocrFailed": "Impossibile leggere la copertina."
     }
   },
   "loans": {
