@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
-import { useAddBook } from "@/features/books/hooks";
+import { useAddBook, useExtractBookCover } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useCreateRecord } from "@/features/records/hooks";
 import {
@@ -38,8 +38,10 @@ export function AddBookPage() {
   const lookup = useIsbnLookup();
   const createRecord = useCreateRecord();
   const addBook = useAddBook();
+  const extractCover = useExtractBookCover();
 
   const users = useUsers();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<Tab>("type");
   const [isbn, setIsbn] = useState("");
@@ -64,6 +66,20 @@ export function AddBookPage() {
       // Not found or upstream error: let the user fill it in manually.
       setDraft({ ...EMPTY_DRAFT, isbn: normalized });
       toast.show(t("books.add.isbnNotFound"));
+    }
+  }
+
+  async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    try {
+      const result = await extractCover.mutateAsync(file);
+      if (result.title) form.setValue("title", result.title);
+      if (result.author) form.setValue("main_author", result.author);
+      toast.success(t("books.add.ocrSuccess"));
+    } catch {
+      toast.error(t("books.add.ocrFailed"));
     }
   }
 
@@ -160,7 +176,28 @@ export function AddBookPage() {
       ) : (
         <form onSubmit={onSubmit} className="space-y-6">
           <Card className="space-y-4 p-5">
-            <h2 className="font-display text-lg font-semibold">{t("books.add.bookDetailsSection")}</h2>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="font-display text-lg font-semibold">{t("books.add.bookDetailsSection")}</h2>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => void handleCoverFile(e)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={extractCover.isPending}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {t("books.add.ocrScanButton")}
+                </Button>
+              </div>
+            </div>
             <Input
               label={t("common.title")}
               error={form.formState.errors.title ? t("validation.titleRequired") : undefined}
