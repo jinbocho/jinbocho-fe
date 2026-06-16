@@ -31,7 +31,7 @@ import {
   useUpdateBookPosition,
 } from "@/features/books/hooks";
 import { useRecord, useUpdateRecord } from "@/features/records/hooks";
-import { useRooms } from "@/features/locations/hooks";
+import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel } from "@/lib/format";
@@ -69,6 +69,7 @@ export function BookDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
 
   if (book.isError) return <ErrorState message="Couldn't load this book." onRetry={book.refetch} />;
   if (book.isLoading || !book.data) {
@@ -137,7 +138,23 @@ export function BookDetailPage() {
           <Field label={t("books.detail.condition")} value={b.condition} />
           <Field label={t("books.detail.source")} value={b.source} />
           <Field label={t("books.detail.purchaseDate")} value={b.purchase_date ? formatDate(b.purchase_date) : null} />
-          <Field label={t("books.detail.location")} value={roomName ?? (b.room_id ? t("books.detail.locationAssigned") : t("books.detail.locationNotPlaced"))} />
+          <div>
+            <dt className="text-xs font-medium uppercase text-ink-soft">{t("books.detail.location")}</dt>
+            <dd className="mt-0.5">
+              {b.room_id ? (
+                <button
+                  type="button"
+                  className="group inline-flex items-center gap-1 text-left text-ink hover:text-brand"
+                  onClick={() => setLocationOpen(true)}
+                >
+                  <span>{roomName ?? t("books.detail.locationAssigned")}</span>
+                  <span className="text-xs opacity-40 transition-opacity group-hover:opacity-100">›</span>
+                </button>
+              ) : (
+                <span className="text-ink">—</span>
+              )}
+            </dd>
+          </div>
           <Field label={t("books.detail.added")} value={formatDate(b.created_at)} />
           <Field
             label={t("books.detail.owner")}
@@ -235,6 +252,7 @@ export function BookDetailPage() {
       <LoanCard bookId={b.id} activeLoan={activeLoan} loans={loans.data ?? []} canEdit={canEdit} lendBook={lendBook} returnBook={returnBook} />
 
       {editOpen && <EditBookModal book={b} record={r} onClose={() => setEditOpen(false)} />}
+      {locationOpen && <ShelfLocationModal book={b} onClose={() => setLocationOpen(false)} />}
       {moveOpen && (
         <MoveModal
           bookId={b.id}
@@ -586,6 +604,67 @@ function MoveModal({
       }
     >
       <LocationPicker value={selection} onChange={setSelection} />
+    </Modal>
+  );
+}
+
+function ShelfLocationModal({ book, onClose }: { book: OwnedBook; onClose: () => void }) {
+  const { t } = useTranslation();
+  const rooms = useRooms();
+  const bookcases = useBookcases(book.room_id ?? undefined);
+  const sections = useSections(book.bookcase_id ?? undefined);
+  const shelves = useShelves(book.section_id ?? undefined);
+
+  const room = rooms.data?.find((r) => r.id === book.room_id);
+  const bookcase = bookcases.data?.find((bc) => bc.id === book.bookcase_id);
+  const section = sections.data?.find((s) => s.id === book.section_id);
+  const shelf = shelves.data?.find((sh) => sh.id === book.shelf_id);
+
+  const isLoading =
+    rooms.isLoading ||
+    (Boolean(book.bookcase_id) && bookcases.isLoading) ||
+    (Boolean(book.section_id) && sections.isLoading) ||
+    (Boolean(book.shelf_id) && shelves.isLoading);
+
+  const crumbs: string[] = [
+    room?.name,
+    bookcase?.name,
+    section
+      ? (section.label ?? `${t("locations.sectionLabel")} ${section.section_index}`)
+      : undefined,
+    shelf ? `${t("locations.shelfLabel")} ${shelf.shelf_index}` : undefined,
+  ].filter((x): x is string => x != null);
+
+  return (
+    <Modal open onClose={onClose} title={t("books.detail.shelfLocationTitle")}>
+      {isLoading ? (
+        <Skeleton className="h-8" />
+      ) : (
+        <div className="space-y-3">
+          {crumbs.length > 0 ? (
+            <>
+              <div className="flex flex-wrap items-center gap-1.5 rounded-md bg-paper px-3 py-2.5 text-sm">
+                {crumbs.map((crumb, i) => (
+                  <span key={i} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="select-none text-ink-soft">›</span>}
+                    <span className={i === crumbs.length - 1 ? "font-medium text-ink" : "text-ink-soft"}>
+                      {crumb}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              {book.shelf_position != null && (
+                <p className="text-sm text-ink-soft">
+                  {t("books.detail.shelfPosition")}:{" "}
+                  <span className="font-medium text-ink">{book.shelf_position}</span>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-ink-soft">{t("books.detail.locationNotPlaced")}</p>
+          )}
+        </div>
+      )}
     </Modal>
   );
 }
