@@ -15,6 +15,7 @@ import type {
   BookLoanCreate,
   BookRead,
   BookView,
+  CoverExtractResponse,
   OwnedBook,
   OwnedBookCreate,
   OwnedBookUpdate,
@@ -306,6 +307,18 @@ export function useUpdateReadingStatus() {
     onSettled: (_data, _err, { id }) => {
       void qc.invalidateQueries({ queryKey: bookKeys.detail(id) });
       void qc.invalidateQueries({ queryKey: bookKeys.list() });
+    },
+  });
+}
+
+// ----- AI: Cover OCR -----
+
+export function useExtractBookCover() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return api.post("v1/ai/cover/extract", { body: formData }).json<CoverExtractResponse>();
     },
   });
 }

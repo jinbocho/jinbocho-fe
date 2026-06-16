@@ -275,6 +275,16 @@ export interface IsbnLookupResponse {
   cached: boolean;
 }
 
+// ----- AI: Cover OCR -----
+
+export interface CoverExtractResponse {
+  title: string;
+  author: string;
+  validated: boolean;
+  confidence: number;
+  raw_ocr_blocks: string[] | null;
+}
+
 // ----- Locations -----
 
 export interface Room {

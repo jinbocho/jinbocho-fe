@@ -348,7 +348,11 @@
       "undoButton": "Undo",
       "invalidIsbn": "That doesn't look like a valid ISBN.",
       "bookAdded": "Book added.",
-      "addFailed": "Couldn't add the book."
+      "addFailed": "Couldn't add the book.",
+      "ocrScanButton": "Scan cover with OCR",
+      "ocrScanning": "Scanning…",
+      "ocrSuccess": "Cover scanned — fields pre-filled.",
+      "ocrFailed": "Couldn't read the cover."
     }
   },
   "loans": {
