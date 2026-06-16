@@ -242,7 +242,10 @@
       "submitButton": "Add book",
       "invalidIsbn": "That doesn't look like a valid ISBN.",
       "isbnFound": "Found it — review and save.",
-      "isbnNotFound": "No match found — enter the details manually."
+      "isbnNotFound": "No match found — enter the details manually.",
+      "ocrScanButton": "Scan cover with OCR",
+      "ocrSuccess": "Cover scanned — fields pre-filled.",
+      "ocrFailed": "Couldn't read the cover."
     },
     "detail": {
       "backLink": "← Back to books",
