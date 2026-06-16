@@ -12,7 +12,7 @@ function spaFallback(): Plugin {
     name: "spa-fallback",
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
-        const path = (req.url ?? "/").split("?")[0];
+        const path = (req.url ?? "/").split("?")[0] ?? "/";
         if (
           req.method === "GET" &&
           !path.startsWith("/@") &&
