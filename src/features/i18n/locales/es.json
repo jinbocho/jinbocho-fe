@@ -317,7 +317,9 @@
       },
       "moveModalTitle": "Mover libro",
       "moveFailedError": "No se pudo actualizar la ubicación.",
-      "moveSuccess": "Ubicación actualizada."
+      "moveSuccess": "Ubicación actualizada.",
+      "shelfLocationTitle": "Ubicación exacta",
+      "shelfPosition": "Posición en estantería"
     },
     "shelfAdd": {
       "title": "Modo estantería",

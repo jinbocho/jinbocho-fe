@@ -317,7 +317,9 @@
       },
       "moveModalTitle": "Déplacer le livre",
       "moveFailedError": "Impossible de mettre à jour l'emplacement.",
-      "moveSuccess": "Emplacement mis à jour."
+      "moveSuccess": "Emplacement mis à jour.",
+      "shelfLocationTitle": "Emplacement exact",
+      "shelfPosition": "Position sur l'étagère"
     },
     "shelfAdd": {
       "title": "Mode étagère",

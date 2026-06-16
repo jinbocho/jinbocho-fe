@@ -317,7 +317,9 @@
       },
       "moveModalTitle": "Move book",
       "moveFailedError": "Couldn't update location.",
-      "moveSuccess": "Location updated."
+      "moveSuccess": "Location updated.",
+      "shelfLocationTitle": "Exact location",
+      "shelfPosition": "Position on shelf"
     },
     "shelfAdd": {
       "title": "Shelf mode",

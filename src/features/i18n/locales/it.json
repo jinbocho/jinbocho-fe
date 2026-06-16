@@ -317,7 +317,9 @@
       },
       "moveModalTitle": "Sposta libro",
       "moveFailedError": "Impossibile aggiornare la posizione.",
-      "moveSuccess": "Posizione aggiornata."
+      "moveSuccess": "Posizione aggiornata.",
+      "shelfLocationTitle": "Posizione esatta",
+      "shelfPosition": "Posizione sullo scaffale"
     },
     "shelfAdd": {
       "title": "Modalità scaffale",
