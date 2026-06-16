@@ -242,7 +242,10 @@
       "submitButton": "Ajouter le livre",
       "invalidIsbn": "Cela ne ressemble pas à un ISBN valide.",
       "isbnFound": "Trouvé — vérifiez et enregistrez.",
-      "isbnNotFound": "Aucun résultat — saisissez les détails manuellement."
+      "isbnNotFound": "Aucun résultat — saisissez les détails manuellement.",
+      "ocrScanButton": "Scanner la couverture avec OCR",
+      "ocrSuccess": "Couverture scannée — champs pré-remplis.",
+      "ocrFailed": "Impossible de lire la couverture."
     },
     "detail": {
       "backLink": "← Retour aux livres",
