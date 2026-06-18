@@ -630,9 +630,9 @@ function ShelfLocationModal({ book, onClose }: { book: OwnedBook; onClose: () =>
     room?.name,
     bookcase?.name,
     section
-      ? (section.label ?? `${t("locations.sectionLabel")} ${section.section_index}`)
+      ? (section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`)
       : undefined,
-    shelf ? `${t("locations.shelfLabel")} ${shelf.shelf_index}` : undefined,
+    shelf ? `${t("locations.shelfLabel")} ${shelf.shelf_index + 1}` : undefined,
   ].filter((x): x is string => x != null);
 
   return (
