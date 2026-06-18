@@ -35,6 +35,27 @@ export function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
+const LOAN_WARNING_DAYS = 7;
+
+export type LoanUrgency = "overdue" | "warning" | "normal";
+
+// A loan is "warning" within a week of its due date, "overdue" past it.
+export function loanUrgency(dueDate: string | null | undefined): LoanUrgency {
+  if (!dueDate) return "normal";
+  const due = new Date(dueDate);
+  if (Number.isNaN(due.getTime())) return "normal";
+  const daysUntilDue = (due.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  if (daysUntilDue < 0) return "overdue";
+  if (daysUntilDue <= LOAN_WARNING_DAYS) return "warning";
+  return "normal";
+}
+
+export const LOAN_URGENCY_CLASS: Record<LoanUrgency, string> = {
+  overdue: "font-semibold text-danger",
+  warning: "font-medium text-amber",
+  normal: "text-ink-soft",
+};
+
 export function formatPrice(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "string" ? Number(value) : value;

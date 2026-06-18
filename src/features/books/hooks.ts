@@ -249,6 +249,17 @@ export const bookLoanKeys = {
   book: (id: string) => ["books", "loans", "book", id] as const,
 };
 
+// Pure sort — exported for testing. Orders active loans by nearest due date
+// first; loans without a due date sort last.
+export function sortLoansByDueDate(loans: BookLoan[]): BookLoan[] {
+  return [...loans].sort((a, b) => {
+    if (!a.due_date && !b.due_date) return 0;
+    if (!a.due_date) return 1;
+    if (!b.due_date) return -1;
+    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+  });
+}
+
 export function useActiveLoans() {
   return useQuery({
     queryKey: bookLoanKeys.active,
