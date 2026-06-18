@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { MobileDrawer } from "@/components/layout/MobileDrawer";
 import { IconButton } from "@/components/ui/IconButton";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
@@ -28,6 +29,7 @@ export function AppShell() {
     if (me.data?.theme_mode) setPref(me.data.theme_mode);
   }, [me.data?.theme_name, me.data?.theme_mode, setName, setPref]);
   const logout = useLogout();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const NAV = [
     { to: "/", label: t("nav.home"), icon: "🏠", end: true },
@@ -84,6 +86,13 @@ export function AppShell() {
       <div className="flex min-w-0 flex-col">
         {/* Top bar (mobile only) */}
         <header className="flex items-center justify-between border-b border-line bg-surface px-4 py-3 md:hidden">
+          <IconButton
+            label={t("common.menu")}
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+          >
+            ☰
+          </IconButton>
           <Link to="/" className="inline-block hover:opacity-80">
             <span className="font-display text-lg font-semibold text-brand">{t("common.appName")}</span>
           </Link>
@@ -92,29 +101,18 @@ export function AppShell() {
           </IconButton>
         </header>
 
-        <main className="mx-auto w-full max-w-content flex-1 px-4 py-6 pb-24 md:pb-6">
+        <main className="mx-auto w-full max-w-content flex-1 px-4 py-6 md:pb-6">
           <Outlet />
         </main>
-
-        {/* Bottom nav (mobile only) */}
-        <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface md:hidden">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs ${
-                  isActive ? "text-brand" : "text-ink-soft"
-                }`
-              }
-            >
-              <span aria-hidden="true" className="text-lg">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
       </div>
+
+      <MobileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        items={items}
+        user={user}
+        onLogout={() => logout.mutate()}
+      />
     </div>
   );
 }

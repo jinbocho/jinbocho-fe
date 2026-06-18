@@ -12,6 +12,8 @@
     "appName": "Jinbocho",
     "appSubtitle": "Biblioteca familiar",
     "logout": "Cerrar sesión",
+    "menu": "Menú",
+    "closeMenu": "Cerrar menú",
     "pageNotFound": "Página no encontrada",
     "pageNotFoundDesc": "La página que buscas no existe.",
     "goHome": "Ir al inicio",
