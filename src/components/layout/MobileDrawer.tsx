@@ -18,12 +18,13 @@ interface MobileDrawerProps {
   items: NavItem[];
   user: { email: string; role: string } | null | undefined;
   onLogout: () => void;
+  loggingOut?: boolean;
 }
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function MobileDrawer({ open, onClose, items, user, onLogout }: MobileDrawerProps) {
+export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut }: MobileDrawerProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
@@ -132,7 +133,7 @@ export function MobileDrawer({ open, onClose, items, user, onLogout }: MobileDra
               <p className="truncate text-sm font-medium text-ink">{user.email}</p>
               <p className="text-xs capitalize text-ink-soft">{user.role}</p>
             </div>
-            <IconButton label={t("common.logout")} onClick={onLogout}>
+            <IconButton label={t("common.logout")} loading={loggingOut} onClick={onLogout}>
               ⏻
             </IconButton>
           </div>
