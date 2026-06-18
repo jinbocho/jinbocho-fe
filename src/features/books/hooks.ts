@@ -189,11 +189,19 @@ export function useBookReads(bookId: string | undefined) {
 export function useMarkBookRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
-      api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>(),
+    mutationFn: async ({ bookId, userId }: { bookId: string; userId: string }) => {
+      const read = await api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>();
+      // Marking a read implies the book itself is now "read".
+      await api.post(`${BOOKS}/${bookId}/reading-status`, {
+        searchParams: { reading_status: "read" satisfies ReadingStatus },
+      });
+      return read;
+    },
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookReadKeys.family });
+      void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
+      void qc.invalidateQueries({ queryKey: bookKeys.list() });
     },
   });
 }
