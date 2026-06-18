@@ -98,7 +98,8 @@ export function MobileDrawer({ open, onClose, items, user, onLogout }: MobileDra
       >
         <div className="flex items-start justify-between px-5 py-5">
           <div>
-            <Link to="/" className="inline-block hover:opacity-80" onClick={onClose}>
+            <Link to="/" className="inline-flex items-center gap-2 hover:opacity-80" onClick={onClose}>
+              <img src="/logo.png" alt="" className="h-8 w-8 rounded-full" />
               <span className="font-display text-xl font-semibold text-brand">{t("common.appName")}</span>
             </Link>
             <p className="mt-0.5 text-xs text-ink-soft">{t("common.appSubtitle")}</p>

@@ -15,6 +15,7 @@ export function AuthLayout({
     <div className="grid min-h-dvh place-items-center bg-paper px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
+          <img src="/logo.png" alt="" className="mx-auto mb-2 h-12 w-12 rounded-full" />
           <h1 className="font-display text-3xl font-semibold text-brand">Jinbocho</h1>
           <p className="mt-1 text-sm text-ink-soft">Your family library</p>
         </div>

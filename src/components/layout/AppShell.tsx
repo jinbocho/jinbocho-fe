@@ -48,7 +48,8 @@ export function AppShell() {
       {/* Sidebar (md+) */}
       <aside className="hidden border-r border-line bg-surface md:flex md:flex-col">
         <div className="px-5 py-5">
-          <Link to="/" className="inline-block hover:opacity-80">
+          <Link to="/" className="inline-flex items-center gap-2 hover:opacity-80">
+            <img src="/logo.png" alt="" className="h-8 w-8 rounded-full" />
             <span className="font-display text-xl font-semibold text-brand">{t("common.appName")}</span>
           </Link>
           <p className="mt-0.5 text-xs text-ink-soft">{t("common.appSubtitle")}</p>
@@ -93,7 +94,8 @@ export function AppShell() {
           >
             ☰
           </IconButton>
-          <Link to="/" className="inline-block hover:opacity-80">
+          <Link to="/" className="inline-flex items-center gap-2 hover:opacity-80">
+            <img src="/logo.png" alt="" className="h-7 w-7 rounded-full" />
             <span className="font-display text-lg font-semibold text-brand">{t("common.appName")}</span>
           </Link>
           <IconButton label={t("common.logout")} onClick={() => logout.mutate()}>
