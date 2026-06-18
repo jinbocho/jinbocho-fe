@@ -209,11 +209,21 @@ export function useMarkBookRead() {
 export function useUnmarkBookRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
-      api.delete(`${BOOKS}/${bookId}/reads/${userId}`).then(() => undefined),
+    mutationFn: async ({ bookId, userId }: { bookId: string; userId: string }) => {
+      await api.delete(`${BOOKS}/${bookId}/reads/${userId}`);
+      const remaining = await api.get(`${BOOKS}/${bookId}/reads`).json<BookRead[]>();
+      if (remaining.length === 0) {
+        // No one has read it anymore — the book itself is unread again.
+        await api.post(`${BOOKS}/${bookId}/reading-status`, {
+          searchParams: { reading_status: "to_read" satisfies ReadingStatus },
+        });
+      }
+    },
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookReadKeys.family });
+      void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
+      void qc.invalidateQueries({ queryKey: bookKeys.list() });
     },
   });
 }
