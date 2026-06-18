@@ -201,7 +201,7 @@ export function DashboardPage() {
                   <p className="mt-1 text-xs text-ink-soft/70">{genreLabel(pick.record.genre, t)}</p>
                 )}
                 <button
-                  onClick={() => setPickSeed((s) => s + 1)}
+                  onClick={() => setPickSeed(Math.floor(Math.random() * 1000))}
                   className="mt-3 text-xs text-brand hover:underline"
                 >
                   🎲 {t("dashboard.nextReadShuffle")}
