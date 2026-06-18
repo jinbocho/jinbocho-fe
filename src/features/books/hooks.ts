@@ -20,6 +20,7 @@ import type {
   OwnedBookCreate,
   OwnedBookUpdate,
   ReadingStatus,
+  User,
 } from "@/types/api";
 
 export const bookKeys = {
@@ -43,6 +44,19 @@ export function joinBooksToRecords(
     book,
     record: records.get(book.bibliographic_record_id) ?? null,
   }));
+}
+
+// Pure grouping — exported for testing. Maps each read book to the names of
+// the family members who have read it, for display in list views.
+export function buildReadersByBook(reads: BookRead[], users: User[]): Map<string, string[]> {
+  const names = new Map(users.map((u) => [u.id, u.full_name]));
+  const map = new Map<string, string[]>();
+  for (const r of reads) {
+    const name = names.get(r.user_id);
+    if (!name) continue;
+    map.set(r.owned_book_id, [...(map.get(r.owned_book_id) ?? []), name]);
+  }
+  return map;
 }
 
 export function useAllBooks() {

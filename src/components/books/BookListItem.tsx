@@ -9,15 +9,19 @@ export function BookListItem({
   view,
   roomName,
   onLoan,
+  readers,
 }: {
   view: BookView;
   roomName?: string;
   onLoan?: boolean;
+  // Family members who have read this book — only relevant for reading_status "read".
+  readers?: string[];
 }) {
   const { book, record } = view;
   const title = record?.title ?? "Untitled";
   const author = record?.main_author;
   const reader = useReaderName(book.reading_status === "reading" ? book.current_reader_id : null);
+  const readBy = book.reading_status === "read" && readers && readers.length > 0 ? readers.join(", ") : null;
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-brand-soft">
@@ -31,6 +35,7 @@ export function BookListItem({
           {author && <p className="truncate text-sm text-ink-soft">{author}</p>}
           {roomName && <p className="mt-0.5 truncate text-xs text-stone">📍 {roomName}</p>}
           {reader && <p className="mt-0.5 truncate text-xs text-amber">📖 {reader}</p>}
+          {readBy && <p className="mt-0.5 truncate text-xs text-sage" title={readBy}>✓ {readBy}</p>}
           {onLoan && <p className="mt-0.5 truncate text-xs text-amber">📤 In prestito</p>}
         </div>
       </Link>
