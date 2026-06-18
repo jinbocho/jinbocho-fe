@@ -12,6 +12,8 @@
     "appName": "Jinbocho",
     "appSubtitle": "Biblioteca di casa",
     "logout": "Esci",
+    "menu": "Menù",
+    "closeMenu": "Chiudi menù",
     "pageNotFound": "Pagina non trovata",
     "pageNotFoundDesc": "La pagina che cerchi non esiste.",
     "goHome": "Vai alla home",
