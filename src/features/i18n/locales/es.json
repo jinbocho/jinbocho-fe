@@ -39,7 +39,8 @@
     "defaultErrorMessage": "Algo salió mal.",
     "tryAgain": "Reintentar",
     "readingStatusLabel": "Estado de lectura",
-    "title": "Título"
+    "title": "Título",
+    "you": "Tú"
   },
   "validation": {
     "invalidEmail": "Introduce un correo válido",
@@ -87,6 +88,8 @@
       "invalidLink": "Enlace no válido. Solicita uno nuevo.",
       "setNewTitle": "Nueva contraseña",
       "subtitle": "Elige una contraseña segura para tu cuenta.",
+      "welcomeTitle": "Bienvenido a Jinbocho",
+      "welcomeSubtitle": "Establece una contraseña para empezar.",
       "backToSignIn": "Volver al inicio de sesión",
       "success": "Tu contraseña ha sido actualizada.",
       "signInButton": "Iniciar sesión",
@@ -445,6 +448,7 @@
     "inviteModalButton": "Invitar",
     "invited": "Usuario invitado.",
     "inviteFailed": "Este correo puede que ya esté registrado.",
+    "inviteHint": "Recibirá un correo con un enlace para establecer su propia contraseña.",
     "editModalTitle": "Editar usuario",
     "roleLabel": "Rol",
     "activeLabel": "Activo",

@@ -3,6 +3,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store";
@@ -30,13 +31,15 @@ export function useUsers() {
   });
 }
 
-// Resolves a reader's user id to a display label: "You" for self, the member's
-// name otherwise, or null when nobody/unknown. Used to show who holds a book.
+// Resolves a reader's user id to a display label: the translated "You" for
+// self, the member's name otherwise, or null when nobody/unknown. Used to
+// show who holds a book.
 export function useReaderName(readerId: string | null): string | null {
   const users = useUsers();
   const myId = useAuthStore((s) => s.user?.id);
+  const { t } = useTranslation();
   if (!readerId) return null;
-  if (readerId === myId) return "You";
+  if (readerId === myId) return t("common.you");
   return users.data?.find((u) => u.id === readerId)?.full_name ?? null;
 }
 

@@ -39,7 +39,8 @@
     "defaultErrorMessage": "Une erreur s'est produite.",
     "tryAgain": "Réessayer",
     "readingStatusLabel": "Statut de lecture",
-    "title": "Titre"
+    "title": "Titre",
+    "you": "Toi"
   },
   "validation": {
     "invalidEmail": "Saisissez une adresse e-mail valide",
@@ -87,6 +88,8 @@
       "invalidLink": "Lien invalide. Veuillez en demander un nouveau.",
       "setNewTitle": "Nouveau mot de passe",
       "subtitle": "Choisissez un mot de passe sécurisé pour votre compte.",
+      "welcomeTitle": "Bienvenue sur Jinbocho",
+      "welcomeSubtitle": "Définissez un mot de passe pour commencer.",
       "backToSignIn": "Retour à la connexion",
       "success": "Votre mot de passe a été mis à jour.",
       "signInButton": "Se connecter",
@@ -445,6 +448,7 @@
     "inviteModalButton": "Inviter",
     "invited": "Utilisateur invité.",
     "inviteFailed": "Cet e-mail est peut-être déjà enregistré.",
+    "inviteHint": "Il recevra un e-mail avec un lien pour définir son propre mot de passe.",
     "editModalTitle": "Modifier l'utilisateur",
     "roleLabel": "Rôle",
     "activeLabel": "Actif",

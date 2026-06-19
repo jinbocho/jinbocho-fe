@@ -1,4 +1,5 @@
-import { lazy, Suspense, useRef, useState } from "react";
+import { lazy, Suspense, useState } from "react";
+// import { useRef } from "react"; // re-add when cover OCR scan is resumed
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,7 +13,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
-import { useExtractBookCover } from "@/features/books/hooks";
+// import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useShelfAddSession } from "@/features/books/useShelfAddSession";
 import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
@@ -138,28 +139,30 @@ interface ManualCardProps {
 
 function ManualCard({ initialDraft, isSaving, onAdd, onSkip }: ManualCardProps) {
   const { t } = useTranslation();
-  const toast = useToast();
   const form = useForm<BibliographicRecordCreate>({ values: initialDraft });
-  const extractCover = useExtractBookCover();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const extractCover = useExtractBookCover(); // OCR paused
+  // const fileInputRef = useRef<HTMLInputElement>(null); // OCR paused
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    try {
-      const result = await extractCover.mutateAsync(file);
-      if (result.title) form.setValue("title", result.title);
-      if (result.author) form.setValue("main_author", result.author);
-      toast.success(t("books.shelfAdd.ocrSuccess"));
-    } catch {
-      toast.error(t("books.shelfAdd.ocrFailed"));
-    }
-  }
+  // OCR paused — inadequate accuracy, revisit later.
+  // const toast = useToast();
+  // async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
+  //   e.target.value = "";
+  //   try {
+  //     const result = await extractCover.mutateAsync(file);
+  //     if (result.title) form.setValue("title", result.title);
+  //     if (result.author) form.setValue("main_author", result.author);
+  //     toast.success(t("books.shelfAdd.ocrSuccess"));
+  //   } catch {
+  //     toast.error(t("books.shelfAdd.ocrFailed"));
+  //   }
+  // }
 
   return (
     <Card className="space-y-4 p-5">
       <p className="text-sm text-ink-soft">{t("books.shelfAdd.noMatch")}</p>
+      {/* OCR cover-scan paused — inadequate accuracy, revisit later.
       <div>
         <input
           ref={fileInputRef}
@@ -178,6 +181,7 @@ function ManualCard({ initialDraft, isSaving, onAdd, onSkip }: ManualCardProps) 
           {t("books.shelfAdd.ocrScanButton")}
         </Button>
       </div>
+      */}
       <div className="grid gap-3 sm:grid-cols-2">
         <Input
           label={t("common.title")}

@@ -68,7 +68,6 @@ export interface User {
 
 export interface UserCreate {
   email: string;
-  password: string;
   full_name: string;
   role: Role;
 }

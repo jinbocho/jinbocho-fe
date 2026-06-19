@@ -39,7 +39,8 @@
     "defaultErrorMessage": "Something went wrong.",
     "tryAgain": "Try again",
     "readingStatusLabel": "Reading status",
-    "title": "Title"
+    "title": "Title",
+    "you": "You"
   },
   "validation": {
     "invalidEmail": "Enter a valid email",
@@ -87,6 +88,8 @@
       "invalidLink": "Invalid reset link. Please request a new one.",
       "setNewTitle": "Set new password",
       "subtitle": "Choose a strong password for your account.",
+      "welcomeTitle": "Welcome to Jinbocho",
+      "welcomeSubtitle": "Set a password to get started.",
       "backToSignIn": "Back to sign in",
       "success": "Your password has been updated.",
       "signInButton": "Sign in",
@@ -445,6 +448,7 @@
     "inviteModalButton": "Invite",
     "invited": "User invited.",
     "inviteFailed": "That email may already be registered.",
+    "inviteHint": "They'll receive an email with a link to set their own password.",
     "editModalTitle": "Edit user",
     "roleLabel": "Role",
     "activeLabel": "Active",

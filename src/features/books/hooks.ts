@@ -15,7 +15,7 @@ import type {
   BookLoanCreate,
   BookRead,
   BookView,
-  CoverExtractResponse,
+  // CoverExtractResponse, // unused while cover OCR scan is paused, see useExtractBookCover below
   OwnedBook,
   OwnedBookCreate,
   OwnedBookUpdate,
@@ -355,13 +355,15 @@ export function useUpdateReadingStatus() {
 }
 
 // ----- AI: Cover OCR -----
+// Paused: OCR accuracy is currently inadequate. Revisit before re-enabling
+// the scan button in AddBookPage.tsx / ShelfAddPage.tsx.
 
-export function useExtractBookCover() {
-  return useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("image", file);
-      return api.post("v1/ai/cover/extract", { body: formData }).json<CoverExtractResponse>();
-    },
-  });
-}
+// export function useExtractBookCover() {
+//   return useMutation({
+//     mutationFn: async (file: File) => {
+//       const formData = new FormData();
+//       formData.append("image", file);
+//       return api.post("v1/ai/cover/extract", { body: formData }).json<CoverExtractResponse>();
+//     },
+//   });
+// }

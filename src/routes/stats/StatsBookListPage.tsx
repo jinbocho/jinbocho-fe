@@ -69,7 +69,7 @@ export function StatsBookListPage() {
 
   return (
     <>
-      <Link to="/" className="mb-4 inline-block text-sm text-brand hover:underline">
+      <Link to="/stats" className="mb-4 inline-block text-sm text-brand hover:underline">
         {t("stats.backLink")}
       </Link>
 

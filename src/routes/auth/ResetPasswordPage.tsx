@@ -15,6 +15,7 @@ export function ResetPasswordPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
+  const isInvite = searchParams.get("mode") === "invite";
   const resetPassword = useResetPassword();
   const [done, setDone] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -71,8 +72,8 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      title={t("auth.resetPassword.setNewTitle")}
-      subtitle={t("auth.resetPassword.subtitle")}
+      title={isInvite ? t("auth.resetPassword.welcomeTitle") : t("auth.resetPassword.setNewTitle")}
+      subtitle={isInvite ? t("auth.resetPassword.welcomeSubtitle") : t("auth.resetPassword.subtitle")}
       footer={
         <Link to="/login" className="font-medium text-brand hover:underline">
           {t("auth.resetPassword.backToSignIn")}

@@ -108,7 +108,6 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const { register, handleSubmit, formState } = useForm<{
     email: string;
-    password: string;
     full_name: string;
     role: Role;
   }>({ defaultValues: { role: "viewer" } });
@@ -148,14 +147,8 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
       <div className="space-y-3">
         <Input label={t("common.fullName")} error={formState.errors.full_name && t("validation.required")} {...register("full_name", { required: true })} />
         <Input label={t("common.email")} type="email" error={formState.errors.email && t("validation.required")} {...register("email", { required: true })} />
-        <Input
-          label={t("common.password")}
-          type="password"
-          hint={t("auth.register.passwordHint")}
-          error={formState.errors.password && t("auth.register.passwordHint")}
-          {...register("password", { required: true, minLength: 8 })}
-        />
         <Select label={t("users.roleLabel")} options={roleOptions} {...register("role")} />
+        <p className="text-xs text-ink-soft">{t("users.inviteHint")}</p>
       </div>
     </Modal>
   );

@@ -1,4 +1,5 @@
-import { lazy, Suspense, useRef, useState } from "react";
+import { lazy, Suspense, useState } from "react";
+// import { useRef } from "react"; // re-add when cover OCR scan is resumed
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
-import { useAddBook, useExtractBookCover } from "@/features/books/hooks";
+import { useAddBook } from "@/features/books/hooks";
+// import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useUsers } from "@/features/users/hooks";
 import { useCreateRecord } from "@/features/records/hooks";
 import {
@@ -38,10 +40,10 @@ export function AddBookPage() {
   const lookup = useIsbnLookup();
   const createRecord = useCreateRecord();
   const addBook = useAddBook();
-  const extractCover = useExtractBookCover();
+  // const extractCover = useExtractBookCover(); // OCR paused
 
   const users = useUsers();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null); // OCR paused
 
   const [tab, setTab] = useState<Tab>("type");
   const [isbn, setIsbn] = useState("");
@@ -69,19 +71,20 @@ export function AddBookPage() {
     }
   }
 
-  async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    try {
-      const result = await extractCover.mutateAsync(file);
-      if (result.title) form.setValue("title", result.title);
-      if (result.author) form.setValue("main_author", result.author);
-      toast.success(t("books.add.ocrSuccess"));
-    } catch {
-      toast.error(t("books.add.ocrFailed"));
-    }
-  }
+  // OCR paused — inadequate accuracy, revisit later.
+  // async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
+  //   e.target.value = "";
+  //   try {
+  //     const result = await extractCover.mutateAsync(file);
+  //     if (result.title) form.setValue("title", result.title);
+  //     if (result.author) form.setValue("main_author", result.author);
+  //     toast.success(t("books.add.ocrSuccess"));
+  //   } catch {
+  //     toast.error(t("books.add.ocrFailed"));
+  //   }
+  // }
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -178,6 +181,7 @@ export function AddBookPage() {
           <Card className="space-y-4 p-5">
             <div className="flex items-center justify-between gap-4">
               <h2 className="font-display text-lg font-semibold">{t("books.add.bookDetailsSection")}</h2>
+              {/* OCR cover-scan paused — inadequate accuracy, revisit later.
               <div>
                 <input
                   ref={fileInputRef}
@@ -197,6 +201,7 @@ export function AddBookPage() {
                   {t("books.add.ocrScanButton")}
                 </Button>
               </div>
+              */}
             </div>
             <Input
               label={t("common.title")}

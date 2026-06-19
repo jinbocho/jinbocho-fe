@@ -25,6 +25,7 @@ export function DashboardPage() {
   const bookViews = useBookViews();
   const users = useUsers();
   const role = useAuthStore((s) => s.user?.role);
+  const myId = useAuthStore((s) => s.user?.id);
   const canEdit = role === "admin" || role === "editor";
   const [pickSeed, setPickSeed] = useState(() => Math.floor(Math.random() * 1000));
 
@@ -66,6 +67,12 @@ export function DashboardPage() {
   const activeLoans = sortLoansByDueDate((loans.data ?? []).filter((l) => !l.returned_at));
   const toRead = data.toReadBooks;
   const pick = toRead.length > 0 ? toRead[pickSeed % toRead.length] : null;
+
+  function readerLabel(readerId: string | null): string | null {
+    if (!readerId) return null;
+    if (readerId === myId) return t("common.you");
+    return userMap.get(readerId)?.full_name ?? null;
+  }
 
   return (
     <>
@@ -111,9 +118,9 @@ export function DashboardPage() {
                     {v.record?.main_author && (
                       <p className="truncate text-sm text-ink-soft">{v.record.main_author}</p>
                     )}
-                    {v.book.current_reader_id && (
+                    {readerLabel(v.book.current_reader_id) && (
                       <p className="truncate text-xs text-brand">
-                        {userMap.get(v.book.current_reader_id)?.full_name}
+                        {readerLabel(v.book.current_reader_id)}
                       </p>
                     )}
                   </div>
