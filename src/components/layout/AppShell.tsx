@@ -77,7 +77,7 @@ export function AppShell() {
               <p className="truncate text-sm font-medium text-ink">{user.email}</p>
               <p className="text-xs capitalize text-ink-soft">{user.role}</p>
             </div>
-            <IconButton label={t("common.logout")} onClick={() => logout.mutate()}>
+            <IconButton label={t("common.logout")} loading={logout.isPending} onClick={() => logout.mutate()}>
               ⏻
             </IconButton>
           </div>
@@ -98,7 +98,7 @@ export function AppShell() {
             <img src="/logo.png" alt="" className="h-7 w-7 rounded-full" />
             <span className="font-display text-lg font-semibold text-brand">{t("common.appName")}</span>
           </Link>
-          <IconButton label={t("common.logout")} onClick={() => logout.mutate()}>
+          <IconButton label={t("common.logout")} loading={logout.isPending} onClick={() => logout.mutate()}>
             ⏻
           </IconButton>
         </header>
@@ -114,6 +114,7 @@ export function AppShell() {
         items={items}
         user={user}
         onLogout={() => logout.mutate()}
+        loggingOut={logout.isPending}
       />
     </div>
   );

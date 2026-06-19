@@ -222,7 +222,7 @@ export function BookDetailPage() {
                   {canEdit && (
                     <button
                       type="button"
-                      className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-medium transition-colors ${
                         hasRead
                           ? "bg-sage/15 text-sage hover:bg-danger/15 hover:text-danger"
                           : "bg-paper text-ink-soft hover:bg-brand/10 hover:text-brand"
@@ -236,6 +236,13 @@ export function BookDetailPage() {
                         }
                       }}
                     >
+                      {((markRead.isPending && markRead.variables?.userId === u.id) ||
+                        (unmarkRead.isPending && unmarkRead.variables?.userId === u.id)) && (
+                        <span
+                          aria-hidden="true"
+                          className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        />
+                      )}
                       {hasRead ? t("books.detail.markUnread") : t("books.detail.markRead")}
                     </button>
                   )}

@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useBookViews, useFamilyReads } from "@/features/books/hooks";
+import { buildReadersByBook, useBookViews, useFamilyReads } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 
 type Filter = "unread" | "read" | "owned";
@@ -25,6 +25,11 @@ export function StatsBookListPage() {
   const userName = useMemo(
     () => (userId ? (users.data?.find((u) => u.id === userId)?.full_name ?? null) : null),
     [userId, users.data],
+  );
+
+  const readersByBook = useMemo(
+    () => buildReadersByBook(reads.data ?? [], users.data ?? []),
+    [reads.data, users.data],
   );
 
   const filtered = useMemo(() => {
@@ -89,7 +94,7 @@ export function StatsBookListPage() {
         <ul className="space-y-3">
           {filtered.map((view) => (
             <li key={view.book.id}>
-              <BookListItem view={view} />
+              <BookListItem view={view} readers={readersByBook.get(view.book.id)} />
             </li>
           ))}
         </ul>

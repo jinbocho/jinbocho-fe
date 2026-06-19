@@ -8,8 +8,8 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useActiveLoans, useBookViews } from "@/features/books/hooks";
-import { formatDate } from "@/lib/format";
+import { sortLoansByDueDate, useActiveLoans, useBookViews } from "@/features/books/hooks";
+import { formatDate, loanUrgency, LOAN_URGENCY_CLASS } from "@/lib/format";
 
 export function OnLoanPage() {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ export function OnLoanPage() {
 
   const items = useMemo(() => {
     if (!loans.data || !books.data) return [];
-    return loans.data.map((loan) => ({
+    return sortLoansByDueDate(loans.data).map((loan) => ({
       loan,
       view: books.data.find((v) => v.book.id === loan.owned_book_id) ?? null,
     }));
@@ -51,7 +51,7 @@ export function OnLoanPage() {
       ) : (
         <ul className="space-y-3">
           {items.map(({ loan, view }) => {
-            const isOverdue = loan.due_date && new Date(loan.due_date) < new Date();
+            const urgency = loanUrgency(loan.due_date);
             return (
               <li key={loan.id}>
                 <Card className="flex items-center gap-3 p-3">
@@ -73,8 +73,8 @@ export function OnLoanPage() {
                     <p className="mt-0.5 text-sm text-amber">📤 {loan.borrower_name}</p>
                     <p className="text-xs text-ink-soft">{t("loans.since")} {formatDate(loan.loaned_at)}</p>
                     {loan.due_date && (
-                      <p className={`text-xs ${isOverdue ? "font-semibold text-danger" : "text-ink-soft"}`}>
-                        {t("loans.due")} {formatDate(loan.due_date)}{isOverdue ? ` · ${t("loans.overdue")}` : ""}
+                      <p className={`text-xs ${LOAN_URGENCY_CLASS[urgency]}`}>
+                        {t("loans.due")} {formatDate(loan.due_date)}{urgency === "overdue" ? ` · ${t("loans.overdue")}` : ""}
                       </p>
                     )}
                   </div>

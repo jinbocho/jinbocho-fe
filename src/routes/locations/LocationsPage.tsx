@@ -399,6 +399,7 @@ function ShelfRow({
           <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>✎</IconButton>
           <IconButton
             label={t("locations.deleteShelfButton")}
+            loading={del.isPending}
             onClick={async () => {
               try {
                 await del.mutateAsync(shelf.id);

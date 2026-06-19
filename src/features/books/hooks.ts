@@ -20,6 +20,7 @@ import type {
   OwnedBookCreate,
   OwnedBookUpdate,
   ReadingStatus,
+  User,
 } from "@/types/api";
 
 export const bookKeys = {
@@ -43,6 +44,19 @@ export function joinBooksToRecords(
     book,
     record: records.get(book.bibliographic_record_id) ?? null,
   }));
+}
+
+// Pure grouping — exported for testing. Maps each read book to the names of
+// the family members who have read it, for display in list views.
+export function buildReadersByBook(reads: BookRead[], users: User[]): Map<string, string[]> {
+  const names = new Map(users.map((u) => [u.id, u.full_name]));
+  const map = new Map<string, string[]>();
+  for (const r of reads) {
+    const name = names.get(r.user_id);
+    if (!name) continue;
+    map.set(r.owned_book_id, [...(map.get(r.owned_book_id) ?? []), name]);
+  }
+  return map;
 }
 
 export function useAllBooks() {
@@ -234,6 +248,17 @@ export const bookLoanKeys = {
   active: ["books", "loans", "active"] as const,
   book: (id: string) => ["books", "loans", "book", id] as const,
 };
+
+// Pure sort — exported for testing. Orders active loans by nearest due date
+// first; loans without a due date sort last.
+export function sortLoansByDueDate(loans: BookLoan[]): BookLoan[] {
+  return [...loans].sort((a, b) => {
+    if (!a.due_date && !b.due_date) return 0;
+    if (!a.due_date) return 1;
+    if (!b.due_date) return -1;
+    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+  });
+}
 
 export function useActiveLoans() {
   return useQuery({

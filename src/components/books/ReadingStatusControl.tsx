@@ -25,18 +25,26 @@ export function ReadingStatusControl({
   }
 
   return (
-    <select
-      aria-label="Reading status"
-      value={status}
-      disabled={mutation.isPending}
-      onChange={(e) => mutation.mutate({ id: bookId, status: e.target.value as ReadingStatus })}
-      className={`shrink-0 rounded-full border-0 px-2.5 py-0.5 text-xs font-medium ${READING_STATUS_CLASS[status]}`}
-    >
-      {READING_STATUSES.map((s) => (
-        <option key={s} value={s}>
-          {readingStatusLabel(s, t)}
-        </option>
-      ))}
-    </select>
+    <span className="inline-flex shrink-0 items-center gap-1.5">
+      <select
+        aria-label="Reading status"
+        value={status}
+        disabled={mutation.isPending}
+        onChange={(e) => mutation.mutate({ id: bookId, status: e.target.value as ReadingStatus })}
+        className={`rounded-full border-0 px-2.5 py-0.5 text-xs font-medium ${READING_STATUS_CLASS[status]}`}
+      >
+        {READING_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {readingStatusLabel(s, t)}
+          </option>
+        ))}
+      </select>
+      {mutation.isPending && (
+        <span
+          aria-hidden="true"
+          className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent text-ink-soft"
+        />
+      )}
+    </span>
   );
 }

@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useActiveLoans, useBookViews } from "@/features/books/hooks";
+import { buildReadersByBook, useActiveLoans, useBookViews, useFamilyReads } from "@/features/books/hooks";
 import { useRooms } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
@@ -25,9 +25,14 @@ export function BookCatalogPage() {
   const rooms = useRooms();
   const users = useUsers();
   const activeLoans = useActiveLoans();
+  const reads = useFamilyReads();
   const onLoanIds = useMemo(
     () => new Set((activeLoans.data ?? []).map((l) => l.owned_book_id)),
     [activeLoans.data],
+  );
+  const readersByBook = useMemo(
+    () => buildReadersByBook(reads.data ?? [], users.data ?? []),
+    [reads.data, users.data],
   );
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
@@ -171,6 +176,7 @@ export function BookCatalogPage() {
                 view={view}
                 roomName={view.book.room_id ? roomNames.get(view.book.room_id) : undefined}
                 onLoan={onLoanIds.has(view.book.id)}
+                readers={readersByBook.get(view.book.id)}
               />
             </li>
           ))}

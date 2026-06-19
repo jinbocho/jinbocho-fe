@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
+import { GlobalLoadingBar } from "@/components/ui/GlobalLoadingBar";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { RequireAuth, RequireRole } from "@/features/auth/guards";
 import { useBootSession } from "@/features/auth/hooks";
@@ -93,5 +94,10 @@ const router = createBrowserRouter([
 export function App() {
   // Resolve a stored session (refresh-on-boot) before guarded routes settle.
   useBootSession();
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <GlobalLoadingBar />
+      <RouterProvider router={router} />
+    </>
+  );
 }

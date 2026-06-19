@@ -43,7 +43,7 @@ export function SettingsPage() {
             <h2 className="font-display text-lg font-semibold">{t("settings.signOut.title")}</h2>
             <p className="text-sm text-ink-soft">{t("settings.signOut.description")}</p>
           </div>
-          <Button variant="secondary" onClick={() => logout.mutate()}>
+          <Button variant="secondary" loading={logout.isPending} onClick={() => logout.mutate()}>
             {t("settings.signOut.button")}
           </Button>
         </Card>
@@ -127,8 +127,9 @@ function AppearanceSection() {
             key={o.value}
             type="button"
             onClick={() => handleSetName(o.value)}
+            disabled={update.isPending}
             aria-pressed={name === o.value}
-            className={`flex items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
+            className={`flex items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition-colors disabled:opacity-50 ${
               name === o.value
                 ? "border-brand bg-brand/10 text-ink"
                 : "border-line bg-surface text-ink-soft hover:border-brand/40 hover:text-ink"
@@ -153,8 +154,9 @@ function AppearanceSection() {
             key={o.value}
             type="button"
             onClick={() => handleSetPref(o.value)}
+            disabled={update.isPending}
             aria-pressed={pref === o.value}
-            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
               pref === o.value ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"
             }`}
           >
@@ -193,8 +195,9 @@ function LanguageSection() {
             key={o.value}
             type="button"
             onClick={() => handleChange(o.value)}
+            disabled={update.isPending}
             aria-pressed={lang === o.value}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
               lang === o.value ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"
             }`}
           >

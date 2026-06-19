@@ -10,10 +10,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useLibraryStats } from "@/features/stats/useLibraryStats";
-import { useActiveLoans, useBookViews } from "@/features/books/hooks";
+import { sortLoansByDueDate, useActiveLoans, useBookViews } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { formatDate, genreLabel, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
+import { formatDate, genreLabel, loanUrgency, LOAN_URGENCY_CLASS, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
 import type { ReadingStatus } from "@/types/api";
 
 const STATUS_ORDER: ReadingStatus[] = ["to_read", "reading", "read"];
@@ -63,8 +63,7 @@ export function DashboardPage() {
 
   const userMap = new Map((users.data ?? []).map((u) => [u.id, u]));
   const bookViewMap = new Map(bookViews.data.map((v) => [v.book.id, v]));
-  const activeLoans = (loans.data ?? []).filter((l) => !l.returned_at);
-  const now = new Date();
+  const activeLoans = sortLoansByDueDate((loans.data ?? []).filter((l) => !l.returned_at));
   const toRead = data.toReadBooks;
   const pick = toRead.length > 0 ? toRead[pickSeed % toRead.length] : null;
 
@@ -141,7 +140,7 @@ export function DashboardPage() {
             <ul className="space-y-3">
               {activeLoans.slice(0, 5).map((loan) => {
                 const view = bookViewMap.get(loan.owned_book_id);
-                const isOverdue = loan.due_date && new Date(loan.due_date) < now;
+                const urgency = loanUrgency(loan.due_date);
                 return (
                   <li key={loan.id} className="flex min-w-0 items-center gap-3">
                     <BookCover url={view?.record?.cover_url} title={view?.record?.title} className="h-12 w-9 shrink-0" />
@@ -151,8 +150,8 @@ export function DashboardPage() {
                       </Link>
                       <p className="truncate text-sm text-ink-soft">{loan.borrower_name}</p>
                       {loan.due_date && (
-                        <p className={`text-xs ${isOverdue ? "font-medium text-amber" : "text-ink-soft"}`}>
-                          {isOverdue ? t("dashboard.onLoanOverdue") : t("dashboard.onLoanDue")}: {formatDate(loan.due_date)}
+                        <p className={`text-xs ${LOAN_URGENCY_CLASS[urgency]}`}>
+                          {urgency === "overdue" ? t("dashboard.onLoanOverdue") : t("dashboard.onLoanDue")}: {formatDate(loan.due_date)}
                         </p>
                       )}
                     </div>
