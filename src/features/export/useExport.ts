@@ -9,6 +9,7 @@ import type {
   ImportFullLibraryRequest,
   ImportFullLibraryResponse,
   ImportUsersResponse,
+  User,
 } from "@/types/api";
 
 type ExportFormat = "csv" | "json";
@@ -78,6 +79,7 @@ export function useExportFullBackup() {
         book_reads: library.book_reads,
         book_loans: library.book_loans,
         book_history: library.book_history,
+        removed_members: library.removed_members,
       };
 
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
@@ -122,6 +124,9 @@ export function parseBackupFile(raw: string): FullBackupExport {
   if (backup.schema_version !== BACKUP_SCHEMA_VERSION) {
     throw new Error(`Unsupported backup version: ${String(backup.schema_version)}`);
   }
+  // Older backups (downloaded before removed-member snapshots existed) won't
+  // have this field — default it rather than letting later code crash on it.
+  backup.removed_members ??= [];
   return backup;
 }
 
@@ -131,17 +136,61 @@ export function parseBackupFile(raw: string): FullBackupExport {
 // bibliographic records are deduplicated by ISBN, everything else is
 // inserted fresh (see the catalog-service import use case for the full
 // merge-semantics rationale).
+
+// Builds the `users` payload for POST v1/users/import: the current roster
+// plus, for every owner_id/current_reader_id/book_reads.user_id/
+// book_history.changed_by referenced in the library data that ISN'T in the
+// roster, the matching removed-member snapshot (their real email/full_name/
+// role, captured when they were deleted) if one was recorded. A referenced
+// id with neither a roster entry nor a snapshot is simply left out — the
+// catalog import already leaves an unmapped owner/reader as unset rather
+// than inventing something for it.
+export function buildUsersImportPayload(backup: FullBackupExport): { users: User[]; restoredFromSnapshot: number } {
+  const known = new Set(backup.users.map((u) => u.id));
+  const referenced = new Set<string>();
+  for (const book of backup.owned_books) {
+    if (book.owner_id) referenced.add(book.owner_id);
+    if (book.current_reader_id) referenced.add(book.current_reader_id);
+  }
+  for (const read of backup.book_reads) referenced.add(read.user_id);
+  for (const entry of backup.book_history) referenced.add(entry.changed_by);
+
+  const snapshotById = new Map(backup.removed_members.map((m) => [m.id, m]));
+  const recovered: User[] = [];
+  for (const id of referenced) {
+    if (known.has(id)) continue;
+    const snapshot = snapshotById.get(id);
+    if (!snapshot) continue;
+    recovered.push({
+      id: snapshot.id,
+      family_id: backup.family.id,
+      email: snapshot.email,
+      full_name: snapshot.full_name,
+      role: snapshot.role,
+      is_active: true,
+      annual_reading_goal: null,
+      language: null,
+      theme_name: null,
+      theme_mode: null,
+    });
+  }
+
+  return { users: [...backup.users, ...recovered], restoredFromSnapshot: recovered.length };
+}
+
 export function useImportFullBackup() {
   const [isImporting, setIsImporting] = useState(false);
 
-  async function importFullBackup(backup: FullBackupExport): Promise<ImportFullLibraryResponse> {
+  async function importFullBackup(
+    backup: FullBackupExport,
+  ): Promise<{ library: ImportFullLibraryResponse; restoredFromSnapshot: number }> {
     setIsImporting(true);
     try {
+      const { users, restoredFromSnapshot } = buildUsersImportPayload(backup);
+
       let usersResult: ImportUsersResponse;
       try {
-        usersResult = await api
-          .post(`${USERS}/import`, { json: { users: backup.users } })
-          .json<ImportUsersResponse>();
+        usersResult = await api.post(`${USERS}/import`, { json: { users } }).json<ImportUsersResponse>();
       } catch (err) {
         throw new ImportStepError("users", err);
       }
@@ -160,9 +209,10 @@ export function useImportFullBackup() {
       };
 
       try {
-        return await api
+        const library = await api
           .post(`${CATALOG_IMPORT}/full`, { json: libraryPayload })
           .json<ImportFullLibraryResponse>();
+        return { library, restoredFromSnapshot };
       } catch (err) {
         throw new ImportStepError("library", err);
       }

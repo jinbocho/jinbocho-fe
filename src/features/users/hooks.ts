@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store";
-import { USERS } from "@/lib/paths";
+import { CATALOG_MEMBERS, USERS } from "@/lib/paths";
 import type { MeUpdate, User, UserCreate, UserUpdate } from "@/types/api";
 
 // Calls /v1/users via the gateway (proxy added + validated end-to-end).
@@ -74,7 +74,22 @@ export function useUpdateUser() {
 export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.delete(`${USERS}/${id}`).then(() => id),
+    mutationFn: async (user: User) => {
+      // Best-effort snapshot of the real identity before auth-service hard-
+      // deletes the row for good — without it, a future export/import has no
+      // way to recreate this person's account, only to leave their old
+      // owner_id/current_reader_id/etc. references unresolved. Must never
+      // block the actual deletion the admin asked for.
+      try {
+        await api.post(`${CATALOG_MEMBERS}/removed`, {
+          json: { id: user.id, full_name: user.full_name, email: user.email, role: user.role },
+        });
+      } catch {
+        // Deletion proceeds regardless — see comment above.
+      }
+      await api.delete(`${USERS}/${user.id}`);
+      return user.id;
+    },
     onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.all }),
   });
 }

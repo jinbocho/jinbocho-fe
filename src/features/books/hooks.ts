@@ -3,6 +3,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { HTTPError } from "ky";
+import { useState } from "react";
 import { useMemo } from "react";
 
 import { api } from "@/lib/api";
@@ -16,6 +18,7 @@ import type {
   BookRead,
   BookView,
   // CoverExtractResponse, // unused while cover OCR scan is paused, see useExtractBookCover below
+  DuplicateBookConflict,
   OwnedBook,
   OwnedBookCreate,
   OwnedBookUpdate,
@@ -120,6 +123,52 @@ export function useAddBook() {
       void qc.invalidateQueries({ queryKey: bookKeys.all });
     },
   });
+}
+
+// Wraps useAddBook with the duplicate-detection roundtrip: the backend
+// rejects with 409 when the new book looks like one already owned by the
+// same owner (same ISBN, or same title+author under a different ISBN).
+// submit() returns null and stores the conflict instead of throwing, so the
+// caller can show it and either confirmDuplicate() (resubmits with
+// is_intentional_duplicate: true) or cancelDuplicate() (drops it, per spec
+// the book must not be added).
+export function useAddBookWithDuplicateCheck() {
+  const addBook = useAddBook();
+  const [pending, setPending] = useState<{ body: OwnedBookCreate; conflict: DuplicateBookConflict } | null>(null);
+
+  async function submit(body: OwnedBookCreate): Promise<OwnedBook | null> {
+    try {
+      return await addBook.mutateAsync(body);
+    } catch (err) {
+      if (err instanceof HTTPError && err.response.status === 409) {
+        const conflict = await err.response.json<DuplicateBookConflict>().catch(() => null);
+        if (conflict?.error === "duplicate_book") {
+          setPending({ body, conflict });
+          return null;
+        }
+      }
+      throw err;
+    }
+  }
+
+  async function confirmDuplicate(): Promise<OwnedBook | null> {
+    if (!pending) return null;
+    const { body } = pending;
+    setPending(null);
+    return await addBook.mutateAsync({ ...body, is_intentional_duplicate: true });
+  }
+
+  function cancelDuplicate() {
+    setPending(null);
+  }
+
+  return {
+    submit,
+    conflict: pending?.conflict ?? null,
+    confirmDuplicate,
+    cancelDuplicate,
+    isPending: addBook.isPending,
+  };
 }
 
 export function useUpdateBook() {

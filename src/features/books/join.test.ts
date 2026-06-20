@@ -22,6 +22,7 @@ function book(id: string, recordId: string): OwnedBook {
     owner_id: null,
     notes: null,
     tags: [],
+    is_intentional_duplicate: false,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
   };

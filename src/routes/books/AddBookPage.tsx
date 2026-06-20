@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { LocationPicker, type LocationSelection } from "@/components/locations/LocationPicker";
+import { DuplicateBookDialog } from "@/components/books/DuplicateBookDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,7 +13,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
-import { useAddBook } from "@/features/books/hooks";
+import { useAddBookWithDuplicateCheck } from "@/features/books/hooks";
 // import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useUsers } from "@/features/users/hooks";
 import { useCreateRecord } from "@/features/records/hooks";
@@ -39,7 +40,7 @@ export function AddBookPage() {
   const toast = useToast();
   const lookup = useIsbnLookup();
   const createRecord = useCreateRecord();
-  const addBook = useAddBook();
+  const addBook = useAddBookWithDuplicateCheck();
   // const extractCover = useExtractBookCover(); // OCR paused
 
   const users = useUsers();
@@ -92,18 +93,34 @@ export function AddBookPage() {
         ...values,
         publication_year: values.publication_year ? Number(values.publication_year) : null,
       });
-      await addBook.mutateAsync({
+      const book = await addBook.submit({
         bibliographic_record_id: record.id,
         reading_status: status,
         ...(ownerId ? { owner_id: ownerId } : {}),
         ...location,
       });
-      toast.success("Book added.");
-      navigate("/books");
+      // null means a duplicate conflict is pending confirmation in the
+      // dialog below — stay on the form until the user resolves it.
+      if (book) {
+        toast.success("Book added.");
+        navigate("/books");
+      }
     } catch {
       toast.error("Couldn't add the book.");
     }
   });
+
+  async function handleConfirmDuplicate() {
+    try {
+      const book = await addBook.confirmDuplicate();
+      if (book) {
+        toast.success("Book added.");
+        navigate("/books");
+      }
+    } catch {
+      toast.error("Couldn't add the book.");
+    }
+  }
 
   const saving = createRecord.isPending || addBook.isPending;
 
@@ -248,6 +265,13 @@ export function AddBookPage() {
           </div>
         </form>
       )}
+
+      <DuplicateBookDialog
+        conflict={addBook.conflict}
+        loading={addBook.isPending}
+        onConfirm={() => void handleConfirmDuplicate()}
+        onCancel={() => addBook.cancelDuplicate()}
+      />
     </>
   );
 }

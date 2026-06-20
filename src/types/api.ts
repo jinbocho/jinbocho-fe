@@ -200,6 +200,7 @@ export interface OwnedBook {
   owner_id: string | null;
   notes: string | null;
   tags: string[];
+  is_intentional_duplicate: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -222,6 +223,27 @@ export interface OwnedBookCreate {
   owner_id?: string;
   notes?: string;
   tags?: string[];
+  // Set to true to confirm adding despite a 409 DuplicateBookConflict from a previous call.
+  is_intentional_duplicate?: boolean;
+}
+
+// 409 body from POST v1/books/ when the family already owns this book — the
+// check is family-wide, not scoped to an owner (two members can legitimately
+// each have their own copy), so the conflict surfaces who already has it and
+// where, letting the user decide whether to add a separate copy anyway.
+export interface DuplicateBookConflict {
+  error: "duplicate_book";
+  conflict_type: "isbn_match" | "title_author_match";
+  existing_book_id: string;
+  existing_record_id: string;
+  title: string;
+  main_author: string | null;
+  isbn: string | null;
+  existing_owner_id: string | null;
+  existing_room_id: string | null;
+  existing_bookcase_id: string | null;
+  existing_section_id: string | null;
+  existing_shelf_id: string | null;
 }
 
 export interface OwnedBookUpdate {
@@ -441,6 +463,25 @@ export interface BookHistory {
   created_at: string;
 }
 
+// A former family member's identity, captured the moment they're removed
+// from the family (POST v1/catalog/members/removed) — auth-service hard-
+// deletes the row, so this is the only place their name/email survive for
+// a future export/import to recreate the real account from.
+export interface RemovedMember {
+  id: string;
+  full_name: string;
+  email: string;
+  role: Role;
+  removed_at: string;
+}
+
+export interface RemovedMemberCreate {
+  id: string;
+  full_name: string;
+  email: string;
+  role: Role;
+}
+
 // GET v1/users/export (auth-service)
 export interface FamilyDataExport {
   schema_version: number;
@@ -461,6 +502,7 @@ export interface FullLibraryExport {
   book_reads: BookRead[];
   book_loans: BookLoan[];
   book_history: BookHistory[];
+  removed_members: RemovedMember[];
 }
 
 // The single downloaded file — FamilyDataExport + FullLibraryExport merged client-side.
@@ -478,9 +520,13 @@ export interface FullBackupExport {
   book_reads: BookRead[];
   book_loans: BookLoan[];
   book_history: BookHistory[];
+  removed_members: RemovedMember[];
 }
 
 // POST v1/users/import (auth-service) — runs first, its user_id_map feeds the catalog import below.
+// `users` may include entries recovered from removed-member snapshots (real
+// email/full_name/role of a former member) alongside the current roster —
+// both go through the same match-or-invite path on the backend.
 export interface ImportUsersRequest {
   users: User[];
 }

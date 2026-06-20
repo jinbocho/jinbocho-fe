@@ -158,7 +158,7 @@ export function BookDetailPage() {
           <Field label={t("books.detail.added")} value={formatDate(b.created_at)} />
           <Field
             label={t("books.detail.owner")}
-            value={b.owner_id ? (users.data?.find((u) => u.id === b.owner_id)?.full_name ?? "Unknown") : null}
+            value={b.owner_id ? users.data?.find((u) => u.id === b.owner_id)?.full_name : null}
           />
         </dl>
 

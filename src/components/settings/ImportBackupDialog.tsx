@@ -32,12 +32,15 @@ export function ImportBackupDialog() {
   async function handleConfirm() {
     if (!pending) return;
     try {
-      const result = await importBackup.importFullBackup(pending);
+      const { library: result, restoredFromSnapshot } = await importBackup.importFullBackup(pending);
       const skipped = result.owned_books_deduped + result.rooms_deduped + result.records_deduped;
+      const base = skipped > 0
+        ? `${t("settings.backup.importSuccess")} ${result.owned_books_imported} ${t("settings.backup.countBooks")}, ${result.rooms_imported} ${t("settings.backup.countRooms")} (${skipped} ${t("settings.backup.alreadyPresent")}).`
+        : `${t("settings.backup.importSuccess")} ${result.owned_books_imported} ${t("settings.backup.countBooks")}, ${result.rooms_imported} ${t("settings.backup.countRooms")}.`;
       toast.success(
-        skipped > 0
-          ? `${t("settings.backup.importSuccess")} ${result.owned_books_imported} ${t("settings.backup.countBooks")}, ${result.rooms_imported} ${t("settings.backup.countRooms")} (${skipped} ${t("settings.backup.alreadyPresent")}).`
-          : `${t("settings.backup.importSuccess")} ${result.owned_books_imported} ${t("settings.backup.countBooks")}, ${result.rooms_imported} ${t("settings.backup.countRooms")}.`,
+        restoredFromSnapshot > 0
+          ? `${base} ${restoredFromSnapshot} ${t("settings.backup.countRestoredMembers")}.`
+          : base,
       );
       setPending(null);
       // Import touches nearly everything in the catalog and the user roster —

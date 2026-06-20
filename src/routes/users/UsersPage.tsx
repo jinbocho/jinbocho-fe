@@ -90,7 +90,7 @@ export function UsersPage() {
         onConfirm={async () => {
           if (!deleting) return;
           try {
-            await del.mutateAsync(deleting.id);
+            await del.mutateAsync(deleting);
             toast.success(t("users.removed"));
           } catch {
             toast.error(t("users.removeFailed"));

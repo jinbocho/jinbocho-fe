@@ -28,6 +28,7 @@ function view(
     owner_id: ownerId ?? null,
     notes: null,
     tags: [],
+    is_intentional_duplicate: false,
     created_at: createdAt,
     updated_at: createdAt,
   };

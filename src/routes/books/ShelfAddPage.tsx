@@ -13,9 +13,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/Toast";
+import { DuplicateBookDialog } from "@/components/books/DuplicateBookDialog";
 // import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useShelfAddSession } from "@/features/books/useShelfAddSession";
-import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
+import { useLocationLabel } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
 import {
   isValidIsbn,
@@ -33,28 +34,6 @@ type Phase = "setup" | "scan";
 type ScanTab = "scan" | "type";
 
 const EMPTY_DRAFT: BibliographicRecordCreate = { title: "", other_authors: [] };
-
-// ── Position breadcrumb ───────────────────────────────────────────────────────────────────
-
-function useLocationLabel(loc: LocationSelection) {
-  const rooms = useRooms();
-  const bookcases = useBookcases(loc.room_id);
-  const sections = useSections(loc.bookcase_id);
-  const shelves = useShelves(loc.section_id);
-
-  const room = (rooms.data ?? []).find((r) => r.id === loc.room_id);
-  const bookcase = (bookcases.data ?? []).find((b) => b.id === loc.bookcase_id);
-  const section = (sections.data ?? []).find((s) => s.id === loc.section_id);
-  const shelf = (shelves.data ?? []).find((s) => s.id === loc.shelf_id);
-
-  if (!room || !bookcase || !section || !shelf) return null;
-  return [
-    room.name,
-    bookcase.name,
-    section.label ?? `Section ${section.section_index + 1}`,
-    `Shelf ${shelf.shelf_index + 1}`,
-  ].join(" › ");
-}
 
 // ── Quick-review card ───────────────────────────────────────────────────────────────
 
@@ -296,8 +275,16 @@ export function ShelfAddPage() {
   const [draft, setDraft] = useState<BibliographicRecordCreate | null>(null);
   const [notFound, setNotFound] = useState(false);
 
-  const { sessionBooks, addToShelf, removeFromShelf, isSaving, isRemoving } =
-    useShelfAddSession(lockedLocation, ownerId || undefined);
+  const {
+    sessionBooks,
+    addToShelf,
+    removeFromShelf,
+    duplicateConflict,
+    confirmPendingDuplicate,
+    cancelPendingDuplicate,
+    isSaving,
+    isRemoving,
+  } = useShelfAddSession(lockedLocation, ownerId || undefined);
 
   const label = useLocationLabel(lockedLocation);
 
@@ -319,11 +306,27 @@ export function ShelfAddPage() {
 
   async function handleAdd(d: BibliographicRecordCreate) {
     try {
-      await addToShelf(d);
+      const added = await addToShelf(d);
+      if (!added) return; // duplicate conflict pending — dialog below resolves it, don't advance yet
       toast.success(t("books.shelfAdd.bookAdded"));
     } catch {
       toast.error(t("books.shelfAdd.addFailed"));
     }
+    resetScan();
+  }
+
+  async function handleConfirmDuplicate() {
+    try {
+      await confirmPendingDuplicate();
+      toast.success(t("books.shelfAdd.bookAdded"));
+    } catch {
+      toast.error(t("books.shelfAdd.addFailed"));
+    }
+    resetScan();
+  }
+
+  function handleCancelDuplicate() {
+    cancelPendingDuplicate();
     resetScan();
   }
 
@@ -524,6 +527,13 @@ export function ShelfAddPage() {
           onRemove={(id) => void removeFromShelf(id)}
         />
       </div>
+
+      <DuplicateBookDialog
+        conflict={duplicateConflict}
+        loading={isSaving}
+        onConfirm={() => void handleConfirmDuplicate()}
+        onCancel={handleCancelDuplicate}
+      />
     </>
   );
 }

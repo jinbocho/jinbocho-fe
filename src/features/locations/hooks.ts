@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
+import type { LocationSelection } from "@/components/locations/LocationPicker";
 import { BOOKCASES, ROOMS, SECTIONS, SHELVES } from "@/lib/paths";
 import type {
   Bookcase,
@@ -183,4 +184,28 @@ export function useDeleteShelf() {
     mutationFn: (id: string) => api.delete(`${SHELVES}/${id}`).then(() => id),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["shelves"] }),
   });
+}
+
+// Resolves a room/bookcase/section/shelf id tuple to a "Room › Bookcase ›
+// Section › Shelf" breadcrumb, or null if any level is missing/unresolved.
+// Shared by ShelfAddPage (position breadcrumb) and the duplicate-book dialog
+// (showing where an existing copy already lives).
+export function useLocationLabel(loc: LocationSelection) {
+  const rooms = useRooms();
+  const bookcases = useBookcases(loc.room_id);
+  const sections = useSections(loc.bookcase_id);
+  const shelves = useShelves(loc.section_id);
+
+  const room = (rooms.data ?? []).find((r) => r.id === loc.room_id);
+  const bookcase = (bookcases.data ?? []).find((b) => b.id === loc.bookcase_id);
+  const section = (sections.data ?? []).find((s) => s.id === loc.section_id);
+  const shelf = (shelves.data ?? []).find((s) => s.id === loc.shelf_id);
+
+  if (!room || !bookcase || !section || !shelf) return null;
+  return [
+    room.name,
+    bookcase.name,
+    section.label ?? `Section ${section.section_index + 1}`,
+    `Shelf ${shelf.shelf_index + 1}`,
+  ].join(" › ");
 }
