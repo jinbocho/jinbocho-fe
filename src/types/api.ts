@@ -98,6 +98,24 @@ export interface FamilyUpdate {
   description?: string;
 }
 
+// POST v1/families/{id}/confirm-deletion and DELETE v1/families/{id} (auth-service) —
+// both require this same proof of intent; the delete endpoint re-checks it
+// itself even if confirm-deletion already ran.
+export interface DeleteFamilyRequest {
+  password: string;
+  confirm_family_name: string;
+}
+
+// DELETE v1/catalog/account (catalog-service) — the library-data half of
+// full account deletion, called before the auth-service family delete above.
+export interface DeleteFamilyDataResponse {
+  rooms_deleted: number;
+  bookcases_deleted: number;
+  records_deleted: number;
+  owned_books_deleted: number;
+  removed_members_deleted: number;
+}
+
 // ----- Catalog: records & books -----
 
 // Normalized genre codes — mirrors the backend Genre enum (catalog-service).

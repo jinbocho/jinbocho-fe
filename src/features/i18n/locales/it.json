@@ -132,6 +132,23 @@
       "description": "Termina la sessione su questo dispositivo.",
       "button": "Esci"
     },
+    "dangerZone": {
+      "title": "Zona pericolosa",
+      "description": "Elimina definitivamente l'account di questa famiglia e tutti i suoi dati.",
+      "deleteButton": "Elimina account",
+      "confirmTitle": "Eliminare questo account per sempre?",
+      "warning": "Questa operazione non può essere annullata.",
+      "warningFamily": "La famiglia e l'accesso di ogni membro verranno eliminati.",
+      "warningLibrary": "Ogni stanza, libreria, libro, prestito e cronologia di lettura verrà cancellato definitivamente.",
+      "warningIrreversible": "Non manteniamo alcun backup dal nostro lato — esportane uno prima se vuoi conservare una copia.",
+      "typeNameLabel": "Scrivi il nome della famiglia per confermare:",
+      "passwordLabel": "La tua password",
+      "confirmButton": "Elimina per sempre",
+      "deleted": "Il tuo account e tutti i suoi dati sono stati eliminati definitivamente.",
+      "wrongConfirmation": "Nome famiglia o password non corrispondenti — non è stato eliminato nulla.",
+      "failedCatalogStep": "Impossibile eliminare i dati della biblioteca — il tuo account non è stato toccato, riprova.",
+      "failedFamilyStep": "La biblioteca è stata eliminata ma non è stato possibile eliminare l'account — accedi e riprova."
+    },
     "appearance": {
       "title": "Aspetto",
       "description": "Scegli il tema grafico e la modalità colore.",

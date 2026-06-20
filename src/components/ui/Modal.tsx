@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 interface ModalProps {
@@ -21,20 +16,50 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
-  // Focus trap + ESC to close + restore focus on unmount.
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+  const focusFirst = useCallback(() => {
+    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = "hidden";
+
+    const t = window.setTimeout(focusFirst, 0);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.clearTimeout(t);
+    };
+  }, [open, focusFirst]);
+
+  useEffect(() => {
+    if (!open) {
+      previouslyFocused.current?.focus();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
         return;
       }
+
       if (e.key !== "Tab" || !panelRef.current) return;
+
       const items = Array.from(
         panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
       );
+
       if (items.length === 0) return;
+
       const first = items[0]!;
       const last = items[items.length - 1]!;
+
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
@@ -42,26 +67,13 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         e.preventDefault();
         first.focus();
       }
-    },
-    [onClose],
-  );
+    };
 
-  useEffect(() => {
-    if (!open) return;
-    previouslyFocused.current = document.activeElement as HTMLElement | null;
     document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-    // Focus the first focusable element in the panel.
-    const t = window.setTimeout(() => {
-      panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-    }, 0);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-      window.clearTimeout(t);
-      previouslyFocused.current?.focus();
     };
-  }, [open, handleKeyDown]);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -77,7 +89,6 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         onClick={onClose}
         aria-hidden="true"
       />
-      {/* Bottom sheet on mobile, centered card on sm+. */}
       <div
         ref={panelRef}
         className="relative z-10 max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-lg bg-surface p-5 shadow-card sm:rounded-lg"

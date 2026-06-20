@@ -132,6 +132,23 @@
       "description": "Termina tu sesión en este dispositivo.",
       "button": "Cerrar sesión"
     },
+    "dangerZone": {
+      "title": "Zona de peligro",
+      "description": "Elimina permanentemente la cuenta de esta familia y todos sus datos.",
+      "deleteButton": "Eliminar cuenta",
+      "confirmTitle": "¿Eliminar esta cuenta para siempre?",
+      "warning": "Esto no se puede deshacer.",
+      "warningFamily": "Se eliminará la familia y el acceso de cada miembro.",
+      "warningLibrary": "Cada habitación, estantería, libro, préstamo e historial de lectura se borrará permanentemente.",
+      "warningIrreversible": "No conservamos ninguna copia de seguridad de nuestro lado — exporta una primero si quieres conservar una copia.",
+      "typeNameLabel": "Escribe el nombre de la familia para confirmar:",
+      "passwordLabel": "Tu contraseña",
+      "confirmButton": "Eliminar para siempre",
+      "deleted": "Tu cuenta y todos sus datos han sido eliminados permanentemente.",
+      "wrongConfirmation": "El nombre de familia o la contraseña no coinciden — no se eliminó nada.",
+      "failedCatalogStep": "No se pudieron eliminar los datos de la biblioteca — tu cuenta no se vio afectada, inténtalo de nuevo.",
+      "failedFamilyStep": "La biblioteca fue eliminada pero la cuenta no pudo eliminarse — inicia sesión e inténtalo de nuevo."
+    },
     "appearance": {
       "title": "Apariencia",
       "description": "Elige tu tema y modo de color.",

@@ -132,6 +132,23 @@
       "description": "Terminez votre session sur cet appareil.",
       "button": "Se déconnecter"
     },
+    "dangerZone": {
+      "title": "Zone dangereuse",
+      "description": "Supprime définitivement le compte de cette famille et toutes ses données.",
+      "deleteButton": "Supprimer le compte",
+      "confirmTitle": "Supprimer ce compte pour toujours ?",
+      "warning": "Cette action est irréversible.",
+      "warningFamily": "La famille et l'accès de chaque membre seront supprimés.",
+      "warningLibrary": "Chaque pièce, bibliothèque, livre, prêt et historique de lecture sera définitivement effacé.",
+      "warningIrreversible": "Aucune sauvegarde n'est conservée de notre côté — exportez-en une d'abord si vous voulez garder une copie.",
+      "typeNameLabel": "Tapez le nom de la famille pour confirmer :",
+      "passwordLabel": "Votre mot de passe",
+      "confirmButton": "Supprimer pour toujours",
+      "deleted": "Votre compte et toutes ses données ont été définitivement supprimés.",
+      "wrongConfirmation": "Le nom de famille ou le mot de passe ne correspond pas — rien n'a été supprimé.",
+      "failedCatalogStep": "Impossible de supprimer les données de la bibliothèque — votre compte n'est pas affecté, réessayez.",
+      "failedFamilyStep": "La bibliothèque a été supprimée mais le compte lui-même n'a pas pu l'être — connectez-vous et réessayez."
+    },
     "appearance": {
       "title": "Apparence",
       "description": "Choisissez votre thème et mode de couleur.",

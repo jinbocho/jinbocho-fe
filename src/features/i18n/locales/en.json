@@ -132,6 +132,23 @@
       "description": "End your session on this device.",
       "button": "Log out"
     },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "Permanently delete this family's account and every bit of its data.",
+      "deleteButton": "Delete account",
+      "confirmTitle": "Delete this account forever?",
+      "warning": "This cannot be undone.",
+      "warningFamily": "The family and every member's login will be deleted.",
+      "warningLibrary": "Every room, bookcase, book, loan and reading history will be permanently erased.",
+      "warningIrreversible": "There is no backup kept on our side — export one first if you want to keep a copy.",
+      "typeNameLabel": "Type the family name to confirm:",
+      "passwordLabel": "Your password",
+      "confirmButton": "Delete forever",
+      "deleted": "Your account and all its data have been permanently deleted.",
+      "wrongConfirmation": "Family name or password didn't match — nothing was deleted.",
+      "failedCatalogStep": "Couldn't delete the library data — your account is unaffected, try again.",
+      "failedFamilyStep": "The library was deleted but the account itself couldn't be — sign in and try again."
+    },
     "appearance": {
       "title": "Appearance",
       "description": "Choose your theme and colour mode.",

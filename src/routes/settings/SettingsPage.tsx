@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { ExportMenu } from "@/components/books/ExportMenu";
+import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { ImportBackupDialog } from "@/components/settings/ImportBackupDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -74,8 +75,26 @@ export function SettingsPage() {
             {t("settings.signOut.button")}
           </Button>
         </Card>
+        {isAdmin && <DangerZoneSection />}
       </div>
     </>
+  );
+}
+
+function DangerZoneSection() {
+  const { t } = useTranslation();
+  const family = useFamily();
+
+  if (!family.data) return null;
+
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+      <div>
+        <h2 className="font-display text-lg font-semibold text-danger">{t("settings.dangerZone.title")}</h2>
+        <p className="text-sm text-ink-soft">{t("settings.dangerZone.description")}</p>
+      </div>
+      <DeleteAccountDialog family={family.data} />
+    </Card>
   );
 }
 
