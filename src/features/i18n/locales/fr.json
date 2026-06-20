@@ -101,9 +101,30 @@
   },
   "settings": {
     "title": "Paramètres",
+    "backup": {
+      "title": "Sauvegarde et restauration",
+      "description": "Téléchargez un instantané complet et restaurable de votre bibliothèque familiale — emplacements, livres, prêts, historique de lecture et liste des membres. Utilisez-le pour passer à une nouvelle base de données sans rien perdre.",
+      "exportButton": "Télécharger la sauvegarde complète",
+      "exportFailed": "Impossible de télécharger la sauvegarde.",
+      "importButton": "Restaurer depuis une sauvegarde",
+      "invalidFile": "Impossible de lire ce fichier.",
+      "confirmTitle": "Restaurer cette sauvegarde ?",
+      "confirmButton": "Restaurer",
+      "confirmFamily": "Famille :",
+      "confirmExportedAt": "Exporté le :",
+      "countUsers": "membres de la famille",
+      "countRooms": "pièces",
+      "countBooks": "livres",
+      "countLoans": "prêts",
+      "mergeWarning": "Cette opération fusionne avec votre bibliothèque actuelle plutôt que de la remplacer : les pièces, bibliothèques, livres et membres déjà présents sont reconnus et réutilisés — rien de ce qui existe déjà n'est dupliqué, même en important le même fichier deux fois.",
+      "alreadyPresent": "déjà présents, ignorés",
+      "importSuccess": "Sauvegarde restaurée :",
+      "importFailedUsers": "Impossible de restaurer la liste des membres — rien d'autre n'a été importé.",
+      "importFailedLibrary": "Les membres ont été restaurés, mais l'importation de la bibliothèque a échoué. Vérifiez le fichier et réessayez — relancer l'opération réassociera les membres déjà trouvés, mais dupliquera les pièces/livres déjà importés."
+    },
     "exportLibrary": {
-      "title": "Exporter la bibliothèque",
-      "description": "Téléchargez votre catalogue complet."
+      "title": "Exporter les livres (CSV/JSON)",
+      "description": "Une liste de livres légère pour les tableurs — ce n'est pas un format de restauration."
     },
     "signOut": {
       "title": "Se déconnecter",

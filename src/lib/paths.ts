@@ -15,6 +15,7 @@ export const RECORDS = "v1/catalog/bibliographic-records"; // NOT /records
 export const INGESTION = "v1/catalog/ingestion";
 export const MAP = "v1/catalog/map";
 export const EXPORT = "v1/catalog/export";
+export const CATALOG_IMPORT = "v1/catalog/import";
 
 // AI domain — gateway proxies /v1/ai/{path} → ai-service /v1/suggestions/{path}
 export const AI = "v1/ai";

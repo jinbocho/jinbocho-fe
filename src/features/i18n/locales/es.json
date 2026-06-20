@@ -101,9 +101,30 @@
   },
   "settings": {
     "title": "Ajustes",
+    "backup": {
+      "title": "Copia de seguridad y restauración",
+      "description": "Descarga una instantánea completa y restaurable de tu biblioteca familiar — ubicaciones, libros, préstamos, historial de lecturas y la lista de miembros. Úsala para pasar a una nueva base de datos sin perder nada.",
+      "exportButton": "Descargar copia completa",
+      "exportFailed": "No se pudo descargar la copia de seguridad.",
+      "importButton": "Restaurar desde copia",
+      "invalidFile": "No se pudo leer ese archivo.",
+      "confirmTitle": "¿Restaurar esta copia de seguridad?",
+      "confirmButton": "Restaurar",
+      "confirmFamily": "Familia:",
+      "confirmExportedAt": "Exportado el:",
+      "countUsers": "miembros de la familia",
+      "countRooms": "habitaciones",
+      "countBooks": "libros",
+      "countLoans": "préstamos",
+      "mergeWarning": "Esto se combina con tu biblioteca actual en lugar de reemplazarla: las habitaciones, estanterías, libros y miembros ya presentes se reconocen y reutilizan — nada de lo que ya existe se duplica, incluso si importas el mismo archivo dos veces.",
+      "alreadyPresent": "ya presentes, omitidos",
+      "importSuccess": "Copia restaurada:",
+      "importFailedUsers": "No se pudo restaurar la lista de miembros — no se importó nada más.",
+      "importFailedLibrary": "Los miembros se restauraron, pero la importación de la biblioteca falló. Revisa el archivo e inténtalo de nuevo — repetir la operación volverá a emparejar a los miembros ya encontrados, pero duplicará las habitaciones/libros que sí se importaron."
+    },
     "exportLibrary": {
-      "title": "Exportar biblioteca",
-      "description": "Descarga tu catálogo completo."
+      "title": "Exportar libros (CSV/JSON)",
+      "description": "Una lista de libros ligera para hojas de cálculo — no es un formato de restauración."
     },
     "signOut": {
       "title": "Cerrar sesión",

@@ -101,9 +101,30 @@
   },
   "settings": {
     "title": "Impostazioni",
+    "backup": {
+      "title": "Backup e ripristino",
+      "description": "Scarica un'istantanea completa e ripristinabile della tua biblioteca famigliare — posizioni, libri, prestiti, storico letture e anagrafica dei membri. Usala per passare a un nuovo database senza perdere nulla.",
+      "exportButton": "Scarica backup completo",
+      "exportFailed": "Impossibile scaricare il backup.",
+      "importButton": "Ripristina da backup",
+      "invalidFile": "Impossibile leggere questo file.",
+      "confirmTitle": "Ripristinare questo backup?",
+      "confirmButton": "Ripristina",
+      "confirmFamily": "Famiglia:",
+      "confirmExportedAt": "Esportato il:",
+      "countUsers": "membri famiglia",
+      "countRooms": "stanze",
+      "countBooks": "libri",
+      "countLoans": "prestiti",
+      "mergeWarning": "Questa operazione si unisce alla tua biblioteca attuale invece di sostituirla: stanze, librerie, libri e membri già presenti vengono riconosciuti e riutilizzati — nulla di già presente viene duplicato, anche importando lo stesso file due volte.",
+      "alreadyPresent": "già presenti, saltati",
+      "importSuccess": "Backup ripristinato:",
+      "importFailedUsers": "Impossibile ripristinare l'anagrafica dei membri — non è stato importato nulla.",
+      "importFailedLibrary": "I membri sono stati ripristinati, ma l'importazione della biblioteca è fallita. Controlla il file e riprova — rieseguire l'operazione riassocierà i membri già trovati, ma duplicherà stanze/libri già importati."
+    },
     "exportLibrary": {
-      "title": "Esporta biblioteca",
-      "description": "Scarica il tuo catalogo completo."
+      "title": "Esporta libri (CSV/JSON)",
+      "description": "Un elenco libri leggero per i fogli di calcolo — non è un formato di ripristino."
     },
     "signOut": {
       "title": "Disconnetti",

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { ExportMenu } from "@/components/books/ExportMenu";
+import { ImportBackupDialog } from "@/components/settings/ImportBackupDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,6 +13,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
+import { useExportFullBackup } from "@/features/export/useExport";
 import { type Lang, SUPPORTED_LANGS } from "@/features/i18n/config";
 import { useLangStore } from "@/features/i18n/store";
 import { useFamily, useUpdateFamily } from "@/features/family/hooks";
@@ -21,22 +23,47 @@ import { useCurrentUser, useUpdateMe } from "@/features/users/hooks";
 export function SettingsPage() {
   const { t } = useTranslation();
   const role = useAuthStore((s) => s.user?.role);
+  const isAdmin = role === "admin";
   const logout = useLogout();
+  const toast = useToast();
+  const fullBackup = useExportFullBackup();
+
+  async function handleFullBackup() {
+    try {
+      await fullBackup.exportFullBackup();
+    } catch {
+      toast.error(t("settings.backup.exportFailed"));
+    }
+  }
 
   return (
     <>
       <PageHeader title={t("settings.title")} />
       <div className="space-y-6">
-        <FamilySection canEdit={role === "admin"} />
+        <FamilySection canEdit={isAdmin} />
         <ProfileSection />
         <AppearanceSection />
         <LanguageSection />
-        <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+        <Card className="space-y-4 p-5">
           <div>
-            <h2 className="font-display text-lg font-semibold">{t("settings.exportLibrary.title")}</h2>
-            <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>
+            <h2 className="font-display text-lg font-semibold">{t("settings.backup.title")}</h2>
+            <p className="text-sm text-ink-soft">{t("settings.backup.description")}</p>
           </div>
-          <ExportMenu />
+          <div className="flex flex-wrap items-center gap-3">
+            {isAdmin && (
+              <Button loading={fullBackup.isExporting} onClick={() => void handleFullBackup()}>
+                {t("settings.backup.exportButton")}
+              </Button>
+            )}
+            {isAdmin && <ImportBackupDialog />}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+            <div>
+              <h3 className="font-medium text-ink">{t("settings.exportLibrary.title")}</h3>
+              <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>
+            </div>
+            <ExportMenu />
+          </div>
         </Card>
         <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>

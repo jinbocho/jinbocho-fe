@@ -383,3 +383,142 @@ export interface BookcaseMap {
   bookcase_name: string;
   sections: SectionMap[];
 }
+
+// ----- Full library backup / restore -----
+// Separate from BibliographicRecord/OwnedBook above (those mirror only the
+// fields the everyday UI uses) so the backup is a complete, lossless 1:1
+// mirror of every backend field, matching the catalog-service export schemas.
+
+export interface BibliographicRecordExportItem {
+  id: string;
+  title: string;
+  main_author: string | null;
+  other_authors: string[];
+  isbn: string | null;
+  publisher: string | null;
+  publication_year: number | null;
+  language: string | null;
+  genre: string | null;
+  genre_raw: string | null;
+  cover_url: string | null;
+  notes: string | null;
+  incipit: string | null;
+  incipit_source: string | null;
+  incipit_generated_at: string | null;
+}
+
+export interface OwnedBookExportItem {
+  id: string;
+  bibliographic_record_id: string;
+  room_id: string | null;
+  bookcase_id: string | null;
+  section_id: string | null;
+  shelf_id: string | null;
+  shelf_position: number | null;
+  position_description: string | null;
+  condition: string | null;
+  purchase_date: string | null;
+  purchase_price: string | null;
+  source: string | null;
+  reading_status: ReadingStatus;
+  current_reader_id: string | null;
+  owner_id: string | null;
+  tags: string[];
+  notes: string | null;
+  is_intentional_duplicate: boolean;
+  duplicate_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookHistory {
+  id: string;
+  owned_book_id: string;
+  event_type: string;
+  changed_by: string;
+  old_data: Record<string, unknown> | null;
+  new_data: Record<string, unknown> | null;
+  created_at: string;
+}
+
+// GET v1/users/export (auth-service)
+export interface FamilyDataExport {
+  schema_version: number;
+  family: Family;
+  users: User[];
+}
+
+// GET v1/catalog/export/full (catalog-service)
+export interface FullLibraryExport {
+  schema_version: number;
+  exported_at: string;
+  rooms: Room[];
+  bookcases: Bookcase[];
+  sections: Section[];
+  shelves: Shelf[];
+  bibliographic_records: BibliographicRecordExportItem[];
+  owned_books: OwnedBookExportItem[];
+  book_reads: BookRead[];
+  book_loans: BookLoan[];
+  book_history: BookHistory[];
+}
+
+// The single downloaded file — FamilyDataExport + FullLibraryExport merged client-side.
+export interface FullBackupExport {
+  schema_version: number;
+  exported_at: string;
+  family: Family;
+  users: User[];
+  rooms: Room[];
+  bookcases: Bookcase[];
+  sections: Section[];
+  shelves: Shelf[];
+  bibliographic_records: BibliographicRecordExportItem[];
+  owned_books: OwnedBookExportItem[];
+  book_reads: BookRead[];
+  book_loans: BookLoan[];
+  book_history: BookHistory[];
+}
+
+// POST v1/users/import (auth-service) — runs first, its user_id_map feeds the catalog import below.
+export interface ImportUsersRequest {
+  users: User[];
+}
+
+export interface ImportUsersResponse {
+  user_id_map: Record<string, string>;
+  created: number;
+  matched: number;
+}
+
+// POST v1/catalog/import/full (catalog-service)
+export interface ImportFullLibraryRequest {
+  rooms: Room[];
+  bookcases: Bookcase[];
+  sections: Section[];
+  shelves: Shelf[];
+  bibliographic_records: BibliographicRecordExportItem[];
+  owned_books: OwnedBookExportItem[];
+  book_reads: BookRead[];
+  book_loans: BookLoan[];
+  book_history: BookHistory[];
+  user_id_map: Record<string, string>;
+}
+
+export interface ImportFullLibraryResponse {
+  rooms_imported: number;
+  rooms_deduped: number;
+  bookcases_imported: number;
+  bookcases_deduped: number;
+  sections_imported: number;
+  sections_deduped: number;
+  shelves_imported: number;
+  shelves_deduped: number;
+  records_imported: number;
+  records_deduped: number;
+  owned_books_imported: number;
+  owned_books_deduped: number;
+  book_reads_imported: number;
+  book_loans_imported: number;
+  book_history_imported: number;
+}

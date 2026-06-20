@@ -101,9 +101,30 @@
   },
   "settings": {
     "title": "Settings",
+    "backup": {
+      "title": "Backup & restore",
+      "description": "Download a complete, restorable snapshot of your family library — locations, books, loans, reading history and the member roster. Use it to move to a new database without losing anything.",
+      "exportButton": "Download full backup",
+      "exportFailed": "Couldn't download the backup.",
+      "importButton": "Restore from backup",
+      "invalidFile": "Couldn't read that file.",
+      "confirmTitle": "Restore this backup?",
+      "confirmButton": "Restore",
+      "confirmFamily": "Family:",
+      "confirmExportedAt": "Exported on:",
+      "countUsers": "family members",
+      "countRooms": "rooms",
+      "countBooks": "books",
+      "countLoans": "loans",
+      "mergeWarning": "This merges into your current library rather than replacing it: matching rooms, bookcases, books and members already present are recognized and reused — nothing already there gets duplicated, even if you import the same file twice.",
+      "alreadyPresent": "already present, skipped",
+      "importSuccess": "Backup restored:",
+      "importFailedUsers": "Couldn't restore the member roster — nothing else was imported.",
+      "importFailedLibrary": "Members were restored, but the library import failed. Check the file and try again — re-running will re-add members already matched, but will duplicate rooms/books that did get imported."
+    },
     "exportLibrary": {
-      "title": "Export library",
-      "description": "Download your full catalog."
+      "title": "Export books (CSV/JSON)",
+      "description": "A lightweight book list for spreadsheets — not a restore format."
     },
     "signOut": {
       "title": "Sign out",
