@@ -23,6 +23,11 @@ export interface SharedFavorite {
   readCount: number;
 }
 
+export interface MemberFavoriteGenre {
+  userId: string;
+  genre: string;
+}
+
 export interface LibraryStats {
   total: number;
   byStatus: Record<ReadingStatus, number>;
@@ -35,6 +40,7 @@ export interface LibraryStats {
   sharedFavorites: SharedFavorite[];
   ownedByMember: MemberCount[];
   readByMember: MemberCount[];
+  favoriteGenreByMember: MemberFavoriteGenre[];
   unreadByAnyone: number;
   goalProgress: GoalProgress[];
 }
@@ -99,6 +105,26 @@ export function computeLibraryStats(
     .map(([userId, count]) => ({ userId, name: memberName(userId, users), count }))
     .sort((a, b) => b.count - a.count);
 
+  // Favorite genre per member, based on the genre of the books they've read.
+  const genreByBookId = new Map<string, string>();
+  for (const { book, record } of views) {
+    if (record?.genre) genreByBookId.set(book.id, record.genre);
+  }
+  const genreCountsByMember = new Map<string, Map<string, number>>();
+  for (const r of reads) {
+    const genre = genreByBookId.get(r.owned_book_id);
+    if (!genre) continue;
+    const counts = genreCountsByMember.get(r.user_id) ?? new Map<string, number>();
+    counts.set(genre, (counts.get(genre) ?? 0) + 1);
+    genreCountsByMember.set(r.user_id, counts);
+  }
+  const favoriteGenreByMember: MemberFavoriteGenre[] = [...genreCountsByMember.entries()].map(
+    ([userId, counts]) => {
+      const [topGenre] = [...counts.entries()].sort(([, a], [, b]) => b - a)[0]!;
+      return { userId, genre: topGenre };
+    },
+  );
+
   // Books not read by any family member.
   const readBookIds = new Set(reads.map((r) => r.owned_book_id));
   const unreadByAnyone = views.filter(({ book }) => !readBookIds.has(book.id)).length;
@@ -158,7 +184,7 @@ export function computeLibraryStats(
     .sort((a, b) => b.readCount - a.readCount)
     .slice(0, 5);
 
-  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, toReadBooks, sharedFavorites, ownedByMember, readByMember, unreadByAnyone, goalProgress };
+  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, toReadBooks, sharedFavorites, ownedByMember, readByMember, favoriteGenreByMember, unreadByAnyone, goalProgress };
 }
 
 // The backend has no stats endpoint — derive everything from loaded data.

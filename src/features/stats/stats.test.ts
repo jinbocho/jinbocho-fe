@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { computeLibraryStats } from "@/features/stats/useLibraryStats";
-import type { BookRead, BookView, OwnedBook, ReadingStatus, Room, User } from "@/types/api";
+import type { BibliographicRecord, BookRead, BookView, OwnedBook, ReadingStatus, Room, User } from "@/types/api";
 
 function view(
   id: string,
@@ -9,6 +9,7 @@ function view(
   roomId: string | null,
   createdAt: string,
   ownerId?: string,
+  genre?: string,
 ): BookView {
   const book: OwnedBook = {
     id,
@@ -32,7 +33,26 @@ function view(
     created_at: createdAt,
     updated_at: createdAt,
   };
-  return { book, record: null };
+  const record: BibliographicRecord | null = genre
+    ? {
+        id: `r-${id}`,
+        family_id: "fam",
+        title: "Title",
+        main_author: null,
+        other_authors: [],
+        isbn: null,
+        publisher: null,
+        publication_year: null,
+        language: null,
+        genre,
+        genre_raw: null,
+        cover_url: null,
+        notes: null,
+        created_at: createdAt,
+        updated_at: createdAt,
+      }
+    : null;
+  return { book, record };
 }
 
 function read(ownedBookId: string, userId: string): BookRead {
@@ -159,5 +179,30 @@ describe("computeLibraryStats", () => {
     const stats = computeLibraryStats([], [], readsData, [alice, bob]);
     expect(stats.goalProgress).toHaveLength(1);
     expect(stats.goalProgress[0]).toMatchObject({ userId: "u1", name: "Alice", goal: 12, readThisYear: 2 });
+  });
+
+  it("picks the most-read genre per member", () => {
+    const stats = computeLibraryStats(
+      [
+        view("b1", "read", null, "2026-01-01", undefined, "fantasy"),
+        view("b2", "read", null, "2026-01-02", undefined, "fantasy"),
+        view("b3", "read", null, "2026-01-03", undefined, "sci-fi"),
+      ],
+      [],
+      [read("b1", "u1"), read("b2", "u1"), read("b3", "u1")],
+      [],
+    );
+    expect(stats.favoriteGenreByMember).toHaveLength(1);
+    expect(stats.favoriteGenreByMember[0]).toMatchObject({ userId: "u1", genre: "fantasy" });
+  });
+
+  it("ignores reads of books with no genre", () => {
+    const stats = computeLibraryStats(
+      [view("b1", "read", null, "2026-01-01")],
+      [],
+      [read("b1", "u1")],
+      [],
+    );
+    expect(stats.favoriteGenreByMember).toEqual([]);
   });
 });

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { BookListItem } from "@/components/books/BookListItem";
 import { ExportMenu } from "@/components/books/ExportMenu";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ErrorState } from "@/components/feedback/ErrorState";
@@ -41,8 +42,17 @@ export function BookCatalogPage() {
   const statusFilter = params.get("status") ?? "";
   const ownerFilter = params.get("owner") ?? "";
   const genreFilter = params.get("genre") ?? "";
+  // "loc" is a deep-link-only filter set from the Rooms & Bookcases page
+  // (bookcase/section/shelf granularity isn't exposed as a dropdown here).
+  const locFilter = params.get("loc") ?? "";
+  const locType = params.get("locType") ?? "";
+  const locName = params.get("locName") ?? "";
   const [query, setQuery] = useState(params.get("q") ?? "");
   const debouncedQuery = useDebounce(query, 250);
+  const [filtersOpen, setFiltersOpen] = useState(
+    () => Boolean(roomFilter || statusFilter || ownerFilter || genreFilter),
+  );
+  const activeFilterCount = [roomFilter, statusFilter, ownerFilter, genreFilter].filter(Boolean).length;
 
   const roomNames = useMemo(
     () => new Map((rooms.data ?? []).map((r) => [r.id, r.name])),
@@ -67,19 +77,46 @@ export function BookCatalogPage() {
       if (statusFilter && book.reading_status !== statusFilter) return false;
       if (ownerFilter && book.owner_id !== ownerFilter) return false;
       if (genreFilter && record?.genre !== genreFilter) return false;
+      if (locFilter && locType === "bookcase" && book.bookcase_id !== locFilter) return false;
+      if (locFilter && locType === "section" && book.section_id !== locFilter) return false;
+      if (locFilter && locType === "shelf" && book.shelf_id !== locFilter) return false;
       if (q) {
         const hay = `${record?.title ?? ""} ${record?.main_author ?? ""} ${record?.isbn ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [data, roomFilter, statusFilter, ownerFilter, genreFilter, debouncedQuery]);
+  }, [data, roomFilter, statusFilter, ownerFilter, genreFilter, locFilter, locType, debouncedQuery]);
 
   function setParam(key: string, value: string) {
     setParams((prev) => {
       const next = new URLSearchParams(prev);
       if (value) next.set(key, value);
       else next.delete(key);
+      return next;
+    });
+  }
+
+  function clearFilters() {
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("room");
+      next.delete("status");
+      next.delete("owner");
+      next.delete("genre");
+      return next;
+    });
+  }
+
+  function clearLocationFilter() {
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      // "Mostra libri qui" always sets room together with loc/locType/locName,
+      // so clearing the banner should undo that whole navigation context.
+      next.delete("room");
+      next.delete("loc");
+      next.delete("locType");
+      next.delete("locName");
       return next;
     });
   }
@@ -91,7 +128,7 @@ export function BookCatalogPage() {
         description={data.length ? `${data.length} ${t("books.catalog.countDesc")}` : undefined}
         actions={
           <>
-            <ExportMenu disabled={data.length === 0} />
+            <ExportMenu disabled={data.length === 0} align="left" />
             {canEdit && (
               <>
                 <Link to="/books/add/shelf">
@@ -106,43 +143,87 @@ export function BookCatalogPage() {
         }
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto_auto]">
-        <SearchInput
-          label={t("books.catalog.searchPlaceholder")}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setParam("q", e.target.value);
-          }}
-        />
-        <Select
-          aria-label="Filter by room"
-          placeholder={t("books.catalog.filterRooms")}
-          value={roomFilter}
-          options={(rooms.data ?? []).map((r) => ({ value: r.id, label: r.name }))}
-          onChange={(e) => setParam("room", e.target.value)}
-        />
-        <Select
-          aria-label="Filter by status"
-          placeholder={t("books.catalog.filterStatuses")}
-          value={statusFilter}
-          options={READING_STATUSES.map((s) => ({ value: s, label: readingStatusLabel(s, t) }))}
-          onChange={(e) => setParam("status", e.target.value)}
-        />
-        <Select
-          aria-label="Filter by owner"
-          placeholder={t("books.catalog.filterOwners")}
-          value={ownerFilter}
-          options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
-          onChange={(e) => setParam("owner", e.target.value)}
-        />
-        <Select
-          aria-label="Filter by genre"
-          placeholder={t("books.catalog.filterGenres")}
-          value={genreFilter}
-          options={genreOptions}
-          onChange={(e) => setParam("genre", e.target.value)}
-        />
+      {locFilter && locName && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-brand/30 bg-brand/5 px-4 py-2.5">
+          <span className="text-sm text-ink">
+            {t("books.catalog.locationFilterActive")} <strong className="font-medium">{locName}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={clearLocationFilter}
+            className="shrink-0 text-sm font-medium text-brand hover:underline"
+          >
+            {t("books.catalog.clearLocationFilter")}
+          </button>
+        </div>
+      )}
+
+      <div className="mb-4 space-y-3">
+        <div className="flex gap-3">
+          <SearchInput
+            label={t("books.catalog.searchPlaceholder")}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setParam("q", e.target.value);
+            }}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((v) => !v)}
+            className="shrink-0"
+          >
+            {t("books.catalog.filtersToggle")} {filtersOpen ? "▴" : "▾"}
+            {activeFilterCount > 0 && (
+              <Badge tone="bg-brand/10 text-brand">{activeFilterCount}</Badge>
+            )}
+          </Button>
+        </div>
+
+        {filtersOpen && (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Select
+              aria-label="Filter by room"
+              placeholder={t("books.catalog.filterRooms")}
+              value={roomFilter}
+              options={(rooms.data ?? []).map((r) => ({ value: r.id, label: r.name }))}
+              onChange={(e) => setParam("room", e.target.value)}
+            />
+            <Select
+              aria-label="Filter by status"
+              placeholder={t("books.catalog.filterStatuses")}
+              value={statusFilter}
+              options={READING_STATUSES.map((s) => ({ value: s, label: readingStatusLabel(s, t) }))}
+              onChange={(e) => setParam("status", e.target.value)}
+            />
+            <Select
+              aria-label="Filter by owner"
+              placeholder={t("books.catalog.filterOwners")}
+              value={ownerFilter}
+              options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
+              onChange={(e) => setParam("owner", e.target.value)}
+            />
+            <Select
+              aria-label="Filter by genre"
+              placeholder={t("books.catalog.filterGenres")}
+              value={genreFilter}
+              options={genreOptions}
+              onChange={(e) => setParam("genre", e.target.value)}
+            />
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-sm text-brand hover:underline sm:col-span-2 lg:col-span-4"
+              >
+                {t("books.catalog.clearFilters")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {isError ? (

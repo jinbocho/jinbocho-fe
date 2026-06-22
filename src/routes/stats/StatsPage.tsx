@@ -36,10 +36,12 @@ export function StatsPage() {
   const memberCards = (users.data ?? []).map((u) => {
     const readEntry = stats.readByMember.find((m) => m.userId === u.id);
     const ownedEntry = stats.ownedByMember.find((m) => m.userId === u.id);
+    const favoriteGenre = stats.favoriteGenreByMember.find((g) => g.userId === u.id)?.genre ?? null;
     return {
       user: u,
       readCount: readEntry?.count ?? 0,
       ownedCount: ownedEntry?.count ?? 0,
+      favoriteGenre,
     };
   }).sort((a, b) => b.readCount - a.readCount);
 
@@ -111,8 +113,8 @@ export function StatsPage() {
         <section>
           <h2 className="mb-4 text-lg font-medium text-ink">{t("stats.membersSection")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {memberCards.map(({ user, readCount, ownedCount }) => (
-              <Card key={user.id} className="p-4">
+            {memberCards.map(({ user, readCount, ownedCount, favoriteGenre }) => (
+              <Card key={user.id} className="flex flex-col p-4">
                 <div className="mb-4 flex items-center gap-3">
                   <Avatar name={user.full_name} className="h-11 w-11 text-base" />
                   <div>
@@ -120,7 +122,7 @@ export function StatsPage() {
                     <p className="text-xs text-stone capitalize">{user.role}</p>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="flex-1 space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-ink-soft">{t("stats.booksReadLabel")}</span>
                     <span className="font-semibold text-sage">{readCount}</span>
@@ -129,6 +131,12 @@ export function StatsPage() {
                     <span className="text-ink-soft">{t("stats.booksOwnedLabel")}</span>
                     <span className="font-semibold text-ink">{ownedCount}</span>
                   </div>
+                  {favoriteGenre && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-ink-soft">{t("stats.favoriteGenreLabel")}</span>
+                      <span className="font-semibold text-ink">{genreLabel(favoriteGenre, t)}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-4 flex gap-3 text-xs">
                   <Link

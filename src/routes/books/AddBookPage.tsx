@@ -22,6 +22,7 @@ import {
   metadataToRecordDraft,
   normalizeIsbn,
   useIsbnLookup,
+  useSearchBooks,
 } from "@/features/records/isbn";
 import { READING_STATUSES, readingStatusLabel } from "@/lib/format";
 import type { BibliographicRecordCreate, ReadingStatus } from "@/types/api";
@@ -31,7 +32,7 @@ const IsbnScanner = lazy(() =>
   import("@/components/books/IsbnScanner").then((m) => ({ default: m.IsbnScanner })),
 );
 
-type Tab = "scan" | "type";
+type Tab = "scan" | "type" | "search";
 const EMPTY_DRAFT: BibliographicRecordCreate = { title: "", other_authors: [] };
 
 export function AddBookPage() {
@@ -39,6 +40,7 @@ export function AddBookPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const lookup = useIsbnLookup();
+  const search = useSearchBooks();
   const createRecord = useCreateRecord();
   const addBook = useAddBookWithDuplicateCheck();
   // const extractCover = useExtractBookCover(); // OCR paused
@@ -48,6 +50,9 @@ export function AddBookPage() {
 
   const [tab, setTab] = useState<Tab>("type");
   const [isbn, setIsbn] = useState("");
+  const [searchTitle, setSearchTitle] = useState("");
+  const [searchAuthor, setSearchAuthor] = useState("");
+  const [searchResults, setSearchResults] = useState<Record<string, unknown>[] | null>(null);
   const [draft, setDraft] = useState<BibliographicRecordCreate | null>(null);
   const [location, setLocation] = useState<LocationSelection>({});
   const [status, setStatus] = useState<ReadingStatus>("to_read");
@@ -69,6 +74,22 @@ export function AddBookPage() {
       // Not found or upstream error: let the user fill it in manually.
       setDraft({ ...EMPTY_DRAFT, isbn: normalized });
       toast.show(t("books.add.isbnNotFound"));
+    }
+  }
+
+  async function runSearch() {
+    if (!searchTitle.trim() && !searchAuthor.trim()) {
+      toast.error(t("books.add.searchMissingQuery"));
+      return;
+    }
+    try {
+      const result = await search.mutateAsync({
+        title: searchTitle.trim() || undefined,
+        author: searchAuthor.trim() || undefined,
+      });
+      setSearchResults(result.results);
+    } catch {
+      setSearchResults([]);
     }
   }
 
@@ -126,6 +147,10 @@ export function AddBookPage() {
 
   return (
     <>
+      <Link to="/books" className="mb-4 inline-block text-sm text-brand hover:underline">
+        {t("books.add.backLink")}
+      </Link>
+
       <PageHeader
         title={t("books.add.pageTitle")}
         description={t("books.add.subtitle")}
@@ -150,6 +175,9 @@ export function AddBookPage() {
             <TabButton active={tab === "scan"} onClick={() => setTab("scan")}>
               {t("books.add.scanTab")}
             </TabButton>
+            <TabButton active={tab === "search"} onClick={() => setTab("search")}>
+              {t("books.add.searchTab")}
+            </TabButton>
           </div>
 
           {tab === "type" ? (
@@ -172,6 +200,82 @@ export function AddBookPage() {
                 {t("books.add.lookupButton")}
               </Button>
             </form>
+          ) : tab === "search" ? (
+            <div className="space-y-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void runSearch();
+                }}
+                className="flex flex-col gap-3 sm:flex-row sm:items-end"
+              >
+                <Input
+                  label={t("books.add.searchTitleLabel")}
+                  placeholder={t("books.add.searchTitlePlaceholder")}
+                  value={searchTitle}
+                  onChange={(e) => setSearchTitle(e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  label={t("books.add.searchAuthorLabel")}
+                  placeholder={t("books.add.searchAuthorPlaceholder")}
+                  value={searchAuthor}
+                  onChange={(e) => setSearchAuthor(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="submit" loading={search.isPending} className="shrink-0 whitespace-nowrap">
+                  {t("books.add.searchButton")}
+                </Button>
+              </form>
+
+              {search.isPending && (
+                <p className="flex items-center gap-2 text-sm text-ink-soft">
+                  <Spinner className="h-4 w-4" /> {t("books.add.searching")}
+                </p>
+              )}
+
+              {searchResults && searchResults.length === 0 && !search.isPending && (
+                <p className="text-sm text-ink-soft">{t("books.add.searchNoResults")}</p>
+              )}
+
+              {searchResults && searchResults.length > 0 && !search.isPending && (
+                <div className="space-y-2">
+                  <p className="text-sm text-ink-soft">{t("books.add.searchResultsHint")}</p>
+                  <ul className="divide-y divide-line rounded-md border border-line">
+                    {searchResults.map((result, index) => (
+                      <li key={index} className="flex items-center gap-3 p-3">
+                        {typeof result.cover_url === "string" ? (
+                          <img
+                            src={result.cover_url}
+                            alt=""
+                            className="h-14 w-10 shrink-0 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="h-14 w-10 shrink-0 rounded bg-paper" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">{String(result.title ?? "")}</p>
+                          <p className="truncate text-sm text-ink-soft">
+                            {[result.main_author, result.publication_year]
+                              .filter((v) => v !== null && v !== undefined)
+                              .join(" · ")}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          className="shrink-0"
+                          onClick={() => setDraft(metadataToRecordDraft(result))}
+                        >
+                          {t("books.add.searchSelect")}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               <Suspense fallback={<div className="grid h-48 place-items-center rounded-md bg-paper"><Spinner /></div>}>
@@ -289,7 +393,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded px-3 py-1.5 text-sm font-medium ${
+      className={`flex-1 truncate rounded px-1.5 py-1.5 text-xs font-medium sm:px-3 sm:text-sm ${
         active ? "bg-surface text-ink shadow-card" : "text-ink-soft"
       }`}
     >

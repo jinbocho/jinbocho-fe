@@ -314,6 +314,10 @@ export interface IsbnLookupResponse {
   cached: boolean;
 }
 
+export interface BookSearchResponse {
+  results: Record<string, unknown>[];
+}
+
 // ----- AI: Cover OCR -----
 
 export interface CoverExtractResponse {

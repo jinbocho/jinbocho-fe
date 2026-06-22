@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -14,6 +15,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { useAuthStore } from "@/features/auth/store";
+import { useBookViews } from "@/features/books/hooks";
 import {
   useBookcases,
   useCreateBookcase,
@@ -32,15 +34,68 @@ import {
   useUpdateSection,
   useUpdateShelf,
 } from "@/features/locations/hooks";
+import type { BookView, OwnedBook } from "@/types/api";
+
+// Direct id equality is enough here: every placed book carries room_id,
+// bookcase_id, section_id and shelf_id together (see PositionValidationService
+// on the backend), so counting by any single field already reflects the
+// whole subtree under that node.
+function countByLocation(views: BookView[], key: keyof OwnedBook): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const { book } of views) {
+    const id = book[key];
+    if (!id || typeof id !== "string") continue;
+    map.set(id, (map.get(id) ?? 0) + 1);
+  }
+  return map;
+}
+
+// Builds the "N books here will lose their position" suffix appended to
+// delete-confirmation messages — empty string when nothing is at stake.
+function bookCountWarning(t: (key: string) => string, count: number): string {
+  if (count === 0) return "";
+  const label = count === 1 ? t("loans.bookLabel") : t("loans.booksLabel");
+  return ` ${t("locations.deleteBooksWarningPrefix")} ${count} ${label} ${t("locations.deleteBooksWarningSuffix")}`;
+}
+
+// Builds a "/books?..." link that both filters (room is a real filter the
+// Filtri panel understands; loc/locType/locName is the deeper-than-room
+// filter) and carries the full breadcrumb for display on the books page.
+function booksLink(opts: { room: string; loc: string; locType: string; locName: string }): string {
+  const qs = new URLSearchParams({ room: opts.room, loc: opts.loc, locType: opts.locType, locName: opts.locName });
+  return `/books?${qs.toString()}`;
+}
+
+// Plain text action link. "Mostra libri qui" stays brand-coloured (the
+// primary action on a row); "Visualizza mappa" uses `muted` so the two don't
+// read as one undifferentiated cluster when they sit side by side.
+function ActionLink({ to, muted = false, children }: { to: string; muted?: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to}
+      className={`shrink-0 whitespace-nowrap text-xs hover:underline ${
+        muted ? "text-ink-soft hover:text-ink" : "text-brand"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
 
 export function LocationsPage() {
   const { t } = useTranslation();
   const rooms = useRooms();
+  const books = useBookViews();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
   const createRoom = useCreateRoom();
   const toast = useToast();
   const [roomModal, setRoomModal] = useState(false);
+
+  const countsByRoom = useMemo(() => countByLocation(books.data, "room_id"), [books.data]);
+  const countsByBookcase = useMemo(() => countByLocation(books.data, "bookcase_id"), [books.data]);
+  const countsBySection = useMemo(() => countByLocation(books.data, "section_id"), [books.data]);
+  const countsByShelf = useMemo(() => countByLocation(books.data, "shelf_id"), [books.data]);
 
   return (
     <>
@@ -72,7 +127,15 @@ export function LocationsPage() {
       ) : (
         <div className="space-y-3">
           {rooms.data!.map((room) => (
-            <RoomNode key={room.id} room={room} canEdit={canEdit} />
+            <RoomNode
+              key={room.id}
+              room={room}
+              canEdit={canEdit}
+              bookCount={countsByRoom.get(room.id) ?? 0}
+              countsByBookcase={countsByBookcase}
+              countsBySection={countsBySection}
+              countsByShelf={countsByShelf}
+            />
           ))}
         </div>
       )}
@@ -95,7 +158,21 @@ export function LocationsPage() {
 }
 
 // ---- Room ----
-function RoomNode({ room, canEdit }: { room: { id: string; name: string; description: string | null }; canEdit: boolean }) {
+function RoomNode({
+  room,
+  canEdit,
+  bookCount,
+  countsByBookcase,
+  countsBySection,
+  countsByShelf,
+}: {
+  room: { id: string; name: string; description: string | null };
+  canEdit: boolean;
+  bookCount: number;
+  countsByBookcase: Map<string, number>;
+  countsBySection: Map<string, number>;
+  countsByShelf: Map<string, number>;
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -112,11 +189,17 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
       <Row
         title={room.name}
         subtitle={room.description ?? undefined}
+        count={bookCount}
         open={open}
         onToggle={() => setOpen((o) => !o)}
         canEdit={canEdit}
         onEdit={() => setEdit(true)}
         onDelete={() => setConfirm(true)}
+        extra={
+          <ActionLink to={booksLink({ room: room.id, loc: room.id, locType: "room", locName: room.name })}>
+            {t("locations.viewBooksLink")}
+          </ActionLink>
+        }
       />
       {open && (
         <div className="space-y-2 border-t border-line bg-paper/40 px-4 py-3 pl-8">
@@ -125,7 +208,18 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
           ) : (bookcases.data?.length ?? 0) === 0 ? (
             <p className="text-sm text-ink-soft">{t("locations.noBookcases")}</p>
           ) : (
-            bookcases.data!.map((bc) => <BookcaseNode key={bc.id} bookcase={bc} canEdit={canEdit} />)
+            bookcases.data!.map((bc) => (
+              <BookcaseNode
+                key={bc.id}
+                bookcase={bc}
+                canEdit={canEdit}
+                bookCount={countsByBookcase.get(bc.id) ?? 0}
+                countsBySection={countsBySection}
+                countsByShelf={countsByShelf}
+                roomId={room.id}
+                roomName={room.name}
+              />
+            ))
           )}
           {canEdit && (
             <Button size="sm" variant="ghost" onClick={() => setAddOpen(true)}>
@@ -165,7 +259,7 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
       <ConfirmDialog
         open={confirm}
         title={t("locations.deleteRoomTitle")}
-        message={t("locations.deleteRoomMessage")}
+        message={`${t("locations.deleteRoomMessage")}${bookCountWarning(t, bookCount)}`}
         destructive
         confirmLabel={t("common.delete")}
         loading={del.isPending}
@@ -188,9 +282,19 @@ function RoomNode({ room, canEdit }: { room: { id: string; name: string; descrip
 function BookcaseNode({
   bookcase,
   canEdit,
+  bookCount,
+  countsBySection,
+  countsByShelf,
+  roomId,
+  roomName,
 }: {
   bookcase: { id: string; name: string; type: string | null };
   canEdit: boolean;
+  bookCount: number;
+  countsBySection: Map<string, number>;
+  countsByShelf: Map<string, number>;
+  roomId: string;
+  roomName: string;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -202,20 +306,46 @@ function BookcaseNode({
   const create = useCreateSection();
   const toast = useToast();
 
+  async function onAddSections(count: number) {
+    const startIndex = sections.data?.length ?? 0;
+    try {
+      for (let i = 0; i < count; i++) {
+        await create.mutateAsync({ bookcase_id: bookcase.id, section_index: startIndex + i });
+      }
+      toast.success(t("locations.sectionAdded"));
+    } catch {
+      toast.error(t("common.defaultErrorMessage"));
+    }
+  }
+
   return (
     <div className="rounded-md border border-line bg-surface">
       <Row
         title={bookcase.name}
         subtitle={bookcase.type ?? undefined}
+        count={bookCount}
         open={open}
         onToggle={() => setOpen((o) => !o)}
         canEdit={canEdit}
         onEdit={() => setEdit(true)}
         onDelete={() => setConfirm(true)}
         extra={
-          <Link to={`/locations/bookcase/${bookcase.id}`} className="text-xs text-brand hover:underline">
-            {t("locations.viewMapLink")}
-          </Link>
+          <div className="flex items-center gap-2">
+            <ActionLink
+              to={booksLink({
+                room: roomId,
+                loc: bookcase.id,
+                locType: "bookcase",
+                locName: `${roomName} › ${bookcase.name}`,
+              })}
+            >
+              {t("locations.viewBooksLink")}
+            </ActionLink>
+            <span aria-hidden="true" className="text-line">·</span>
+            <ActionLink to={`/locations/bookcase/${bookcase.id}`} muted>
+              {t("locations.viewMapLink")}
+            </ActionLink>
+          </div>
         }
       />
       {open && (
@@ -225,23 +355,25 @@ function BookcaseNode({
           ) : (sections.data?.length ?? 0) === 0 ? (
             <p className="text-sm text-ink-soft">{t("locations.noSections")}</p>
           ) : (
-            sections.data!.map((s) => <SectionNode key={s.id} section={s} canEdit={canEdit} />)
+            sections.data!.map((s) => (
+              <SectionNode
+                key={s.id}
+                section={s}
+                canEdit={canEdit}
+                bookCount={countsBySection.get(s.id) ?? 0}
+                countsByShelf={countsByShelf}
+                roomId={roomId}
+                roomName={roomName}
+                bookcaseName={bookcase.name}
+              />
+            ))
           )}
           {canEdit && (
-            <Button
-              size="sm"
-              variant="ghost"
-              loading={create.isPending}
-              onClick={async () => {
-                await create.mutateAsync({
-                  bookcase_id: bookcase.id,
-                  section_index: sections.data?.length ?? 0,
-                });
-                toast.success(t("locations.sectionAdded"));
-              }}
-            >
-              {t("locations.addSectionButton")}
-            </Button>
+            <BulkAddControl
+              quantityLabel={t("locations.sectionCountLabel")}
+              buttonLabel={t("locations.addSectionButton")}
+              onAdd={onAddSections}
+            />
           )}
         </div>
       )}
@@ -263,7 +395,7 @@ function BookcaseNode({
       <ConfirmDialog
         open={confirm}
         title={t("locations.deleteBookcaseTitle")}
-        message={t("locations.deleteBookcaseMessage")}
+        message={`${t("locations.deleteBookcaseMessage")}${bookCountWarning(t, bookCount)}`}
         destructive
         confirmLabel={t("common.delete")}
         loading={del.isPending}
@@ -286,9 +418,19 @@ function BookcaseNode({
 function SectionNode({
   section,
   canEdit,
+  bookCount,
+  countsByShelf,
+  roomId,
+  roomName,
+  bookcaseName,
 }: {
   section: { id: string; section_index: number; label: string | null };
   canEdit: boolean;
+  bookCount: number;
+  countsByShelf: Map<string, number>;
+  roomId: string;
+  roomName: string;
+  bookcaseName: string;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -300,18 +442,46 @@ function SectionNode({
   const del = useDeleteSection();
   const toast = useToast();
 
+  const sectionName = section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`;
+
+  async function onAddShelves(count: number) {
+    const startIndex = shelves.data?.length ?? 0;
+    try {
+      for (let i = 0; i < count; i++) {
+        await create.mutateAsync({ section_id: section.id, shelf_index: startIndex + i });
+      }
+      toast.success(t("locations.shelfAdded"));
+    } catch {
+      toast.error(t("common.defaultErrorMessage"));
+    }
+  }
+
   return (
     <div className="rounded-md bg-paper/60 px-3 py-2">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={() => setOpen((o) => !o)} className="text-sm font-medium text-ink">
-          {open ? "▾" : "▸"} {section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`}
+      <div className="flex items-center justify-between gap-2">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="flex min-w-0 items-center gap-2 text-left text-sm font-medium text-ink">
+          <span className="shrink-0">{open ? "▾" : "▸"}</span>
+          <span className="truncate">{sectionName}</span>
+          {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
         </button>
-        {canEdit && (
-          <div className="flex shrink-0 items-center gap-1">
-            <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>✎</IconButton>
-            <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>🗑</IconButton>
-          </div>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <ActionLink
+            to={booksLink({
+              room: roomId,
+              loc: section.id,
+              locType: "section",
+              locName: `${roomName} › ${bookcaseName} › ${sectionName}`,
+            })}
+          >
+            {t("locations.viewBooksLink")}
+          </ActionLink>
+          {canEdit && (
+            <div className="flex shrink-0 items-center gap-1">
+              <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>✎</IconButton>
+              <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>🗑</IconButton>
+            </div>
+          )}
+        </div>
       </div>
       {open && (
         <div className="mt-2 space-y-1 pl-5">
@@ -320,20 +490,25 @@ function SectionNode({
           ) : (shelves.data?.length ?? 0) === 0 ? (
             <p className="text-xs text-ink-soft">{t("locations.noShelves")}</p>
           ) : (
-            shelves.data!.map((sh) => <ShelfRow key={sh.id} shelf={sh} canEdit={canEdit} />)
+            shelves.data!.map((sh) => (
+              <ShelfRow
+                key={sh.id}
+                shelf={sh}
+                canEdit={canEdit}
+                bookCount={countsByShelf.get(sh.id) ?? 0}
+                roomId={roomId}
+                roomName={roomName}
+                bookcaseName={bookcaseName}
+                sectionName={sectionName}
+              />
+            ))
           )}
           {canEdit && (
-            <Button
-              size="sm"
-              variant="ghost"
-              loading={create.isPending}
-              onClick={async () => {
-                await create.mutateAsync({ section_id: section.id, shelf_index: shelves.data?.length ?? 0 });
-                toast.success(t("locations.shelfAdded"));
-              }}
-            >
-              {t("locations.addShelfButton")}
-            </Button>
+            <BulkAddControl
+              quantityLabel={t("locations.shelfCountLabel")}
+              buttonLabel={t("locations.addShelfButton")}
+              onAdd={onAddShelves}
+            />
           )}
         </div>
       )}
@@ -355,7 +530,7 @@ function SectionNode({
       <ConfirmDialog
         open={confirm}
         title={t("locations.deleteSectionTitle")}
-        message={t("locations.deleteSectionMessage")}
+        message={`${t("locations.deleteSectionMessage")}${bookCountWarning(t, bookCount)}`}
         destructive
         confirmLabel={t("common.delete")}
         loading={del.isPending}
@@ -378,41 +553,56 @@ function SectionNode({
 function ShelfRow({
   shelf,
   canEdit,
+  bookCount,
+  roomId,
+  roomName,
+  bookcaseName,
+  sectionName,
 }: {
   shelf: { id: string; shelf_index: number; notes: string | null };
   canEdit: boolean;
+  bookCount: number;
+  roomId: string;
+  roomName: string;
+  bookcaseName: string;
+  sectionName: string;
 }) {
   const { t } = useTranslation();
   const [edit, setEdit] = useState(false);
+  const [confirm, setConfirm] = useState(false);
   const update = useUpdateShelf();
   const del = useDeleteShelf();
   const toast = useToast();
 
+  const shelfName = `${t("locations.shelfLabel")} ${shelf.shelf_index + 1}`;
+
   return (
     <div className="flex items-center justify-between gap-2 text-sm text-ink">
-      <span className="min-w-0 truncate">
-        {t("locations.shelfLabel")} {shelf.shelf_index + 1}
-        {shelf.notes && <span className="text-ink-soft"> — {shelf.notes}</span>}
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="min-w-0 truncate">
+          {shelfName}
+          {shelf.notes && <span className="text-ink-soft"> — {shelf.notes}</span>}
+        </span>
+        {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
       </span>
-      {canEdit && (
-        <div className="flex shrink-0 items-center gap-1">
-          <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>✎</IconButton>
-          <IconButton
-            label={t("locations.deleteShelfButton")}
-            loading={del.isPending}
-            onClick={async () => {
-              try {
-                await del.mutateAsync(shelf.id);
-                toast.success(t("locations.shelfDeleted"));
-              } catch {
-                toast.error(t("locations.deleteShelfFailed"));
-              }
-            }}
-          >
-            ✕
-          </IconButton>
-        </div>
-      )}
+      <div className="flex shrink-0 items-center gap-3">
+        <ActionLink
+          to={booksLink({
+            room: roomId,
+            loc: shelf.id,
+            locType: "shelf",
+            locName: `${roomName} › ${bookcaseName} › ${sectionName} › ${shelfName}`,
+          })}
+        >
+          {t("locations.viewBooksLink")}
+        </ActionLink>
+        {canEdit && (
+          <div className="flex shrink-0 items-center gap-1">
+            <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>✎</IconButton>
+            <IconButton label={t("locations.deleteShelfButton")} onClick={() => setConfirm(true)}>✕</IconButton>
+          </div>
+        )}
+      </div>
 
       {edit && (
         <EntityModal
@@ -428,6 +618,65 @@ function ShelfRow({
           }}
         />
       )}
+      <ConfirmDialog
+        open={confirm}
+        title={t("locations.deleteShelfTitle")}
+        message={`${t("locations.deleteShelfMessage")}${bookCountWarning(t, bookCount)}`}
+        destructive
+        confirmLabel={t("common.delete")}
+        loading={del.isPending}
+        onClose={() => setConfirm(false)}
+        onConfirm={async () => {
+          try {
+            await del.mutateAsync(shelf.id);
+            toast.success(t("locations.shelfDeleted"));
+          } catch {
+            toast.error(t("locations.deleteShelfFailed"));
+          }
+          setConfirm(false);
+        }}
+      />
+    </div>
+  );
+}
+
+// ---- Shared bulk-add control ----
+function BulkAddControl({
+  quantityLabel,
+  buttonLabel,
+  onAdd,
+}: {
+  quantityLabel: string;
+  buttonLabel: string;
+  onAdd: (count: number) => Promise<void>;
+}) {
+  const [count, setCount] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleClick() {
+    setSubmitting(true);
+    try {
+      await onAdd(count);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        min={1}
+        max={20}
+        value={count}
+        disabled={submitting}
+        onChange={(e) => setCount(Math.min(20, Math.max(1, Number(e.target.value) || 1)))}
+        aria-label={quantityLabel}
+        className="h-9 w-14 rounded-md border border-line bg-paper px-2 text-center text-sm text-ink disabled:opacity-60"
+      />
+      <Button size="sm" variant="ghost" loading={submitting} onClick={() => void handleClick()}>
+        {buttonLabel}
+      </Button>
     </div>
   );
 }
@@ -436,6 +685,7 @@ function ShelfRow({
 function Row({
   title,
   subtitle,
+  count,
   open,
   onToggle,
   canEdit,
@@ -445,6 +695,7 @@ function Row({
 }: {
   title: string;
   subtitle?: string;
+  count?: number;
   open: boolean;
   onToggle: () => void;
   canEdit: boolean;
@@ -458,11 +709,14 @@ function Row({
       <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2 text-left">
         <span aria-hidden="true" className="text-ink-soft">{open ? "▾" : "▸"}</span>
         <span className="min-w-0">
-          <span className="block truncate font-medium text-ink">{title}</span>
+          <span className="flex items-center gap-2">
+            <span className="min-w-0 truncate font-medium text-ink">{title}</span>
+            {Boolean(count) && <Badge tone="bg-line text-ink-soft" className="shrink-0">{count}</Badge>}
+          </span>
           {subtitle && <span className="block truncate text-sm text-ink-soft">{subtitle}</span>}
         </span>
       </button>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-2">
         {extra}
         {canEdit && onEdit && (
           <IconButton label={t("common.edit")} onClick={onEdit}>✎</IconButton>

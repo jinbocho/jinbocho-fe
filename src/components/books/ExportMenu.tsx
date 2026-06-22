@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/Button";
 import { useExport } from "@/features/export/useExport";
 import { useToast } from "@/components/ui/Toast";
 
-export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
+export function ExportMenu({
+  disabled = false,
+  align = "right",
+}: {
+  disabled?: boolean;
+  // "right" anchors the menu's right edge to the trigger (use when the trigger
+  // sits at the right end of a row); "left" anchors the left edge instead, so
+  // the menu doesn't spill past the screen edge when the trigger sits at the left.
+  align?: "left" | "right";
+}) {
   const { t } = useTranslation();
   const { exportBooks, isExporting } = useExport();
   const toast = useToast();
@@ -34,7 +43,11 @@ export function ExportMenu({ disabled = false }: { disabled?: boolean }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-md border border-line bg-surface shadow-card">
+          <div
+            className={`absolute z-20 mt-1 w-32 overflow-hidden rounded-md border border-line bg-surface shadow-card ${
+              align === "right" ? "right-0" : "left-0"
+            }`}
+          >
             <button
               type="button"
               className="block w-full px-3 py-2 text-left text-sm hover:bg-paper"

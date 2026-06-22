@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
 import { INGESTION } from "@/lib/paths";
-import type { BibliographicRecordCreate, IsbnLookupResponse } from "@/types/api";
+import type { BibliographicRecordCreate, BookSearchResponse, IsbnLookupResponse } from "@/types/api";
 
 // Strips non-alphanumeric characters (keeps the trailing X some ISBN-10s use).
 export function normalizeIsbn(raw: string): string {
@@ -43,5 +43,16 @@ export function useIsbnLookup() {
       api
         .get(`${INGESTION}/isbn/${normalizeIsbn(isbn)}`)
         .json<IsbnLookupResponse>(),
+  });
+}
+
+export function useSearchBooks() {
+  return useMutation({
+    mutationFn: (query: { title?: string; author?: string }) => {
+      const searchParams: Record<string, string> = {};
+      if (query.title) searchParams.title = query.title;
+      if (query.author) searchParams.author = query.author;
+      return api.get(`${INGESTION}/search`, { searchParams }).json<BookSearchResponse>();
+    },
   });
 }
