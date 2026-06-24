@@ -37,7 +37,9 @@ export function DuplicateBookDialog({
   const reason =
     conflict.conflict_type === "isbn_match"
       ? t("books.add.duplicateReasonIsbn")
-      : t("books.add.duplicateReasonTitleAuthor");
+      : conflict.conflict_type === "fuzzy_match"
+        ? t("books.add.duplicateReasonFuzzy")
+        : t("books.add.duplicateReasonTitleAuthor");
 
   return (
     <Modal
@@ -65,6 +67,11 @@ export function DuplicateBookDialog({
         <p className="text-ink-soft">
           {t("books.add.duplicateLocationLabel")} {locationLabel ?? t("books.add.duplicateNoLocation")}
         </p>
+        {conflict.match_reason && (
+          <p className="italic text-ink-soft">
+            {t("books.add.duplicateAiReasonLabel")} {conflict.match_reason}
+          </p>
+        )}
         <p className="text-ink-soft">{t("books.add.duplicateQuestion")}</p>
       </div>
     </Modal>

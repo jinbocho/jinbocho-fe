@@ -6,7 +6,8 @@
     "rooms": "Stanze",
     "stats": "Statistiche",
     "users": "Utenti",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "aiUpgrade": "✨ Passa alla versione con AI"
   },
   "common": {
     "appName": "Jinbocho",
@@ -40,7 +41,8 @@
     "tryAgain": "Riprova",
     "readingStatusLabel": "Stato di lettura",
     "title": "Titolo",
-    "you": "Tu"
+    "you": "Tu",
+    "aiFeatureNotEnabled": "Le funzionalità AI non sono abilitate in questa installazione."
   },
   "validation": {
     "invalidEmail": "Inserisci un'email valida",
@@ -101,6 +103,11 @@
   },
   "settings": {
     "title": "Impostazioni",
+    "groups": {
+      "account": "Account",
+      "preferences": "Preferenze",
+      "data": "Dati"
+    },
     "backup": {
       "title": "Backup e ripristino",
       "description": "Scarica un'istantanea completa e ripristinabile della tua biblioteca famigliare — posizioni, libri, prestiti, storico letture e anagrafica dei membri. Usala per passare a un nuovo database senza perdere nulla.",
@@ -304,6 +311,8 @@
       "duplicateMessage": "Possiedi già",
       "duplicateReasonIsbn": "stesso ISBN",
       "duplicateReasonTitleAuthor": "stesso titolo e autore, ISBN diverso",
+      "duplicateReasonFuzzy": "probabilmente lo stesso libro, edizione diversa",
+      "duplicateAiReasonLabel": "Nota AI:",
       "duplicateOwnerLabel": "Proprietario:",
       "duplicateNoOwner": "nessun proprietario impostato",
       "duplicateLocationLabel": "Posizione:",
@@ -332,7 +341,6 @@
         "save": "Salva",
         "cancel": "Annulla",
         "placeholder": "Scrivi una breve presentazione, senza spoiler…",
-        "aiUnavailable": "La generazione AI non è configurata.",
         "generated": "Presentazione generata.",
         "saved": "Presentazione salvata."
       },
@@ -383,6 +391,7 @@
         "noRecordNote": "Questa copia non ha una scheda bibliografica, quindi titolo/autore non possono essere modificati qui.",
         "otherAuthors": "Altri autori",
         "separateCommas": "Separati da virgola",
+        "suggestTagsButton": "Suggerisci tag",
         "sharedNote": "Questi campi sono condivisi da tutte le copie di questo libro.",
         "thisCopy": "Questa copia",
         "purchasePrice": "Prezzo di acquisto",
@@ -538,7 +547,22 @@
     "editModalTitle": "Modifica utente",
     "roleLabel": "Ruolo",
     "activeLabel": "Attivo",
-    "editSelfNote": "Non puoi cambiare il tuo ruolo o stato attivo."
+    "editSelfNote": "Non puoi cambiare il tuo ruolo o stato attivo.",
+    "pendingInviteLabel": "Invito in sospeso",
+    "resendInviteButton": "Reinvia invito",
+    "resendInviteSent": "Invito reinviato.",
+    "resendInviteFailed": "Impossibile reinviare l'invito.",
+    "lastAdminTooltip": "Non puoi farlo: è l'unico amministratore attivo della famiglia.",
+    "bookCount_one": "{{count}} libro",
+    "bookCount_other": "{{count}} libri",
+    "reactivateButton": "Riattiva",
+    "reactivated": "Utente riattivato.",
+    "reactivateFailed": "Impossibile riattivare l'utente.",
+    "deleteReassignTitle": "Riassegna prima i suoi libri",
+    "deleteReassignMessage": "{{name}} possiede {{count}} libri. Scegli a chi assegnarli prima di rimuovere questo membro.",
+    "deleteReassignSelectLabel": "Riassegna a",
+    "deleteReassignNoOwner": "Nessuno (lascia non assegnati)",
+    "deleteReassignButton": "Riassegna e rimuovi"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -554,10 +578,9 @@
     "recentlyAddedTitle": "Aggiunti di recente",
     "ownedByMemberTitle": "Libri posseduti per membro",
     "readByMemberTitle": "Libri letti per membro",
-    "unreadByAnyoneTitle": "Non letti da nessuno",
-    "bookLabel": "libro",
-    "booksLabel": "libri",
-    "unreadByAnyoneDesc": "nessun membro ha ancora letto",
+    "unreadInsightOne": "libro non ancora aperto da nessuno in famiglia",
+    "unreadInsightMany": "libri non ancora aperti da nessuno in famiglia",
+    "unreadInsightCta": "Vedi quali",
     "readingGoalsTitle": "Obiettivi di lettura",
     "goalBooksLabel": "libri",
     "currentlyReadingTitle": "In lettura",
@@ -569,7 +592,16 @@
     "onLoanViewAll": "Vedi tutti",
     "nextReadTitle": "Cosa leggere dopo?",
     "nextReadEmpty": "Nessun libro nella lista da leggere",
-    "nextReadShuffle": "Un altro",
+    "nextReadShuffle": "Mi sento fortunato",
+    "recommendationsBadge": "AI",
+    "recommendationsTitle": "Consigliati per te",
+    "recommendationsPrompt": "Chiedi all'AI di suggerirti un libro su misura, in base alle tue letture.",
+    "recommendationsAskButton": "Chiedi un consiglio",
+    "recommendationsLoading": "Sto pensando… può richiedere qualche secondo.",
+    "recommendationsEmpty": "Nessun consiglio per ora — riprova più tardi.",
+    "recommendationsLike": "Mi interessa",
+    "recommendationsDislike": "Non mi interessa",
+    "recommendationsFeedbackSaved": "Preferenza salvata.",
     "familyFavoritesTitle": "Preferiti di famiglia",
     "familyFavoritesEmpty": "Nessun libro letto da più di un membro",
     "familyFavoritesReadBy": "membri"

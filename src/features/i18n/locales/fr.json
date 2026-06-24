@@ -6,7 +6,8 @@
     "rooms": "Pièces",
     "stats": "Statistiques",
     "users": "Utilisateurs",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "aiUpgrade": "✨ Passer à l'édition avec IA"
   },
   "common": {
     "appName": "Jinbocho",
@@ -40,7 +41,8 @@
     "tryAgain": "Réessayer",
     "readingStatusLabel": "Statut de lecture",
     "title": "Titre",
-    "you": "Toi"
+    "you": "Toi",
+    "aiFeatureNotEnabled": "Les fonctionnalités IA ne sont pas activées sur cette installation."
   },
   "validation": {
     "invalidEmail": "Saisissez une adresse e-mail valide",
@@ -101,6 +103,11 @@
   },
   "settings": {
     "title": "Paramètres",
+    "groups": {
+      "account": "Compte",
+      "preferences": "Préférences",
+      "data": "Données"
+    },
     "backup": {
       "title": "Sauvegarde et restauration",
       "description": "Téléchargez un instantané complet et restaurable de votre bibliothèque familiale — emplacements, livres, prêts, historique de lecture et liste des membres. Utilisez-le pour passer à une nouvelle base de données sans rien perdre.",
@@ -304,6 +311,8 @@
       "duplicateMessage": "Vous avez déjà",
       "duplicateReasonIsbn": "même ISBN",
       "duplicateReasonTitleAuthor": "même titre et auteur, ISBN différent",
+      "duplicateReasonFuzzy": "probablement le même livre, édition différente",
+      "duplicateAiReasonLabel": "Note de l'IA :",
       "duplicateOwnerLabel": "Propriétaire :",
       "duplicateNoOwner": "aucun propriétaire défini",
       "duplicateLocationLabel": "Emplacement :",
@@ -332,7 +341,6 @@
         "save": "Enregistrer",
         "cancel": "Annuler",
         "placeholder": "Rédigez une courte présentation, sans spoilers…",
-        "aiUnavailable": "La génération par IA n'est pas configurée.",
         "generated": "Présentation générée.",
         "saved": "Présentation enregistrée."
       },
@@ -383,6 +391,7 @@
         "noRecordNote": "Cette copie n'a pas de fiche bibliographique, donc le titre/auteur ne peut pas être modifié ici.",
         "otherAuthors": "Autres auteurs",
         "separateCommas": "Séparés par des virgules",
+        "suggestTagsButton": "Suggérer des tags",
         "sharedNote": "Ces champs sont partagés par tous les exemplaires de ce livre.",
         "thisCopy": "Cet exemplaire",
         "purchasePrice": "Prix d'achat",
@@ -538,7 +547,22 @@
     "editModalTitle": "Modifier l'utilisateur",
     "roleLabel": "Rôle",
     "activeLabel": "Actif",
-    "editSelfNote": "Vous ne pouvez pas modifier votre propre rôle ou statut actif."
+    "editSelfNote": "Vous ne pouvez pas modifier votre propre rôle ou statut actif.",
+    "pendingInviteLabel": "Invitation en attente",
+    "resendInviteButton": "Renvoyer l'invitation",
+    "resendInviteSent": "Invitation renvoyée.",
+    "resendInviteFailed": "Impossible de renvoyer l'invitation.",
+    "lastAdminTooltip": "Impossible : c'est le seul administrateur actif de la famille.",
+    "bookCount_one": "{{count}} livre",
+    "bookCount_other": "{{count}} livres",
+    "reactivateButton": "Réactiver",
+    "reactivated": "Utilisateur réactivé.",
+    "reactivateFailed": "Impossible de réactiver l'utilisateur.",
+    "deleteReassignTitle": "Réattribuez d'abord ses livres",
+    "deleteReassignMessage": "{{name}} possède {{count}} livre(s). Choisissez qui les recevra avant de supprimer ce membre.",
+    "deleteReassignSelectLabel": "Réattribuer à",
+    "deleteReassignNoOwner": "Personne (laisser non attribués)",
+    "deleteReassignButton": "Réattribuer et supprimer"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -554,10 +578,9 @@
     "recentlyAddedTitle": "Ajoutés récemment",
     "ownedByMemberTitle": "Livres par membre",
     "readByMemberTitle": "Livres lus par membre",
-    "unreadByAnyoneTitle": "Non lus par personne",
-    "bookLabel": "livre",
-    "booksLabel": "livres",
-    "unreadByAnyoneDesc": "aucun membre n'a encore lu",
+    "unreadInsightOne": "livre que personne dans la famille n'a encore ouvert",
+    "unreadInsightMany": "livres que personne dans la famille n'a encore ouvert",
+    "unreadInsightCta": "Voir lesquels",
     "readingGoalsTitle": "Objectifs de lecture",
     "goalBooksLabel": "livres",
     "currentlyReadingTitle": "En lecture",
@@ -569,7 +592,16 @@
     "onLoanViewAll": "Voir tout",
     "nextReadTitle": "Que lire ensuite ?",
     "nextReadEmpty": "Aucun livre dans la liste à lire",
-    "nextReadShuffle": "Un autre",
+    "nextReadShuffle": "J'ai de la chance",
+    "recommendationsBadge": "IA",
+    "recommendationsTitle": "Recommandé pour vous",
+    "recommendationsPrompt": "Demandez à l'IA de vous suggérer un livre adapté à votre historique de lecture.",
+    "recommendationsAskButton": "Demander une suggestion",
+    "recommendationsLoading": "Je réfléchis… cela peut prendre quelques secondes.",
+    "recommendationsEmpty": "Aucune suggestion pour l'instant — réessayez plus tard.",
+    "recommendationsLike": "Ça m'intéresse",
+    "recommendationsDislike": "Pas intéressé",
+    "recommendationsFeedbackSaved": "Préférence enregistrée.",
     "familyFavoritesTitle": "Favoris de la famille",
     "familyFavoritesEmpty": "Aucun livre lu par plus d'un membre",
     "familyFavoritesReadBy": "membres"

@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { api } from "@/lib/api";
+import { AI_REQUEST_TIMEOUT_MS, api } from "@/lib/api";
 import { AI, RECORDS } from "@/lib/paths";
 import type {
   BibliographicRecord,
@@ -12,6 +12,8 @@ import type {
   BibliographicRecordUpdate,
   Incipit,
   IncipitGenerateResult,
+  TagSuggestionRequest,
+  TagSuggestionResult,
 } from "@/types/api";
 
 export const recordKeys = {
@@ -96,7 +98,19 @@ export function useGenerateIncipitAI() {
       main_author?: string | null;
       genre?: string | null;
       language?: string | null;
-    }) => api.post(`${AI}/incipit`, { json: body }).json<IncipitGenerateResult>(),
+    }) =>
+      api
+        .post(`${AI}/incipit`, { json: body, timeout: AI_REQUEST_TIMEOUT_MS })
+        .json<IncipitGenerateResult>(),
+  });
+}
+
+export function useSuggestTags() {
+  return useMutation({
+    mutationFn: (body: TagSuggestionRequest) =>
+      api
+        .post(`${AI}/tags`, { json: body, timeout: AI_REQUEST_TIMEOUT_MS })
+        .json<TagSuggestionResult>(),
   });
 }
 

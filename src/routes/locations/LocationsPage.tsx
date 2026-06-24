@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Icon } from "@/components/ui/Icon";
 import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
@@ -458,13 +458,13 @@ function SectionNode({
 
   return (
     <div className="rounded-md bg-paper/60 px-3 py-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <button type="button" onClick={() => setOpen((o) => !o)} className="flex min-w-0 items-center gap-2 text-left text-sm font-medium text-ink">
-          <span className="shrink-0">{open ? "▾" : "▸"}</span>
+          <Icon name={open ? "expand_more" : "chevron_right"} className="shrink-0 text-[18px]" />
           <span className="truncate">{sectionName}</span>
           {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
         </button>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 pl-5 sm:shrink-0 sm:pl-0">
           <ActionLink
             to={booksLink({
               room: roomId,
@@ -477,8 +477,12 @@ function SectionNode({
           </ActionLink>
           {canEdit && (
             <div className="flex shrink-0 items-center gap-1">
-              <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>✎</IconButton>
-              <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>🗑</IconButton>
+              <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>
+                <Icon name="edit" className="text-[18px]" />
+              </IconButton>
+              <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>
+                <Icon name="delete" className="text-[18px]" />
+              </IconButton>
             </div>
           )}
         </div>
@@ -577,7 +581,7 @@ function ShelfRow({
   const shelfName = `${t("locations.shelfLabel")} ${shelf.shelf_index + 1}`;
 
   return (
-    <div className="flex items-center justify-between gap-2 text-sm text-ink">
+    <div className="flex flex-col gap-2 text-sm text-ink sm:flex-row sm:items-center sm:justify-between">
       <span className="flex min-w-0 items-center gap-2">
         <span className="min-w-0 truncate">
           {shelfName}
@@ -585,7 +589,7 @@ function ShelfRow({
         </span>
         {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
       </span>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 pl-0 sm:shrink-0">
         <ActionLink
           to={booksLink({
             room: roomId,
@@ -598,8 +602,12 @@ function ShelfRow({
         </ActionLink>
         {canEdit && (
           <div className="flex shrink-0 items-center gap-1">
-            <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>✎</IconButton>
-            <IconButton label={t("locations.deleteShelfButton")} onClick={() => setConfirm(true)}>✕</IconButton>
+            <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>
+              <Icon name="edit" className="text-[18px]" />
+            </IconButton>
+            <IconButton label={t("locations.deleteShelfButton")} onClick={() => setConfirm(true)}>
+              <Icon name="delete" className="text-[18px]" />
+            </IconButton>
           </div>
         )}
       </div>
@@ -705,9 +713,9 @@ function Row({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between gap-2 px-4 py-3">
-      <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2 text-left">
-        <span aria-hidden="true" className="text-ink-soft">{open ? "▾" : "▸"}</span>
+    <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <button type="button" onClick={onToggle} className="flex min-w-0 items-center gap-2 text-left sm:flex-1">
+        <Icon name={open ? "expand_more" : "chevron_right"} className="shrink-0 text-ink-soft text-[20px]" />
         <span className="min-w-0">
           <span className="flex items-center gap-2">
             <span className="min-w-0 truncate font-medium text-ink">{title}</span>
@@ -716,13 +724,17 @@ function Row({
           {subtitle && <span className="block truncate text-sm text-ink-soft">{subtitle}</span>}
         </span>
       </button>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 pl-6 sm:shrink-0 sm:pl-0">
         {extra}
         {canEdit && onEdit && (
-          <IconButton label={t("common.edit")} onClick={onEdit}>✎</IconButton>
+          <IconButton label={t("common.edit")} onClick={onEdit}>
+            <Icon name="edit" className="text-[18px]" />
+          </IconButton>
         )}
         {canEdit && (
-          <IconButton label={t("common.delete")} onClick={onDelete}>🗑</IconButton>
+          <IconButton label={t("common.delete")} onClick={onDelete}>
+            <Icon name="delete" className="text-[18px]" />
+          </IconButton>
         )}
       </div>
     </div>

@@ -71,6 +71,12 @@ export function useUpdateUser() {
   });
 }
 
+export function useResendInvite() {
+  return useMutation({
+    mutationFn: (userId: string) => api.post(`${USERS}/${userId}/resend-invite`),
+  });
+}
+
 export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({

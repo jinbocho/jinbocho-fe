@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -40,44 +40,61 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader title={t("settings.title")} />
-      <div className="space-y-6">
-        <FamilySection canEdit={isAdmin} />
-        <ProfileSection />
-        <AppearanceSection />
-        <LanguageSection />
-        <Card className="space-y-4 p-5">
-          <div>
-            <h2 className="font-display text-lg font-semibold">{t("settings.backup.title")}</h2>
-            <p className="text-sm text-ink-soft">{t("settings.backup.description")}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {isAdmin && (
-              <Button loading={fullBackup.isExporting} onClick={() => void handleFullBackup()}>
-                {t("settings.backup.exportButton")}
-              </Button>
-            )}
-            {isAdmin && <ImportBackupDialog />}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+      <div className="space-y-8">
+        <SettingsGroup label={t("settings.groups.account")}>
+          <ProfileSection />
+          <FamilySection canEdit={isAdmin} />
+          <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
             <div>
-              <h3 className="font-medium text-ink">{t("settings.exportLibrary.title")}</h3>
-              <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>
+              <h2 className="font-display text-lg font-semibold">{t("settings.signOut.title")}</h2>
+              <p className="text-sm text-ink-soft">{t("settings.signOut.description")}</p>
             </div>
-            <ExportMenu />
-          </div>
-        </Card>
-        <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
-          <div>
-            <h2 className="font-display text-lg font-semibold">{t("settings.signOut.title")}</h2>
-            <p className="text-sm text-ink-soft">{t("settings.signOut.description")}</p>
-          </div>
-          <Button variant="secondary" loading={logout.isPending} onClick={() => logout.mutate()}>
-            {t("settings.signOut.button")}
-          </Button>
-        </Card>
-        {isAdmin && <DangerZoneSection />}
+            <Button variant="secondary" loading={logout.isPending} onClick={() => logout.mutate()}>
+              {t("settings.signOut.button")}
+            </Button>
+          </Card>
+        </SettingsGroup>
+
+        <SettingsGroup label={t("settings.groups.preferences")}>
+          <AppearanceSection />
+          <LanguageSection />
+        </SettingsGroup>
+
+        <SettingsGroup label={t("settings.groups.data")}>
+          <Card className="space-y-4 p-5">
+            <div>
+              <h2 className="font-display text-lg font-semibold">{t("settings.backup.title")}</h2>
+              <p className="text-sm text-ink-soft">{t("settings.backup.description")}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {isAdmin && (
+                <Button loading={fullBackup.isExporting} onClick={() => void handleFullBackup()}>
+                  {t("settings.backup.exportButton")}
+                </Button>
+              )}
+              {isAdmin && <ImportBackupDialog />}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+              <div>
+                <h3 className="font-medium text-ink">{t("settings.exportLibrary.title")}</h3>
+                <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>
+              </div>
+              <ExportMenu />
+            </div>
+          </Card>
+          {isAdmin && <DangerZoneSection />}
+        </SettingsGroup>
       </div>
     </>
+  );
+}
+
+function SettingsGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <section>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</h2>
+      <div className="space-y-4">{children}</div>
+    </section>
   );
 }
 
@@ -88,7 +105,7 @@ function DangerZoneSection() {
   if (!family.data) return null;
 
   return (
-    <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+    <Card className="flex flex-wrap items-center justify-between gap-3 border-danger/30 bg-danger/5 p-5">
       <div>
         <h2 className="font-display text-lg font-semibold text-danger">{t("settings.dangerZone.title")}</h2>
         <p className="text-sm text-ink-soft">{t("settings.dangerZone.description")}</p>

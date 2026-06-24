@@ -4,6 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "@/components/ui/IconButton";
+import { useAiFeatureEnabled } from "@/features/system/hooks";
 
 interface NavItem {
   to: string;
@@ -26,6 +27,7 @@ const FOCUSABLE =
 
 export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut }: MobileDrawerProps) {
   const { t } = useTranslation();
+  const aiEnabled = useAiFeatureEnabled();
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   // Kept mounted slightly past `open=false` so the slide-out transition can play.
@@ -97,7 +99,7 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
           visible ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-start justify-between px-5 py-5">
+        <div className="flex shrink-0 items-start justify-between px-5 py-5">
           <div>
             <Link to="/" className="inline-flex items-center gap-2 hover:opacity-80" onClick={onClose}>
               <img src="/logo.png" alt="" className="h-8 w-8 rounded-full" />
@@ -109,7 +111,7 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
             ✕
           </IconButton>
         </div>
-        <nav className="flex-1 space-y-1 px-3">
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
           {items.map((item) => (
             <NavLink
               key={item.to}
@@ -127,8 +129,19 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
             </NavLink>
           ))}
         </nav>
+        {!aiEnabled && (
+          <a
+            href="https://jinbocho.github.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="mx-3 mb-3 block shrink-0 rounded-md bg-brand/10 px-3 py-2 text-center text-sm font-medium text-brand hover:bg-brand/15"
+          >
+            {t("nav.aiUpgrade")}
+          </a>
+        )}
         {user && (
-          <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line px-4 py-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-ink">{user.email}</p>
               <p className="text-xs capitalize text-ink-soft">{user.role}</p>

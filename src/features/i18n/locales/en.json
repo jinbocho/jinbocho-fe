@@ -6,7 +6,8 @@
     "rooms": "Rooms",
     "stats": "Statistics",
     "users": "Users",
-    "settings": "Settings"
+    "settings": "Settings",
+    "aiUpgrade": "✨ Upgrade to the AI edition"
   },
   "common": {
     "appName": "Jinbocho",
@@ -40,7 +41,8 @@
     "tryAgain": "Try again",
     "readingStatusLabel": "Reading status",
     "title": "Title",
-    "you": "You"
+    "you": "You",
+    "aiFeatureNotEnabled": "AI features aren't enabled on this installation."
   },
   "validation": {
     "invalidEmail": "Enter a valid email",
@@ -101,6 +103,11 @@
   },
   "settings": {
     "title": "Settings",
+    "groups": {
+      "account": "Account",
+      "preferences": "Preferences",
+      "data": "Data"
+    },
     "backup": {
       "title": "Backup & restore",
       "description": "Download a complete, restorable snapshot of your family library — locations, books, loans, reading history and the member roster. Use it to move to a new database without losing anything.",
@@ -304,6 +311,8 @@
       "duplicateMessage": "You already have",
       "duplicateReasonIsbn": "same ISBN",
       "duplicateReasonTitleAuthor": "same title and author, different ISBN",
+      "duplicateReasonFuzzy": "likely the same book, different edition",
+      "duplicateAiReasonLabel": "AI note:",
       "duplicateOwnerLabel": "Owner:",
       "duplicateNoOwner": "no owner set",
       "duplicateLocationLabel": "Location:",
@@ -332,7 +341,6 @@
         "save": "Save",
         "cancel": "Cancel",
         "placeholder": "Write a short, spoiler-free presentation…",
-        "aiUnavailable": "AI generation is not configured.",
         "generated": "Presentation generated.",
         "saved": "Presentation saved."
       },
@@ -383,6 +391,7 @@
         "noRecordNote": "This copy has no bibliographic record, so title/author can't be edited here.",
         "otherAuthors": "Other authors",
         "separateCommas": "Separate with commas",
+        "suggestTagsButton": "Suggest tags",
         "sharedNote": "These fields are shared by every copy of this book.",
         "thisCopy": "This copy",
         "purchasePrice": "Purchase price",
@@ -538,7 +547,22 @@
     "editModalTitle": "Edit user",
     "roleLabel": "Role",
     "activeLabel": "Active",
-    "editSelfNote": "You can't change your own role or active status."
+    "editSelfNote": "You can't change your own role or active status.",
+    "pendingInviteLabel": "Invite pending",
+    "resendInviteButton": "Resend invite",
+    "resendInviteSent": "Invite resent.",
+    "resendInviteFailed": "Couldn't resend the invite.",
+    "lastAdminTooltip": "You can't do this: they're the family's only active admin.",
+    "bookCount_one": "{{count}} book",
+    "bookCount_other": "{{count}} books",
+    "reactivateButton": "Reactivate",
+    "reactivated": "User reactivated.",
+    "reactivateFailed": "Couldn't reactivate user.",
+    "deleteReassignTitle": "Reassign their books first",
+    "deleteReassignMessage": "{{name}} owns {{count}} book(s). Choose who should get them before removing this member.",
+    "deleteReassignSelectLabel": "Reassign to",
+    "deleteReassignNoOwner": "No one (leave unassigned)",
+    "deleteReassignButton": "Reassign and remove"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -554,10 +578,9 @@
     "recentlyAddedTitle": "Recently added",
     "ownedByMemberTitle": "Books owned per member",
     "readByMemberTitle": "Books read per member",
-    "unreadByAnyoneTitle": "Unread by anyone",
-    "bookLabel": "book",
-    "booksLabel": "books",
-    "unreadByAnyoneDesc": "no member has read yet",
+    "unreadInsightOne": "book no one in the family has opened yet",
+    "unreadInsightMany": "books no one in the family has opened yet",
+    "unreadInsightCta": "See which",
     "readingGoalsTitle": "Reading goals",
     "goalBooksLabel": "books",
     "currentlyReadingTitle": "Currently reading",
@@ -569,7 +592,16 @@
     "onLoanViewAll": "View all",
     "nextReadTitle": "What to read next?",
     "nextReadEmpty": "No books in your to-read list",
-    "nextReadShuffle": "Another one",
+    "nextReadShuffle": "I'm feeling lucky",
+    "recommendationsBadge": "AI",
+    "recommendationsTitle": "Recommended for you",
+    "recommendationsPrompt": "Ask the AI to suggest a book tailored to your reading history.",
+    "recommendationsAskButton": "Ask for a pick",
+    "recommendationsLoading": "Thinking… this can take a few seconds.",
+    "recommendationsEmpty": "No suggestions right now — try again later.",
+    "recommendationsLike": "I'm interested",
+    "recommendationsDislike": "Not interested",
+    "recommendationsFeedbackSaved": "Preference saved.",
     "familyFavoritesTitle": "Family favorites",
     "familyFavoritesEmpty": "No book has been read by more than one member yet",
     "familyFavoritesReadBy": "members"

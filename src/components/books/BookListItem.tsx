@@ -21,7 +21,9 @@ export function BookListItem({
   const title = record?.title ?? "Untitled";
   const author = record?.main_author;
   const reader = useReaderName(book.reading_status === "reading" ? book.current_reader_id : null);
-  const readBy = book.reading_status === "read" && readers && readers.length > 0 ? readers.join(", ") : null;
+  // Independent of book.reading_status (that's this copy's own state) — shows
+  // whichever family members have personally finished this book.
+  const readBy = readers && readers.length > 0 ? readers.join(", ") : null;
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-brand-soft">

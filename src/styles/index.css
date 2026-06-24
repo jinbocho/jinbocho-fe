@@ -139,4 +139,20 @@ html.theme-sumi.dark {
   :focus-visible {
     @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-paper;
   }
+
+  /* Required class for the Material Symbols variable font loaded in
+     index.html — Google's stylesheet only declares the @font-face, not
+     this class. Weight 300 (light) and FILL 0 are set as the font's
+     default axis values via the index.html link, so no per-icon override
+     is needed. */
+  .material-symbols-outlined {
+    font-family: "Material Symbols Outlined";
+    font-style: normal;
+    line-height: 1;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+  }
 }

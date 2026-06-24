@@ -11,6 +11,8 @@ import {
   useIncipit,
   useSetIncipit,
 } from "@/features/records/hooks";
+import { useAiUsable } from "@/features/system/hooks";
+import { isAiFeatureDisabledError } from "@/lib/api";
 import type { BibliographicRecord } from "@/types/api";
 
 function sourceLabel(source: string | null, t: (key: string) => string): string {
@@ -31,6 +33,7 @@ export function BookPresentation({
   const incipit = useIncipit(record.id);
   const setIncipit = useSetIncipit();
   const generateAI = useGenerateIncipitAI();
+  const aiUsable = useAiUsable();
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -39,18 +42,22 @@ export function BookPresentation({
   const busy = setIncipit.isPending || generateAI.isPending;
 
   async function handleGenerate() {
-    const result = await generateAI.mutateAsync({
-      title: record.title,
-      main_author: record.main_author,
-      genre: record.genre,
-      language: record.language,
-    });
-    if (!result.text) {
-      toast.show(t("books.detail.presentation.aiUnavailable"), "info");
-      return;
+    try {
+      const result = await generateAI.mutateAsync({
+        title: record.title,
+        main_author: record.main_author,
+        genre: record.genre,
+        language: record.language,
+      });
+      if (!result.text) {
+        toast.error(t("common.defaultErrorMessage"));
+        return;
+      }
+      await setIncipit.mutateAsync({ id: record.id, text: result.text, source: "ai" });
+      toast.success(t("books.detail.presentation.generated"));
+    } catch (err) {
+      toast.error(isAiFeatureDisabledError(err) ? t("common.aiFeatureNotEnabled") : t("common.defaultErrorMessage"));
     }
-    await setIncipit.mutateAsync({ id: record.id, text: result.text, source: "ai" });
-    toast.success(t("books.detail.presentation.generated"));
   }
 
   async function handleSaveManual() {
@@ -102,7 +109,7 @@ export function BookPresentation({
           )}
           {canEdit && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {!text && (
+              {!text && aiUsable && (
                 <Button size="sm" variant="secondary" onClick={handleGenerate} disabled={busy} loading={generateAI.isPending}>
                   {generateAI.isPending
                     ? t("books.detail.presentation.generating")

@@ -252,14 +252,8 @@ export function useBookReads(bookId: string | undefined) {
 export function useMarkBookRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ bookId, userId }: { bookId: string; userId: string }) => {
-      const read = await api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>();
-      // Marking a read implies the book itself is now "read".
-      await api.post(`${BOOKS}/${bookId}/reading-status`, {
-        searchParams: { reading_status: "read" satisfies ReadingStatus },
-      });
-      return read;
-    },
+    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
+      api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>(),
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookReadKeys.family });
@@ -272,16 +266,8 @@ export function useMarkBookRead() {
 export function useUnmarkBookRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ bookId, userId }: { bookId: string; userId: string }) => {
-      await api.delete(`${BOOKS}/${bookId}/reads/${userId}`);
-      const remaining = await api.get(`${BOOKS}/${bookId}/reads`).json<BookRead[]>();
-      if (remaining.length === 0) {
-        // No one has read it anymore — the book itself is unread again.
-        await api.post(`${BOOKS}/${bookId}/reading-status`, {
-          searchParams: { reading_status: "to_read" satisfies ReadingStatus },
-        });
-      }
-    },
+    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
+      api.delete(`${BOOKS}/${bookId}/reads/${userId}`),
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookReadKeys.family });

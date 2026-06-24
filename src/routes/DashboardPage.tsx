@@ -2,27 +2,27 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { AiPickCard } from "@/components/books/AiPickCard";
 import { BookCover } from "@/components/ui/BookCover";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { NextToReadCard } from "@/components/books/NextToReadCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useLibraryStats } from "@/features/stats/useLibraryStats";
-import { sortLoansByDueDate, useActiveLoans, useBookViews } from "@/features/books/hooks";
+import { sortLoansByDueDate, useActiveLoans, useBookViews, useFamilyReads } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { formatDate, genreLabel, loanUrgency, LOAN_URGENCY_CLASS, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
-import type { ReadingStatus } from "@/types/api";
-
-const STATUS_ORDER: ReadingStatus[] = ["to_read", "reading", "read"];
+import { formatDate, loanUrgency, LOAN_URGENCY_CLASS, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
 
 export function DashboardPage() {
   const { t } = useTranslation();
   const { data, isLoading } = useLibraryStats();
   const loans = useActiveLoans();
   const bookViews = useBookViews();
+  const reads = useFamilyReads();
   const users = useUsers();
   const role = useAuthStore((s) => s.user?.role);
   const myId = useAuthStore((s) => s.user?.id);
@@ -38,6 +38,7 @@ export function DashboardPage() {
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
+        <Skeleton className="mt-3 h-16" />
       </>
     );
   }
@@ -65,8 +66,15 @@ export function DashboardPage() {
   const userMap = new Map((users.data ?? []).map((u) => [u.id, u]));
   const bookViewMap = new Map(bookViews.data.map((v) => [v.book.id, v]));
   const activeLoans = sortLoansByDueDate((loans.data ?? []).filter((l) => !l.returned_at));
-  const toRead = data.toReadBooks;
-  const pick = toRead.length > 0 ? toRead[pickSeed % toRead.length] : null;
+
+  // "Feeling lucky" draws from books the CURRENT user personally hasn't read —
+  // not the shared OwnedBook.reading_status field, which reflects whoever set
+  // it last and says nothing about this specific member's own history.
+  const myReadBookIds = new Set(
+    (reads.data ?? []).filter((r) => r.user_id === myId).map((r) => r.owned_book_id),
+  );
+  const unreadByMe = bookViews.data.filter((v) => !myReadBookIds.has(v.book.id) && v.record);
+  const pick = unreadByMe.length > 0 ? unreadByMe[pickSeed % unreadByMe.length] ?? null : null;
 
   function readerLabel(readerId: string | null): string | null {
     if (!readerId) return null;
@@ -90,15 +98,40 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label={t("dashboard.totalBooksLabel")} value={data.total} />
-        {STATUS_ORDER.map((s) => (
-          <StatCard
-            key={s}
-            label={readingStatusLabel(s, t)}
-            value={data.byStatus[s]}
-            tone={READING_STATUS_CLASS[s]}
-          />
-        ))}
+        <StatCard
+          label={readingStatusLabel("to_read", t)}
+          value={data.byStatus.to_read}
+          tone={READING_STATUS_CLASS.to_read}
+        />
+        <StatCard
+          label={readingStatusLabel("reading", t)}
+          value={data.byStatus.reading}
+          tone={READING_STATUS_CLASS.reading}
+        />
+        <StatCard
+          label={readingStatusLabel("read", t)}
+          value={data.byStatus.read}
+          tone={READING_STATUS_CLASS.read}
+        />
       </div>
+
+      {/* Distinct from the tiles above on purpose: this is a family-wide insight
+          (derived from everyone's BookRead history), not another book-status count —
+          a bare number tile next to "Read" invited reading it as the same kind of
+          thing ("read by me" vs "read by anyone"). */}
+      <Link
+        to="/stats/books?filter=unread"
+        className="mt-3 flex items-center justify-between gap-4 rounded-lg border border-line bg-surface p-4 shadow-card transition-colors hover:bg-paper"
+      >
+        <div className="flex items-center gap-3">
+          <span aria-hidden="true" className="text-2xl">🌑</span>
+          <p className="text-sm text-ink">
+            <span className="font-display text-lg font-semibold">{data.unreadByAnyone}</span>{" "}
+            {data.unreadByAnyone === 1 ? t("dashboard.unreadInsightOne") : t("dashboard.unreadInsightMany")}
+          </p>
+        </div>
+        <span className="shrink-0 text-sm font-medium text-brand">{t("dashboard.unreadInsightCta")} →</span>
+      </Link>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Currently Reading */}
@@ -169,6 +202,12 @@ export function DashboardPage() {
           )}
         </Card>
 
+        {/* AI picks — separate, manually-triggered card; never fetched automatically */}
+        <AiPickCard />
+
+        {/* What to read next — random pick + "I'm feeling lucky" */}
+        <NextToReadCard pick={pick} onShuffle={() => setPickSeed(Math.floor(Math.random() * 1000))} />
+
         {/* Recently Added */}
         <Card className="min-w-0 p-5">
           <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.recentlyAddedTitle")}</h2>
@@ -188,50 +227,6 @@ export function DashboardPage() {
               </li>
             ))}
           </ul>
-        </Card>
-
-        {/* What to read next */}
-        <Card className="min-w-0 p-5">
-          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.nextReadTitle")}</h2>
-          {pick ? (
-            <div className="flex gap-4">
-              <BookCover url={pick.record?.cover_url} title={pick.record?.title} className="h-28 w-20 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <Link to={`/books/${pick.book.id}`} className="block font-medium leading-snug text-ink hover:text-brand">
-                  {pick.record?.title ?? t("common.untitled")}
-                </Link>
-                {pick.record?.main_author && (
-                  <p className="mt-1 text-sm text-ink-soft">{pick.record.main_author}</p>
-                )}
-                {pick.record?.genre && (
-                  <p className="mt-1 text-xs text-ink-soft/70">{genreLabel(pick.record.genre, t)}</p>
-                )}
-                <button
-                  onClick={() => setPickSeed(Math.floor(Math.random() * 1000))}
-                  className="mt-3 text-xs text-brand hover:underline"
-                >
-                  🎲 {t("dashboard.nextReadShuffle")}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-ink-soft">{t("dashboard.nextReadEmpty")}</p>
-          )}
-        </Card>
-
-        {/* Unread by anyone */}
-        <Card className="min-w-0 p-5">
-          <h2 className="mb-2 font-display text-lg font-semibold">{t("dashboard.unreadByAnyoneTitle")}</h2>
-          <Link
-            to="/stats/books?filter=unread"
-            className="block font-display text-3xl font-semibold text-amber hover:underline"
-          >
-            {data.unreadByAnyone}
-          </Link>
-          <p className="mt-1 text-sm text-ink-soft">
-            {data.unreadByAnyone === 1 ? t("dashboard.bookLabel") : t("dashboard.booksLabel")}{" "}
-            {t("dashboard.unreadByAnyoneDesc")}
-          </p>
         </Card>
 
         {/* Family Favorites */}
@@ -295,9 +290,9 @@ export function DashboardPage() {
   );
 }
 
-function StatCard({ label, value, tone }: { label: string; value: number; tone?: string }) {
-  return (
-    <Card className="p-4">
+function StatCard({ label, value, tone, to }: { label: string; value: number; tone?: string; to?: string }) {
+  const content = (
+    <>
       <p className="text-sm text-ink-soft">{label}</p>
       <p className={`mt-1 font-display text-2xl font-semibold ${tone ? "" : "text-ink"}`}>
         {tone ? (
@@ -306,6 +301,19 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone?:
           value
         )}
       </p>
-    </Card>
+    </>
   );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="block rounded-lg border border-line bg-surface p-4 shadow-card transition-colors hover:bg-paper"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <Card className="p-4">{content}</Card>;
 }

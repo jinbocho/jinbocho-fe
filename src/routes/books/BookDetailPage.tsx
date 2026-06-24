@@ -30,10 +30,12 @@ import {
   useUpdateBook,
   useUpdateBookPosition,
 } from "@/features/books/hooks";
-import { useRecord, useUpdateRecord } from "@/features/records/hooks";
+import { useRecord, useSuggestTags, useUpdateRecord } from "@/features/records/hooks";
 import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
+import { useAiUsable } from "@/features/system/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
+import { isAiFeatureDisabledError } from "@/lib/api";
 import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
 
@@ -49,6 +51,7 @@ export function BookDetailPage() {
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = role === "admin" || role === "editor";
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const book = useBook(id);
   const record = useRecord(book.data?.bibliographic_record_id);
@@ -219,7 +222,7 @@ export function BookDetailPage() {
                       </span>
                     )}
                   </span>
-                  {canEdit && (
+                  {u.id === currentUserId && (
                     <button
                       type="button"
                       className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-medium transition-colors ${
@@ -333,8 +336,11 @@ function EditBookModal({
   const updateRecord = useUpdateRecord();
   const users = useUsers();
   const toast = useToast();
+  const suggestTags = useSuggestTags();
+  const aiUsable = useAiUsable();
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
 
-  const { register, handleSubmit } = useForm<EditForm>({
+  const { register, handleSubmit, watch, setValue } = useForm<EditForm>({
     defaultValues: {
       title: record?.title ?? "",
       main_author: record?.main_author ?? "",
@@ -393,6 +399,31 @@ function EditBookModal({
   });
 
   const saving = updateBook.isPending || updateRecord.isPending;
+
+  async function handleSuggestTags() {
+    if (!record) return;
+    try {
+      const result = await suggestTags.mutateAsync({
+        bibliographic_record_id: record.id,
+        title: watch("title").trim() || record.title,
+        main_author: watch("main_author").trim() || null,
+        genre: watch("genre").trim() || null,
+      });
+      if (result.tags.length === 0) {
+        toast.error(t("common.defaultErrorMessage"));
+        return;
+      }
+      setSuggestedTags(result.tags);
+    } catch (err) {
+      toast.error(isAiFeatureDisabledError(err) ? t("common.aiFeatureNotEnabled") : t("common.defaultErrorMessage"));
+    }
+  }
+
+  function addSuggestedTag(tag: string) {
+    const current = splitCsv(watch("tags"));
+    if (current.includes(tag)) return;
+    setValue("tags", [...current, tag].join(", "));
+  }
 
   return (
     <Modal
@@ -453,7 +484,39 @@ function EditBookModal({
               {...register("owner_id")}
             />
           </div>
-          <Input label={t("books.detail.editSection.tags")} hint={t("books.detail.editSection.separateCommas")} {...register("tags")} />
+          <div className="space-y-2">
+            <Input
+              label={t("books.detail.editSection.tags")}
+              hint={t("books.detail.editSection.separateCommas")}
+              {...register("tags")}
+            />
+            {aiUsable && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={!record}
+                loading={suggestTags.isPending}
+                onClick={handleSuggestTags}
+              >
+                {t("books.detail.editSection.suggestTagsButton")}
+              </Button>
+            )}
+            {suggestedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => addSuggestedTag(tag)}
+                    className="rounded-full bg-paper px-2.5 py-0.5 text-xs text-ink-soft transition-colors hover:bg-brand/10 hover:text-brand"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Textarea label={t("books.detail.notes")} rows={3} {...register("notes")} />
         </section>
       </div>

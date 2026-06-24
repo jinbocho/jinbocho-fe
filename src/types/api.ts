@@ -64,6 +64,8 @@ export interface User {
   language: Lang | null;
   theme_name: "pergamena" | "akabeni" | "sumi" | null;
   theme_mode: "light" | "dark" | "system" | null;
+  /** Null means the user hasn't set their own password yet — invite still pending. */
+  password_set_at: string | null;
 }
 
 export interface UserCreate {
@@ -167,6 +169,51 @@ export interface IncipitGenerateResult {
   model: string | null;
 }
 
+// AI: personalized "what to read next" — see features/recommendations/hooks.ts.
+// Each member carries their own unread_catalog (books that specific member hasn't
+// read yet) — a book already read by one family member can still be a valid
+// candidate for another, so there is no single family-wide catalog.
+export interface RecommendationCatalogItem {
+  owned_book_id: string;
+  title: string;
+  main_author: string | null;
+  genre: string | null;
+}
+
+export interface RecommendationMemberInput {
+  user_id: string;
+  favorite_genres: string[];
+  recently_read_titles: string[];
+  unread_catalog: RecommendationCatalogItem[];
+}
+
+export interface RecommendationsRequest {
+  members: RecommendationMemberInput[];
+}
+
+export interface BookRecommendation {
+  suggestion_id: string | null;
+  owned_book_id: string;
+  user_id: string;
+  reason: string;
+}
+
+export interface RecommendationsResponse {
+  recommendations: BookRecommendation[];
+}
+
+// AI: tag suggestions for a book — see useSuggestTags in features/records/hooks.ts.
+export interface TagSuggestionRequest {
+  bibliographic_record_id: string;
+  title: string;
+  main_author?: string | null;
+  genre?: string | null;
+}
+
+export interface TagSuggestionResult {
+  tags: string[];
+}
+
 export interface BibliographicRecord {
   id: string;
   family_id: string;
@@ -251,7 +298,7 @@ export interface OwnedBookCreate {
 // where, letting the user decide whether to add a separate copy anyway.
 export interface DuplicateBookConflict {
   error: "duplicate_book";
-  conflict_type: "isbn_match" | "title_author_match";
+  conflict_type: "isbn_match" | "title_author_match" | "fuzzy_match";
   existing_book_id: string;
   existing_record_id: string;
   title: string;
@@ -262,6 +309,10 @@ export interface DuplicateBookConflict {
   existing_bookcase_id: string | null;
   existing_section_id: string | null;
   existing_shelf_id: string | null;
+  // Set only for conflict_type "fuzzy_match" when the ambiguous-band AI judge
+  // ran (null for isbn/title-author matches, and for a fuzzy match confident
+  // enough to skip the AI call entirely).
+  match_reason: string | null;
 }
 
 export interface OwnedBookUpdate {
@@ -589,4 +640,22 @@ export interface ImportFullLibraryResponse {
   book_reads_imported: number;
   book_loans_imported: number;
   book_history_imported: number;
+}
+
+// ----- System -----
+
+// GET /health on the gateway — unauthenticated, used by the FE to detect
+// whether this installation has the "ai" module enabled at all (Community
+// vs Pro edition), distinct from whether an LLM is actually configured.
+export interface SystemHealth {
+  status: string;
+  service: string;
+  features: string[];
+}
+
+// GET /v1/ai/status on the gateway (proxied to ai-service) — whether an LLM
+// is actually configured, distinct from whether the "ai" module itself is
+// licensed/enabled (see SystemHealth.features).
+export interface AiStatus {
+  llm_enabled: boolean;
 }

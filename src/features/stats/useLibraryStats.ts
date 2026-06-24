@@ -36,7 +36,6 @@ export interface LibraryStats {
   topAuthors: { author: string; count: number }[];
   recentlyAdded: BookView[];
   currentlyReading: BookView[];
-  toReadBooks: BookView[];
   sharedFavorites: SharedFavorite[];
   ownedByMember: MemberCount[];
   readByMember: MemberCount[];
@@ -170,7 +169,6 @@ export function computeLibraryStats(
     .map(([author, count]) => ({ author, count }));
 
   const currentlyReading = views.filter((v) => v.book.reading_status === "reading");
-  const toReadBooks = views.filter((v) => v.book.reading_status === "to_read");
 
   const readUsersByBook = new Map<string, Set<string>>();
   for (const r of reads) {
@@ -184,7 +182,7 @@ export function computeLibraryStats(
     .sort((a, b) => b.readCount - a.readCount)
     .slice(0, 5);
 
-  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, toReadBooks, sharedFavorites, ownedByMember, readByMember, favoriteGenreByMember, unreadByAnyone, goalProgress };
+  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, sharedFavorites, ownedByMember, readByMember, favoriteGenreByMember, unreadByAnyone, goalProgress };
 }
 
 // The backend has no stats endpoint — derive everything from loaded data.

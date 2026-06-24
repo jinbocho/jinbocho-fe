@@ -1,4 +1,4 @@
-import ky, { type KyInstance, type KyRequest } from "ky";
+import ky, { HTTPError, type KyInstance, type KyRequest } from "ky";
 
 import { authStore, useAuthStore } from "@/features/auth/store";
 import { decodeJwt, isExpired } from "@/lib/jwt";
@@ -94,3 +94,19 @@ export const api: KyInstance = ky.create({
     ],
   },
 });
+
+// The gateway gates every v1/ai/* route behind a feature flag and returns a
+// plain 403 (not 401) when it's off — distinct from a "you lack permission"
+// 403, since v1/ai/* never issues those for any other reason. Callers use
+// this to show "AI isn't enabled" instead of a generic error toast.
+export function isAiFeatureDisabledError(err: unknown): boolean {
+  return err instanceof HTTPError && err.response.status === 403;
+}
+
+// LLM-backed endpoints (recommendations, incipit, tags) can legitimately take
+// several seconds — recommendations scale with family size, since one call
+// covers every member. ky's default is 10s, which a multi-member family can
+// exceed: the client then aborts and discards the response, even though the
+// backend goes on to finish (and persist) it seconds later. 30s matches the
+// gateway's own upstream read timeout, so the two budgets agree.
+export const AI_REQUEST_TIMEOUT_MS = 30_000;
