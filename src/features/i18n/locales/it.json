@@ -463,7 +463,10 @@
     "clearFilters": "Rimuovi filtri",
     "markReturnedAction": "Rientrato",
     "returnSuccess": "Segnato come restituito.",
-    "returnFailed": "Impossibile aggiornare il prestito."
+    "returnFailed": "Impossibile aggiornare il prestito.",
+    "historyTitle": "Storico prestiti",
+    "noHistory": "Nessun prestito restituito finora.",
+    "returnedOn": "Restituito"
   },
   "locations": {
     "title": "Stanze e scaffali",

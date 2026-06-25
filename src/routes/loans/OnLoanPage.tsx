@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { useAuthStore } from "@/features/auth/store";
-import { sortLoansByDueDate, useActiveLoans, useBookViews, useReturnBook } from "@/features/books/hooks";
+import { sortLoansByDueDate, useActiveLoans, useAllLoans, useBookViews, useReturnBook } from "@/features/books/hooks";
 import { formatDate, loanUrgency, LOAN_URGENCY_CLASS, type LoanUrgency } from "@/lib/format";
 
 export function OnLoanPage() {
@@ -24,6 +24,7 @@ export function OnLoanPage() {
   const canEdit = role === "admin" || role === "editor";
 
   const loans = useActiveLoans();
+  const allLoans = useAllLoans();
   const books = useBookViews();
   const returnBook = useReturnBook();
 
@@ -56,6 +57,17 @@ export function OnLoanPage() {
     () => items.filter(({ loan }) => loanUrgency(loan.due_date) === "overdue").length,
     [items],
   );
+
+  const returnedItems = useMemo(() => {
+    if (!allLoans.data || !books.data) return [];
+    return allLoans.data
+      .filter((loan) => loan.returned_at !== null)
+      .sort((a, b) => new Date(b.returned_at!).getTime() - new Date(a.returned_at!).getTime())
+      .map((loan) => ({
+        loan,
+        view: books.data.find((v) => v.book.id === loan.owned_book_id) ?? null,
+      }));
+  }, [allLoans.data, books.data]);
 
   const isLoading = loans.isLoading || books.isLoading;
   const isError = loans.isError || books.isError;
@@ -193,6 +205,50 @@ export function OnLoanPage() {
                   </li>
                 );
               })}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {!isLoading && (
+        <div className="mt-8">
+          <h2 className="mb-3 text-sm font-medium text-ink-soft">{t("loans.historyTitle")}</h2>
+          {allLoans.isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-20" />
+              ))}
+            </div>
+          ) : returnedItems.length === 0 ? (
+            <p className="text-sm text-ink-soft">{t("loans.noHistory")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {returnedItems.map(({ loan, view }) => (
+                <li key={loan.id}>
+                  <Card className="flex items-center gap-3 p-3">
+                    <BookCover
+                      url={view?.record?.cover_url}
+                      title={view?.record?.title}
+                      className="h-16 w-12 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to={`/books/${loan.owned_book_id}`}
+                        className="block truncate font-medium text-ink hover:text-brand"
+                      >
+                        {view?.record?.title ?? "Untitled"}
+                      </Link>
+                      {view?.record?.main_author && (
+                        <p className="truncate text-sm text-ink-soft">{view.record.main_author}</p>
+                      )}
+                      <p className="mt-0.5 text-sm text-ink-soft">📤 {loan.borrower_name}</p>
+                      <p className="text-xs text-ink-soft">
+                        {t("loans.since")} {formatDate(loan.loaned_at)} · {t("loans.returnedOn")} {formatDate(loan.returned_at!)}
+                      </p>
+                    </div>
+                  </Card>
+                </li>
+              ))}
             </ul>
           )}
         </div>

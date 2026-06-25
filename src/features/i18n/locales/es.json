@@ -463,7 +463,10 @@
     "clearFilters": "Quitar filtros",
     "markReturnedAction": "Recuperado",
     "returnSuccess": "Marcado como devuelto.",
-    "returnFailed": "No se pudo actualizar el préstamo."
+    "returnFailed": "No se pudo actualizar el préstamo.",
+    "historyTitle": "Historial de préstamos",
+    "noHistory": "Todavía no hay préstamos devueltos.",
+    "returnedOn": "Devuelto"
   },
   "locations": {
     "title": "Habitaciones y estanterías",

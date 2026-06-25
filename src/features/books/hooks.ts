@@ -281,6 +281,7 @@ export function useUnmarkBookRead() {
 
 export const bookLoanKeys = {
   active: ["books", "loans", "active"] as const,
+  all: ["books", "loans", "all"] as const,
   book: (id: string) => ["books", "loans", "book", id] as const,
 };
 
@@ -302,6 +303,14 @@ export function useActiveLoans() {
   });
 }
 
+// All loans for the family, active and returned — powers the loan-history section.
+export function useAllLoans() {
+  return useQuery({
+    queryKey: bookLoanKeys.all,
+    queryFn: () => api.get(`${BOOKS}/loans/all`).json<BookLoan[]>(),
+  });
+}
+
 export function useBookLoans(bookId: string | undefined) {
   return useQuery({
     queryKey: bookLoanKeys.book(bookId ?? ""),
@@ -318,6 +327,7 @@ export function useLendBook() {
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookLoanKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookLoanKeys.active });
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.all });
       void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
     },
   });
@@ -331,6 +341,7 @@ export function useReturnBook() {
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookLoanKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookLoanKeys.active });
+      void qc.invalidateQueries({ queryKey: bookLoanKeys.all });
       void qc.invalidateQueries({ queryKey: bookKeys.detail(bookId) });
     },
   });

@@ -463,7 +463,10 @@
     "clearFilters": "Clear filters",
     "markReturnedAction": "Got it back",
     "returnSuccess": "Marked as returned.",
-    "returnFailed": "Couldn't update the loan."
+    "returnFailed": "Couldn't update the loan.",
+    "historyTitle": "Loan history",
+    "noHistory": "No returned loans yet.",
+    "returnedOn": "Returned"
   },
   "locations": {
     "title": "Rooms & shelves",

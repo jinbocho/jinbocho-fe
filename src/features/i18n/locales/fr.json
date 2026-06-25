@@ -463,7 +463,10 @@
     "clearFilters": "Effacer les filtres",
     "markReturnedAction": "Récupéré",
     "returnSuccess": "Marqué comme rendu.",
-    "returnFailed": "Impossible de mettre à jour le prêt."
+    "returnFailed": "Impossible de mettre à jour le prêt.",
+    "historyTitle": "Historique des prêts",
+    "noHistory": "Aucun prêt rendu pour le moment.",
+    "returnedOn": "Rendu"
   },
   "locations": {
     "title": "Pièces et étagères",
