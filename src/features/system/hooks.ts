@@ -4,12 +4,12 @@ import { api } from "@/lib/api";
 import { AI } from "@/lib/paths";
 import type { AiStatus, SystemHealth } from "@/types/api";
 
-// Unauthenticated gateway probe — safe to call before login, and not subject
-// to the AI feature-flag middleware (that only guards /v1/ai/*).
+// Authenticated gateway probe — returns enabled feature modules for this
+// installation. Called after login; AppShell is always inside the auth guard.
 export function useSystemHealth() {
   return useQuery({
     queryKey: ["system", "health"],
-    queryFn: () => api.get("health").json<SystemHealth>(),
+    queryFn: () => api.get("v1/status").json<SystemHealth>(),
     staleTime: Infinity,
     retry: false,
   });

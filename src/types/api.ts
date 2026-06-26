@@ -644,12 +644,9 @@ export interface ImportFullLibraryResponse {
 
 // ----- System -----
 
-// GET /health on the gateway — unauthenticated, used by the FE to detect
-// whether this installation has the "ai" module enabled at all (Community
-// vs Pro edition), distinct from whether an LLM is actually configured.
+// GET /v1/status on the gateway — authenticated, returns the list of enabled
+// feature modules (e.g. "catalog", "auth", "ai") for the current installation.
 export interface SystemHealth {
-  status: string;
-  service: string;
   features: string[];
 }
 
