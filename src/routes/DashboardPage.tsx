@@ -15,7 +15,9 @@ import { useLibraryStats } from "@/features/stats/useLibraryStats";
 import { sortLoansByDueDate, useActiveLoans, useBookViews, useFamilyReads } from "@/features/books/hooks";
 import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
+import { useWishlist } from "@/features/wishlist/hooks";
 import { formatDate, loanUrgency, LOAN_URGENCY_CLASS, READING_STATUS_CLASS, readingStatusLabel } from "@/lib/format";
+import { Bookmark, BookOpen, EyeOff } from "lucide-react";
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -24,6 +26,7 @@ export function DashboardPage() {
   const bookViews = useBookViews();
   const reads = useFamilyReads();
   const users = useUsers();
+  const wishlist = useWishlist();
   const role = useAuthStore((s) => s.user?.role);
   const myId = useAuthStore((s) => s.user?.id);
   const canEdit = role === "admin" || role === "editor";
@@ -48,7 +51,7 @@ export function DashboardPage() {
       <>
         <PageHeader title={t("dashboard.title")} />
         <EmptyState
-          icon="📚"
+          icon={<BookOpen size={44} strokeWidth={1.5} />}
           title={t("dashboard.emptyTitle")}
           description={canEdit ? t("dashboard.emptyDescEditor") : t("dashboard.emptyDescViewer")}
           action={
@@ -124,7 +127,7 @@ export function DashboardPage() {
         className="mt-3 flex items-center justify-between gap-4 rounded-lg border border-line bg-surface p-4 shadow-card transition-colors hover:bg-paper"
       >
         <div className="flex items-center gap-3">
-          <span aria-hidden="true" className="text-2xl">🌑</span>
+          <EyeOff size={22} className="shrink-0 text-ink-soft/50" aria-hidden="true" />
           <p className="text-sm text-ink">
             <span className="font-display text-lg font-semibold">{data.unreadByAnyone}</span>{" "}
             {data.unreadByAnyone === 1 ? t("dashboard.unreadInsightOne") : t("dashboard.unreadInsightMany")}
@@ -198,6 +201,38 @@ export function DashboardPage() {
                   </li>
                 );
               })}
+            </ul>
+          )}
+        </Card>
+
+        {/* Wishlist */}
+        <Card className="min-w-0 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">{t("dashboard.wishlistTitle")}</h2>
+            {(wishlist.data?.length ?? 0) > 0 && (
+              <Link to="/wishlist" className="text-xs text-brand hover:underline">
+                {t("dashboard.wishlistViewAll")} →
+              </Link>
+            )}
+          </div>
+          {(wishlist.data?.length ?? 0) === 0 ? (
+            <p className="text-sm text-ink-soft">{t("dashboard.wishlistEmpty")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {(wishlist.data ?? []).slice(0, 5).map((item) => (
+                <li key={item.id} className="flex min-w-0 items-center gap-3">
+                  <BookCover url={item.record.cover_url} title={item.record.title} className="h-12 w-9 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="block truncate font-medium text-ink">{item.record.title}</p>
+                    {item.record.main_author && (
+                      <p className="truncate text-sm text-ink-soft">{item.record.main_author}</p>
+                    )}
+                    <p className="truncate text-xs text-stone">
+                      <span className="inline-flex items-center gap-1"><Bookmark size={11} />{userMap.get(item.user_id)?.full_name ?? "…"}</span>
+                    </p>
+                  </div>
+                </li>
+              ))}
             </ul>
           )}
         </Card>

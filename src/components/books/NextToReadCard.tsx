@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Shuffle } from "lucide-react";
 
 import { BookCover } from "@/components/ui/BookCover";
 import { Card } from "@/components/ui/Card";
@@ -28,8 +29,8 @@ export function NextToReadCard({ pick, onShuffle }: { pick: BookView | null; onS
             {pick.record?.genre && (
               <p className="mt-1 text-xs text-ink-soft/70">{genreLabel(pick.record.genre, t)}</p>
             )}
-            <button onClick={onShuffle} className="mt-3 text-xs text-brand hover:underline">
-              🎲 {t("dashboard.nextReadShuffle")}
+            <button onClick={onShuffle} className="mt-3 inline-flex items-center gap-1 text-xs text-brand hover:underline">
+              <Shuffle size={12} />{t("dashboard.nextReadShuffle")}
             </button>
           </div>
         </div>

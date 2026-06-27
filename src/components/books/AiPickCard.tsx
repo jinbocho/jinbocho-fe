@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { BookCover } from "@/components/ui/BookCover";
 import { Button } from "@/components/ui/Button";
@@ -100,13 +101,13 @@ export function AiPickCard() {
                       label={t("dashboard.recommendationsLike")}
                       onClick={() => react(rec.suggestion_id, true)}
                     >
-                      👍
+                      <ThumbsUp size={15} />
                     </IconButton>
                     <IconButton
                       label={t("dashboard.recommendationsDislike")}
                       onClick={() => react(rec.suggestion_id, false)}
                     >
-                      👎
+                      <ThumbsDown size={15} />
                     </IconButton>
                   </div>
                 )}

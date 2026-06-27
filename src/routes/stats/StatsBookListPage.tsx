@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { SearchX } from "lucide-react";
 
 import { BookListItem } from "@/components/books/BookListItem";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -86,7 +87,7 @@ export function StatsBookListPage() {
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
-          icon="📭"
+          icon={<SearchX size={44} strokeWidth={1.5} />}
           title={t("stats.noMatchesTitle")}
           description={t("stats.noMatchesDescription")}
         />

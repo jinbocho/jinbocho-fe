@@ -1,7 +1,7 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 // import { useRef } from "react"; // re-add when cover OCR scan is resumed
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { LocationPicker, type LocationSelection } from "@/components/locations/LocationPicker";
@@ -16,7 +16,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useAddBookWithDuplicateCheck } from "@/features/books/hooks";
 // import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useUsers } from "@/features/users/hooks";
-import { useCreateRecord } from "@/features/records/hooks";
+import { useCreateRecord, useRecord } from "@/features/records/hooks";
+import { useRemoveFromWishlist } from "@/features/wishlist/hooks";
 import {
   isValidIsbn,
   metadataToRecordDraft,
@@ -38,15 +39,21 @@ const EMPTY_DRAFT: BibliographicRecordCreate = { title: "", other_authors: [] };
 export function AddBookPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const toast = useToast();
   const lookup = useIsbnLookup();
   const search = useSearchBooks();
   const createRecord = useCreateRecord();
   const addBook = useAddBookWithDuplicateCheck();
+  const removeFromWishlist = useRemoveFromWishlist();
   // const extractCover = useExtractBookCover(); // OCR paused
 
   const users = useUsers();
   // const fileInputRef = useRef<HTMLInputElement>(null); // OCR paused
+
+  const prefilledRecordId = searchParams.get("record_id") ?? undefined;
+  const fromWishlistId = searchParams.get("from_wishlist") ?? undefined;
+  const prefilledRecord = useRecord(prefilledRecordId);
 
   const [tab, setTab] = useState<Tab>("type");
   const [isbn, setIsbn] = useState("");
@@ -57,6 +64,13 @@ export function AddBookPage() {
   const [location, setLocation] = useState<LocationSelection>({});
   const [status, setStatus] = useState<ReadingStatus>("to_read");
   const [ownerId, setOwnerId] = useState<string>("");
+
+  useEffect(() => {
+    if (prefilledRecord.data && draft === null) {
+      const { title, main_author, isbn: recIsbn, publisher, publication_year, genre, cover_url, language, other_authors } = prefilledRecord.data;
+      setDraft({ title, main_author, isbn: recIsbn, publisher, publication_year, genre, cover_url, language, other_authors: other_authors ?? [] });
+    }
+  }, [prefilledRecord.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const form = useForm<BibliographicRecordCreate>({ values: draft ?? EMPTY_DRAFT });
 
@@ -110,12 +124,12 @@ export function AddBookPage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const record = await createRecord.mutateAsync({
+      const recordId = prefilledRecordId ?? (await createRecord.mutateAsync({
         ...values,
         publication_year: values.publication_year ? Number(values.publication_year) : null,
-      });
+      })).id;
       const book = await addBook.submit({
-        bibliographic_record_id: record.id,
+        bibliographic_record_id: recordId,
         reading_status: status,
         ...(ownerId ? { owner_id: ownerId } : {}),
         ...location,
@@ -123,6 +137,9 @@ export function AddBookPage() {
       // null means a duplicate conflict is pending confirmation in the
       // dialog below — stay on the form until the user resolves it.
       if (book) {
+        if (fromWishlistId) {
+          try { await removeFromWishlist.mutateAsync(fromWishlistId); } catch { /* non-blocking */ }
+        }
         toast.success("Book added.");
         navigate("/books");
       }
@@ -135,6 +152,9 @@ export function AddBookPage() {
     try {
       const book = await addBook.confirmDuplicate();
       if (book) {
+        if (fromWishlistId) {
+          try { await removeFromWishlist.mutateAsync(fromWishlistId); } catch { /* non-blocking */ }
+        }
         toast.success("Book added.");
         navigate("/books");
       }

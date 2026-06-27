@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -141,10 +142,10 @@ const THEME_NAME_OPTIONS: {
   },
 ];
 
-const MODE_OPTIONS: { value: ThemePref; labelKey: string; icon: string }[] = [
-  { value: "light", labelKey: "enums.theme.light", icon: "☀️" },
-  { value: "dark", labelKey: "enums.theme.dark", icon: "🌙" },
-  { value: "system", labelKey: "enums.theme.system", icon: "🖥️" },
+const MODE_OPTIONS: { value: ThemePref; labelKey: string; icon: ReactNode }[] = [
+  { value: "light", labelKey: "enums.theme.light", icon: <Sun size={15} /> },
+  { value: "dark", labelKey: "enums.theme.dark", icon: <Moon size={15} /> },
+  { value: "system", labelKey: "enums.theme.system", icon: <Monitor size={15} /> },
 ];
 
 function ThemeSwatch({ colors }: { colors: [string, string, string] }) {

@@ -337,6 +337,32 @@ export interface BookRead {
   read_at: string;
 }
 
+export interface WishlistItem {
+  id: string;
+  family_id: string;
+  user_id: string;
+  bibliographic_record_id: string;
+  added_at: string;
+  notes: string | null;
+  priority: number | null;  // 1=alta, 2=media, 3=bassa
+  record: BibliographicRecord;
+}
+
+export interface WishlistItemCreate {
+  bibliographic_record_id?: string;
+  title?: string;
+  isbn?: string | null;
+  main_author?: string | null;
+  other_authors?: string[];
+  publisher?: string | null;
+  publication_year?: number | null;
+  language?: string | null;
+  genre?: string | null;
+  cover_url?: string | null;
+  notes?: string | null;
+  priority?: number | null;
+}
+
 export interface BookLoan {
   id: string;
   owned_book_id: string;

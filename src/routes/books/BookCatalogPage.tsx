@@ -18,6 +18,7 @@ import { useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useDebounce } from "@/hooks/useDebounce";
 import { genreLabel, READING_STATUSES, readingStatusLabel } from "@/lib/format";
+import { Library } from "lucide-react";
 
 export function BookCatalogPage() {
   const { t } = useTranslation();
@@ -236,7 +237,7 @@ export function BookCatalogPage() {
         </div>
       ) : data.length === 0 ? (
         <EmptyState
-          icon="📚"
+          icon={<Library size={44} strokeWidth={1.5} />}
           title={t("books.catalog.emptyTitle")}
           description={canEdit ? t("books.catalog.emptyDescEditor") : t("books.catalog.emptyDescViewer")}
           action={

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { LogOut, X } from "lucide-react";
 
 import { IconButton } from "@/components/ui/IconButton";
 import { useAiFeatureEnabled } from "@/features/system/hooks";
@@ -9,7 +10,7 @@ import { useAiFeatureEnabled } from "@/features/system/hooks";
 interface NavItem {
   to: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   end?: boolean;
 }
 
@@ -108,7 +109,7 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
             <p className="mt-0.5 text-xs text-ink-soft">{t("common.appSubtitle")}</p>
           </div>
           <IconButton label={t("common.closeMenu")} onClick={onClose}>
-            ✕
+            <X size={18} />
           </IconButton>
         </div>
         <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
@@ -147,7 +148,7 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
               <p className="text-xs capitalize text-ink-soft">{user.role}</p>
             </div>
             <IconButton label={t("common.logout")} loading={loggingOut} onClick={onLogout}>
-              ⏻
+              <LogOut size={16} />
             </IconButton>
           </div>
         )}

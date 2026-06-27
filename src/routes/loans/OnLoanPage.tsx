@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useAuthStore } from "@/features/auth/store";
 import { sortLoansByDueDate, useActiveLoans, useAllLoans, useBookViews, useReturnBook } from "@/features/books/hooks";
 import { formatDate, loanUrgency, LOAN_URGENCY_CLASS, type LoanUrgency } from "@/lib/format";
+import { BookOpen, BookUp } from "lucide-react";
 
 export function OnLoanPage() {
   const { t } = useTranslation();
@@ -105,7 +106,7 @@ export function OnLoanPage() {
         </div>
       ) : items.length === 0 ? (
         <EmptyState
-          icon="📚"
+          icon={<BookOpen size={44} strokeWidth={1.5} />}
           title={t("loans.emptyTitle")}
           description={t("loans.emptyDescription")}
         />
@@ -182,7 +183,7 @@ export function OnLoanPage() {
                         {view?.record?.main_author && (
                           <p className="truncate text-sm text-ink-soft">{view.record.main_author}</p>
                         )}
-                        <p className="mt-0.5 text-sm text-amber">📤 {loan.borrower_name}</p>
+                        <p className="mt-0.5 flex items-center gap-1 text-sm text-amber"><BookUp size={13} />{loan.borrower_name}</p>
                         <p className="text-xs text-ink-soft">{t("loans.since")} {formatDate(loan.loaned_at)}</p>
                         {loan.due_date && (
                           <p className={`text-xs ${LOAN_URGENCY_CLASS[urgency]}`}>
@@ -241,7 +242,7 @@ export function OnLoanPage() {
                       {view?.record?.main_author && (
                         <p className="truncate text-sm text-ink-soft">{view.record.main_author}</p>
                       )}
-                      <p className="mt-0.5 text-sm text-ink-soft">📤 {loan.borrower_name}</p>
+                      <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-soft"><BookUp size={13} />{loan.borrower_name}</p>
                       <p className="text-xs text-ink-soft">
                         {t("loans.since")} {formatDate(loan.loaned_at)} · {t("loans.returnedOn")} {formatDate(loan.returned_at!)}
                       </p>

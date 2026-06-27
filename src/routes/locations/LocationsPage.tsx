@@ -35,6 +35,7 @@ import {
   useUpdateShelf,
 } from "@/features/locations/hooks";
 import type { BookView, OwnedBook } from "@/types/api";
+import { MapPin } from "lucide-react";
 
 // Direct id equality is enough here: every placed book carries room_id,
 // bookcase_id, section_id and shelf_id together (see PositionValidationService
@@ -119,7 +120,7 @@ export function LocationsPage() {
         </div>
       ) : (rooms.data?.length ?? 0) === 0 ? (
         <EmptyState
-          icon="🏠"
+          icon={<MapPin size={44} strokeWidth={1.5} />}
           title={t("locations.emptyTitle")}
           description={t("locations.emptyDescription")}
           action={canEdit && <Button onClick={() => setRoomModal(true)}>{t("locations.emptyAction")}</Button>}

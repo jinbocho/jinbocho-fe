@@ -38,6 +38,7 @@ import { useAuthStore } from "@/features/auth/store";
 import { isAiFeatureDisabledError } from "@/lib/api";
 import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
+import { BookOpen, BookUp } from "lucide-react";
 
 interface HistoryEntry {
   event_type?: string;
@@ -113,8 +114,8 @@ export function BookDetailPage() {
             {r?.main_author && <p className="mt-0.5 text-ink-soft">{r.main_author}</p>}
             <div className="mt-3 flex items-center gap-2">
               <ReadingStatusControl bookId={b.id} status={b.reading_status} />
-              {reader && <span className="text-sm text-amber">📖 {reader}</span>}
-              {activeLoan && <span className="text-sm text-amber">📤 {t("books.detail.onLoanTo")} {activeLoan.borrower_name}</span>}
+              {reader && <span className="inline-flex items-center gap-1 text-sm text-amber"><BookOpen size={14} />{reader}</span>}
+              {activeLoan && <span className="inline-flex items-center gap-1 text-sm text-amber"><BookUp size={14} />{t("books.detail.onLoanTo")} {activeLoan.borrower_name}</span>}
             </div>
             {canEdit && (
               <div className="mt-4 flex flex-wrap gap-2">

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BookOpen, BookUp, Check, MapPin } from "lucide-react";
 
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { BookCover } from "@/components/ui/BookCover";
@@ -35,10 +36,10 @@ export function BookListItem({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-ink">{title}</p>
           {author && <p className="truncate text-sm text-ink-soft">{author}</p>}
-          {roomName && <p className="mt-0.5 truncate text-xs text-stone">📍 {roomName}</p>}
-          {reader && <p className="mt-0.5 truncate text-xs text-amber">📖 {reader}</p>}
-          {readBy && <p className="mt-0.5 truncate text-xs text-sage" title={readBy}>✓ {readBy}</p>}
-          {onLoan && <p className="mt-0.5 truncate text-xs text-amber">📤 In prestito</p>}
+          {roomName && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-stone"><MapPin size={11} className="shrink-0" />{roomName}</p>}
+          {reader && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-amber"><BookOpen size={11} className="shrink-0" />{reader}</p>}
+          {readBy && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-sage" title={readBy}><Check size={11} className="shrink-0" />{readBy}</p>}
+          {onLoan && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-amber"><BookUp size={11} className="shrink-0" />In prestito</p>}
         </div>
       </Link>
       <div className="shrink-0">

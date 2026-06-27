@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BookOpen } from "lucide-react";
 
 interface BookCoverProps {
   url?: string | null;
@@ -28,7 +29,7 @@ export function BookCover({ url, title, className = "h-16 w-12" }: BookCoverProp
       aria-hidden="true"
       className={`grid place-items-center rounded-sm bg-brand/10 text-brand ${className}`}
     >
-      <span className="text-lg">📖</span>
+      <BookOpen size={20} strokeWidth={1.5} />
     </div>
   );
 }

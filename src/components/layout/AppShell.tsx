@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import {
+  BarChart3,
+  BookOpen,
+  BookUp,
+  Bookmark,
+  Home,
+  LogOut,
+  MapPin,
+  Menu,
+  Settings,
+  Users,
+} from "lucide-react";
 
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
 import { IconButton } from "@/components/ui/IconButton";
@@ -34,13 +46,14 @@ export function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const NAV = [
-    { to: "/", label: t("nav.home"), icon: "🏠", end: true },
-    { to: "/books", label: t("nav.books"), icon: "📚" },
-    { to: "/loans", label: t("nav.onLoan"), icon: "📤" },
-    { to: "/locations", label: t("nav.rooms"), icon: "🗄" },
-    { to: "/stats", label: t("nav.stats"), icon: "📊" },
-    { to: "/users", label: t("nav.users"), icon: "👥", adminOnly: true },
-    { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
+    { to: "/", label: t("nav.home"), icon: <Home size={18} />, end: true },
+    { to: "/books", label: t("nav.books"), icon: <BookOpen size={18} /> },
+    { to: "/loans", label: t("nav.onLoan"), icon: <BookUp size={18} /> },
+    { to: "/wishlist", label: t("nav.wishlist"), icon: <Bookmark size={18} /> },
+    { to: "/locations", label: t("nav.rooms"), icon: <MapPin size={18} /> },
+    { to: "/stats", label: t("nav.stats"), icon: <BarChart3 size={18} /> },
+    { to: "/users", label: t("nav.users"), icon: <Users size={18} />, adminOnly: true },
+    { to: "/settings", label: t("nav.settings"), icon: <Settings size={18} /> },
   ];
 
   const items = NAV.filter((i) => !i.adminOnly || user?.role === "admin");
@@ -95,7 +108,7 @@ export function AppShell() {
               <p className="text-xs capitalize text-ink-soft">{user.role}</p>
             </div>
             <IconButton label={t("common.logout")} loading={logout.isPending} onClick={() => logout.mutate()}>
-              ⏻
+              <LogOut size={16} />
             </IconButton>
           </div>
         )}
@@ -109,14 +122,14 @@ export function AppShell() {
             aria-expanded={drawerOpen}
             onClick={() => setDrawerOpen(true)}
           >
-            ☰
+            <Menu size={20} />
           </IconButton>
           <Link to="/" className="inline-flex items-center gap-2 hover:opacity-80">
             <img src="/logo.png" alt="" className="h-7 w-7 rounded-full" />
             <span className="font-display text-lg font-semibold text-brand">{t("common.appName")}</span>
           </Link>
           <IconButton label={t("common.logout")} loading={logout.isPending} onClick={() => logout.mutate()}>
-            ⏻
+            <LogOut size={16} />
           </IconButton>
         </header>
 
