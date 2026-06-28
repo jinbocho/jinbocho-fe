@@ -644,7 +644,16 @@
     "bookLabel": "livre",
     "booksLabel": "livres",
     "noMatchesTitle": "Aucun livre trouvé",
-    "noMatchesDescription": "Aucun livre ne correspond à ce filtre."
+    "noMatchesDescription": "Aucun livre ne correspond à ce filtre.",
+    "pctReadSection": "Bibliothèque lue",
+    "pctReadLabel": "de la bibliothèque a été lu par au moins un membre",
+    "pctReadDone": "lus",
+    "pctReadLeft": "pas encore ouverts",
+    "monthlyPaceSection": "Rythme de lecture (12 derniers mois)",
+    "sharedFavoritesSection": "Favoris de famille",
+    "sharedFavoritesReadBy": "membres",
+    "byLanguageSection": "Par langue",
+    "byDecadeSection": "Par décennie de publication"
   },
   "wishlist": {
     "title": "Liste de souhaits",

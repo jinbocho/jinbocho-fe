@@ -25,7 +25,7 @@ import {
   useIsbnLookup,
   useSearchBooks,
 } from "@/features/records/isbn";
-import { genreSuggestions, READING_STATUSES, readingStatusLabel } from "@/lib/format";
+import { genreOptions, READING_STATUSES, readingStatusLabel } from "@/lib/format";
 import type { BibliographicRecordCreate, ReadingStatus } from "@/types/api";
 
 // Code-split the camera scanner (@zxing is large) — only loaded on the Scan tab.
@@ -354,7 +354,7 @@ export function AddBookPage() {
               <Input label={t("books.add.isbn")} inputMode="numeric" {...form.register("isbn")} />
               <Input label={t("books.add.publisher")} {...form.register("publisher")} />
               <Input label={t("books.add.year")} type="number" {...form.register("publication_year")} />
-              <Input label={t("books.add.genre")} suggestions={genreSuggestions(t)} {...form.register("genre")} />
+              <Select label={t("books.add.genre")} placeholder="—" options={genreOptions(t)} {...form.register("genre")} />
               <Input label={t("books.add.coverUrl")} {...form.register("cover_url")} />
             </div>
           </Card>

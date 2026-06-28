@@ -28,11 +28,19 @@ export interface MemberFavoriteGenre {
   genre: string;
 }
 
+export interface MonthlyPace {
+  year: number;
+  month: number; // 0-indexed (JS Date.getMonth())
+  count: number;
+}
+
 export interface LibraryStats {
   total: number;
   byStatus: Record<ReadingStatus, number>;
   byRoom: { roomId: string | null; roomName: string; count: number }[];
   byGenre: { genre: string; count: number; pct: number }[];
+  byLanguage: { language: string; count: number; pct: number }[];
+  byDecade: { decade: number; count: number }[];
   topAuthors: { author: string; count: number }[];
   recentlyAdded: BookView[];
   currentlyReading: BookView[];
@@ -41,7 +49,9 @@ export interface LibraryStats {
   readByMember: MemberCount[];
   favoriteGenreByMember: MemberFavoriteGenre[];
   unreadByAnyone: number;
+  pctLibraryRead: number;
   goalProgress: GoalProgress[];
+  readingPaceByMonth: MonthlyPace[];
 }
 
 const EMPTY_STATUS: Record<ReadingStatus, number> = {
@@ -62,6 +72,7 @@ export function computeLibraryStats(
   reads: BookRead[],
   users: User[],
   currentYear: number = new Date().getFullYear(),
+  currentMonth: number = new Date().getMonth(),
 ): LibraryStats {
   const roomNames = new Map(rooms.map((r) => [r.id, r.name]));
 
@@ -124,9 +135,11 @@ export function computeLibraryStats(
     },
   );
 
-  // Books not read by any family member.
+  // Books not read by any family member + % of library read.
   const readBookIds = new Set(reads.map((r) => r.owned_book_id));
   const unreadByAnyone = views.filter(({ book }) => !readBookIds.has(book.id)).length;
+  const pctLibraryRead =
+    views.length > 0 ? Math.round((readBookIds.size / views.length) * 100) : 0;
 
   // Annual reading goal progress per member (only members with a goal set).
   const thisYearReads = new Map<string, number>();
@@ -144,6 +157,8 @@ export function computeLibraryStats(
       readThisYear: thisYearReads.get(u.id) ?? 0,
     }));
 
+  const totalForPct = views.length || 1;
+
   // Genre distribution (from bibliographic records).
   const genreCounts = new Map<string, number>();
   for (const { record } of views) {
@@ -151,10 +166,33 @@ export function computeLibraryStats(
       genreCounts.set(record.genre, (genreCounts.get(record.genre) ?? 0) + 1);
     }
   }
-  const totalForPct = views.length || 1;
   const byGenre = [...genreCounts.entries()]
     .sort(([, a], [, b]) => b - a)
     .map(([genre, count]) => ({ genre, count, pct: Math.round((count / totalForPct) * 100) }));
+
+  // Language distribution — normalise to lowercase so "IT", "It", "it" merge.
+  const languageCounts = new Map<string, number>();
+  for (const { record } of views) {
+    if (record?.language) {
+      const lang = record.language.trim().toLowerCase();
+      languageCounts.set(lang, (languageCounts.get(lang) ?? 0) + 1);
+    }
+  }
+  const byLanguage = [...languageCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .map(([language, count]) => ({ language, count, pct: Math.round((count / totalForPct) * 100) }));
+
+  // Publication decade distribution.
+  const decadeCounts = new Map<number, number>();
+  for (const { record } of views) {
+    if (record?.publication_year) {
+      const decade = Math.floor(record.publication_year / 10) * 10;
+      decadeCounts.set(decade, (decadeCounts.get(decade) ?? 0) + 1);
+    }
+  }
+  const byDecade = [...decadeCounts.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([decade, count]) => ({ decade, count }));
 
   // Top 5 authors by number of owned books.
   const authorCounts = new Map<string, number>();
@@ -182,7 +220,39 @@ export function computeLibraryStats(
     .sort((a, b) => b.readCount - a.readCount)
     .slice(0, 5);
 
-  return { total: views.length, byStatus, byRoom, byGenre, topAuthors, recentlyAdded, currentlyReading, sharedFavorites, ownedByMember, readByMember, favoriteGenreByMember, unreadByAnyone, goalProgress };
+  // Books read per month for the last 12 months (including current month).
+  const paceCounts = new Map<string, number>();
+  for (const r of reads) {
+    const d = new Date(r.read_at);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    paceCounts.set(key, (paceCounts.get(key) ?? 0) + 1);
+  }
+  const readingPaceByMonth: MonthlyPace[] = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(currentYear, currentMonth - 11 + i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    return { year: y, month: m, count: paceCounts.get(`${y}-${m}`) ?? 0 };
+  });
+
+  return {
+    total: views.length,
+    byStatus,
+    byRoom,
+    byGenre,
+    byLanguage,
+    byDecade,
+    topAuthors,
+    recentlyAdded,
+    currentlyReading,
+    sharedFavorites,
+    ownedByMember,
+    readByMember,
+    favoriteGenreByMember,
+    unreadByAnyone,
+    pctLibraryRead,
+    goalProgress,
+    readingPaceByMonth,
+  };
 }
 
 // The backend has no stats endpoint — derive everything from loaded data.

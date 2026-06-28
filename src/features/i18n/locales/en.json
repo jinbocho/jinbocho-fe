@@ -644,7 +644,16 @@
     "bookLabel": "book",
     "booksLabel": "books",
     "noMatchesTitle": "No books found",
-    "noMatchesDescription": "No books match this filter."
+    "noMatchesDescription": "No books match this filter.",
+    "pctReadSection": "Library read",
+    "pctReadLabel": "of the library has been read by at least one member",
+    "pctReadDone": "read",
+    "pctReadLeft": "not yet opened",
+    "monthlyPaceSection": "Reading pace (last 12 months)",
+    "sharedFavoritesSection": "Family favorites",
+    "sharedFavoritesReadBy": "members",
+    "byLanguageSection": "By language",
+    "byDecadeSection": "By publication decade"
   },
   "wishlist": {
     "title": "Wishlist",

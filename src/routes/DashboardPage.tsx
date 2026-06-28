@@ -264,62 +264,6 @@ export function DashboardPage() {
           </ul>
         </Card>
 
-        {/* Family Favorites */}
-        <Card className="min-w-0 p-5">
-          <h2 className="mb-4 font-display text-lg font-semibold">{t("dashboard.familyFavoritesTitle")}</h2>
-          {data.sharedFavorites.length === 0 ? (
-            <p className="text-sm text-ink-soft">{t("dashboard.familyFavoritesEmpty")}</p>
-          ) : (
-            <ul className="space-y-3">
-              {data.sharedFavorites.map(({ view, readCount }) => (
-                <li key={view.book.id} className="flex min-w-0 items-center gap-3">
-                  <BookCover url={view.record?.cover_url} title={view.record?.title} className="h-12 w-9 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <Link to={`/books/${view.book.id}`} className="block truncate font-medium text-ink hover:text-brand">
-                      {view.record?.title ?? t("common.untitled")}
-                    </Link>
-                    {view.record?.main_author && (
-                      <p className="truncate text-sm text-ink-soft">{view.record.main_author}</p>
-                    )}
-                  </div>
-                  <span className="shrink-0 text-xs font-medium text-sage">
-                    {readCount} {t("dashboard.familyFavoritesReadBy")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        {/* Reading Goals */}
-        {data.goalProgress.length > 0 && (
-          <Card className="min-w-0 p-5 lg:col-span-2">
-            <h2 className="mb-4 font-display text-lg font-semibold">
-              {t("dashboard.readingGoalsTitle")} {new Date().getFullYear()}
-            </h2>
-            <ul className="space-y-4">
-              {data.goalProgress.map((g) => {
-                const pct = Math.min(100, Math.round((g.readThisYear / g.goal) * 100));
-                return (
-                  <li key={g.userId}>
-                    <div className="mb-1 flex justify-between text-sm">
-                      <span className="text-ink">{g.name}</span>
-                      <span className="text-ink-soft">
-                        {g.readThisYear} / {g.goal} {t("dashboard.goalBooksLabel")} ({pct}%)
-                      </span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-paper">
-                      <div
-                        className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-sage" : "bg-brand"}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
-        )}
       </div>
     </>
   );
