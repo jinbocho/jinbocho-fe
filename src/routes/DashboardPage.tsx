@@ -93,7 +93,7 @@ export function DashboardPage() {
         actions={
           canEdit && (
             <Link to="/books/add">
-              <Button>{t("dashboard.addBookButton")}</Button>
+              <Button size="sm">{t("dashboard.addBookButton")}</Button>
             </Link>
           )
         }

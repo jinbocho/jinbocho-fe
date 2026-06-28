@@ -84,6 +84,14 @@ export function genreLabel(genre: string, t: (key: string) => string): string {
   return (GENRE_CODES as readonly string[]).includes(genre) ? t(`enums.genre.${genre}`) : genre;
 }
 
+// Autocomplete suggestions for the free-text genre field — guides input toward the
+// normalized list without blocking custom values (those get normalized later).
+export function genreSuggestions(t: (key: string) => string): string[] {
+  return GENRE_CODES.filter((g) => g !== "other")
+    .map((g) => t(`enums.genre.${g}`))
+    .sort((a, b) => a.localeCompare(b));
+}
+
 export function bookConditionLabel(
   condition: BookCondition,
   t: (key: string) => string,
