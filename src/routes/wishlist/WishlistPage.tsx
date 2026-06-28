@@ -129,7 +129,7 @@ export function WishlistPage() {
             : `${wishlist.data?.length ?? 0} ${t("wishlist.booksCount")}`
         }
         actions={
-          <Button onClick={() => navigate("/wishlist/add")}>
+          <Button size="sm" onClick={() => navigate("/wishlist/add")}>
             {t("wishlist.addButton")}
           </Button>
         }

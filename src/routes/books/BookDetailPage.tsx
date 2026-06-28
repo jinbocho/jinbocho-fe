@@ -36,7 +36,7 @@ import { useAiUsable } from "@/features/system/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { isAiFeatureDisabledError } from "@/lib/api";
-import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel } from "@/lib/format";
+import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel, genreSuggestions } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
 import { BookOpen, BookUp } from "lucide-react";
 
@@ -460,7 +460,12 @@ function EditBookModal({
             <Input label={t("books.detail.publisher")} disabled={!record} {...register("publisher")} />
             <Input label={t("books.detail.year")} type="number" disabled={!record} {...register("publication_year")} />
             <Input label={t("books.detail.language")} disabled={!record} {...register("language")} />
-            <Input label={t("books.detail.genre")} disabled={!record} {...register("genre")} />
+            <Input
+              label={t("books.detail.genre")}
+              disabled={!record}
+              suggestions={genreSuggestions(t)}
+              {...register("genre")}
+            />
             <Input label={t("books.add.coverUrl")} disabled={!record} {...register("cover_url")} />
           </div>
           {record && (
