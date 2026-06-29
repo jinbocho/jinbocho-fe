@@ -176,7 +176,11 @@
       "title": "Votre profil",
       "annualReadingGoal": "Objectif de lecture annuel",
       "annualReadingGoalHint": "Nombre de livres que vous souhaitez lire cette année",
-      "updated": "Profil mis à jour."
+      "updated": "Profil mis à jour.",
+      "changeAvatar": "Changer la photo",
+      "removeAvatar": "Supprimer la photo",
+      "avatarUploaded": "Photo de profil mise à jour.",
+      "avatarRemoved": "Photo de profil supprimée."
     }
   },
   "enums": {
@@ -262,6 +266,7 @@
       "filterStatuses": "Tous les statuts",
       "filterOwners": "Tous les propriétaires",
       "filterGenres": "Tous les genres",
+      "filterOnLoan": "En prêt",
       "filtersToggle": "Filtres",
       "clearFilters": "Effacer les filtres",
       "clearLocationFilter": "Effacer le filtre de position",
@@ -343,7 +348,10 @@
         "cancel": "Annuler",
         "placeholder": "Rédigez une courte présentation, sans spoilers…",
         "generated": "Présentation générée.",
-        "saved": "Présentation enregistrée."
+        "saved": "Présentation enregistrée.",
+        "overwriteTitle": "Écraser la présentation ?",
+        "overwriteMessage": "L'IA va générer une nouvelle présentation en remplaçant celle existante.",
+        "overwriteConfirm": "Écraser"
       },
       "isbn": "ISBN",
       "publisher": "Éditeur",
@@ -653,7 +661,23 @@
     "sharedFavoritesSection": "Favoris de famille",
     "sharedFavoritesReadBy": "membres",
     "byLanguageSection": "Par langue",
-    "byDecadeSection": "Par décennie de publication"
+    "byDecadeSection": "Par décennie de publication",
+    "ratingsSection": "Avis",
+    "ratingsAverage": "Note moyenne familiale",
+    "ratingsTotal": "avis au total",
+    "ratingsDistribution": "Distribution des notes",
+    "ratingsByMember": "Notes par membre",
+    "ratingsAvgLabel": "Note moy.",
+    "ratingsCountLabel": "Avis",
+    "ratingsByGenre": "Genres les mieux notés",
+    "ratingsUnrated": "Pas encore commentés",
+    "ratingsUnratedEmpty": "Tous les livres ont au moins un avis !",
+    "categoryActivity": "Ce qui se passe",
+    "categoryFamily": "La famille lit",
+    "categoryTastes": "Goûts & Avis",
+    "categoryCollection": "La collection",
+    "currentlyReadingSection": "En lecture actuellement",
+    "currentlyReadingEmpty": "Personne ne lit en ce moment."
   },
   "wishlist": {
     "title": "Liste de souhaits",

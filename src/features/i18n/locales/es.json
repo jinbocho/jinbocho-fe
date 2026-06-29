@@ -176,7 +176,11 @@
       "title": "Tu perfil",
       "annualReadingGoal": "Objetivo de lectura anual",
       "annualReadingGoalHint": "Número de libros que quieres leer este año",
-      "updated": "Perfil actualizado."
+      "updated": "Perfil actualizado.",
+      "changeAvatar": "Cambiar foto",
+      "removeAvatar": "Eliminar foto",
+      "avatarUploaded": "Foto de perfil actualizada.",
+      "avatarRemoved": "Foto de perfil eliminada."
     }
   },
   "enums": {
@@ -262,6 +266,7 @@
       "filterStatuses": "Todos los estados",
       "filterOwners": "Todos los propietarios",
       "filterGenres": "Todos los géneros",
+      "filterOnLoan": "En préstamo",
       "filtersToggle": "Filtros",
       "clearFilters": "Quitar filtros",
       "clearLocationFilter": "Quitar filtro de ubicación",
@@ -653,7 +658,23 @@
     "sharedFavoritesSection": "Favoritos de familia",
     "sharedFavoritesReadBy": "miembros",
     "byLanguageSection": "Por idioma",
-    "byDecadeSection": "Por década de publicación"
+    "byDecadeSection": "Por década de publicación",
+    "ratingsSection": "Opiniones",
+    "ratingsAverage": "Valoración media familiar",
+    "ratingsTotal": "valoraciones en total",
+    "ratingsDistribution": "Distribución de valoraciones",
+    "ratingsByMember": "Valoraciones por miembro",
+    "ratingsAvgLabel": "Val. media",
+    "ratingsCountLabel": "Opiniones",
+    "ratingsByGenre": "Géneros mejor valorados",
+    "ratingsUnrated": "Aún sin valorar",
+    "ratingsUnratedEmpty": "¡Todos los libros tienen al menos una opinión!",
+    "categoryActivity": "Qué está pasando",
+    "categoryFamily": "La familia lee",
+    "categoryTastes": "Gustos & Opiniones",
+    "categoryCollection": "La colección",
+    "currentlyReadingSection": "Leyendo ahora",
+    "currentlyReadingEmpty": "Nadie está leyendo en este momento."
   },
   "wishlist": {
     "title": "Lista de deseos",

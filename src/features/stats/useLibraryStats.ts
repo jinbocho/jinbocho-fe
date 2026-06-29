@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 
 import { useBookViews, useFamilyReads } from "@/features/books/hooks";
+import { useFamilyRatings } from "@/features/ratings/hooks";
 import { useRooms } from "@/features/locations/hooks";
 import { useUsers } from "@/features/users/hooks";
-import type { BookRead, BookView, ReadingStatus, Room, User } from "@/types/api";
+import type { BookRating, BookRead, BookView, ReadingStatus, Room, User } from "@/types/api";
 
 export interface MemberCount {
   userId: string | null;
@@ -34,6 +35,28 @@ export interface MonthlyPace {
   count: number;
 }
 
+export interface MemberRatingStat {
+  userId: string;
+  name: string;
+  count: number;
+  average: number;
+}
+
+export interface GenreRatingStat {
+  genre: string;
+  average: number;
+  count: number;
+}
+
+export interface RatingStats {
+  totalRatings: number;
+  familyAverage: number | null;
+  distribution: Record<string, number>;  // "1".."5"
+  byMember: MemberRatingStat[];
+  byGenre: GenreRatingStat[];    // genres sorted by avg rating desc
+  unrated: BookView[];           // top 5 recently added books with no ratings
+}
+
 export interface LibraryStats {
   total: number;
   byStatus: Record<ReadingStatus, number>;
@@ -52,6 +75,7 @@ export interface LibraryStats {
   pctLibraryRead: number;
   goalProgress: GoalProgress[];
   readingPaceByMonth: MonthlyPace[];
+  ratings: RatingStats | null;
 }
 
 const EMPTY_STATUS: Record<ReadingStatus, number> = {
@@ -65,12 +89,82 @@ function memberName(userId: string | null, users: User[]): string {
   return users.find((u) => u.id === userId)?.full_name ?? "Unknown";
 }
 
+export function computeRatingStats(
+  ratings: BookRating[],
+  views: BookView[],
+  users: User[],
+): RatingStats | null {
+  if (ratings.length === 0) return null;
+
+  const viewByBookId = new Map(views.map((v) => [v.book.id, v]));
+  const nameOf = (userId: string) =>
+    users.find((u) => u.id === userId)?.full_name ?? "Membro famiglia";
+
+  const distribution: Record<string, number> = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 };
+  const sumByBook = new Map<string, { sum: number; count: number }>();
+  const sumByMember = new Map<string, { sum: number; count: number }>();
+
+  for (const r of ratings) {
+    distribution[String(r.rating)] = (distribution[String(r.rating)] ?? 0) + 1;
+
+    const book = sumByBook.get(r.owned_book_id) ?? { sum: 0, count: 0 };
+    book.sum += r.rating;
+    book.count += 1;
+    sumByBook.set(r.owned_book_id, book);
+
+    const member = sumByMember.get(r.user_id) ?? { sum: 0, count: 0 };
+    member.sum += r.rating;
+    member.count += 1;
+    sumByMember.set(r.user_id, member);
+  }
+
+  const totalSum = ratings.reduce((acc, r) => acc + r.rating, 0);
+  const familyAverage = Math.round((totalSum / ratings.length) * 10) / 10;
+
+  const byMember: MemberRatingStat[] = [...sumByMember.entries()]
+    .map(([userId, { sum, count }]) => ({
+      userId,
+      name: nameOf(userId),
+      count,
+      average: Math.round((sum / count) * 10) / 10,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  // Average rating per genre, derived from the genre of each rated book's record.
+  const genreMap = new Map<string, { sum: number; count: number }>();
+  for (const r of ratings) {
+    const genre = viewByBookId.get(r.owned_book_id)?.record?.genre;
+    if (!genre) continue;
+    const entry = genreMap.get(genre) ?? { sum: 0, count: 0 };
+    entry.sum += r.rating;
+    entry.count += 1;
+    genreMap.set(genre, entry);
+  }
+  const byGenre: GenreRatingStat[] = [...genreMap.entries()]
+    .map(([genre, { sum, count }]) => ({
+      genre,
+      average: Math.round((sum / count) * 10) / 10,
+      count,
+    }))
+    .sort((a, b) => b.average - a.average || b.count - a.count);
+
+  // Books with no rating at all — recently added first, capped at 5.
+  const ratedBookIds = new Set(ratings.map((r) => r.owned_book_id));
+  const unrated = views
+    .filter((v) => !ratedBookIds.has(v.book.id))
+    .sort((a, b) => b.book.created_at.localeCompare(a.book.created_at))
+    .slice(0, 5);
+
+  return { totalRatings: ratings.length, familyAverage, distribution, byMember, byGenre, unrated };
+}
+
 // Pure aggregation — exported for testing.
 export function computeLibraryStats(
   views: BookView[],
   rooms: Room[],
   reads: BookRead[],
   users: User[],
+  allRatings: BookRating[] = [],
   currentYear: number = new Date().getFullYear(),
   currentMonth: number = new Date().getMonth(),
 ): LibraryStats {
@@ -252,6 +346,7 @@ export function computeLibraryStats(
     pctLibraryRead,
     goalProgress,
     readingPaceByMonth,
+    ratings: computeRatingStats(allRatings, views, users),
   };
 }
 
@@ -266,15 +361,22 @@ export function useLibraryStats(): {
   const rooms = useRooms();
   const reads = useFamilyReads();
   const users = useUsers();
+  const familyRatings = useFamilyRatings();
 
   const data = useMemo<LibraryStats>(
-    () => computeLibraryStats(books.data, rooms.data ?? [], reads.data ?? [], users.data ?? []),
-    [books.data, rooms.data, reads.data, users.data],
+    () => computeLibraryStats(
+      books.data,
+      rooms.data ?? [],
+      reads.data ?? [],
+      users.data ?? [],
+      familyRatings.data ?? [],
+    ),
+    [books.data, rooms.data, reads.data, users.data, familyRatings.data],
   );
 
   return {
     data,
-    isLoading: books.isLoading || rooms.isLoading || reads.isLoading || users.isLoading,
-    isError: books.isError || rooms.isError || reads.isError || users.isError,
+    isLoading: books.isLoading || rooms.isLoading || reads.isLoading || users.isLoading || familyRatings.isLoading,
+    isError: books.isError || rooms.isError || reads.isError || users.isError || familyRatings.isError,
   };
 }

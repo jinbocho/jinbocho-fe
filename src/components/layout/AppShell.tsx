@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,13 +15,17 @@ import {
 } from "lucide-react";
 
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
+import { Avatar } from "@/components/ui/Avatar";
 import { IconButton } from "@/components/ui/IconButton";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
+import { useFamily } from "@/features/family/hooks";
 import { useLangStore } from "@/features/i18n/store";
 import { useAiFeatureEnabled } from "@/features/system/hooks";
 import { useThemeStore } from "@/features/theme/store";
 import { useCurrentUser } from "@/features/users/hooks";
+import { useActiveLoans } from "@/features/books/hooks";
+import { loanUrgency } from "@/lib/format";
 
 export function AppShell() {
   const { t } = useTranslation();
@@ -41,14 +45,20 @@ export function AppShell() {
     if (me.data?.theme_name) setName(me.data.theme_name);
     if (me.data?.theme_mode) setPref(me.data.theme_mode);
   }, [me.data?.theme_name, me.data?.theme_mode, setName, setPref]);
+  const family = useFamily();
   const logout = useLogout();
   const aiEnabled = useAiFeatureEnabled();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const activeLoans = useActiveLoans();
+  const overdueCount = useMemo(
+    () => (activeLoans.data ?? []).filter((l) => loanUrgency(l.due_date) === "overdue").length,
+    [activeLoans.data],
+  );
 
   const NAV = [
     { to: "/", label: t("nav.home"), icon: <Home size={18} />, end: true },
     { to: "/books", label: t("nav.books"), icon: <BookOpen size={18} /> },
-    { to: "/loans", label: t("nav.onLoan"), icon: <BookUp size={18} /> },
+    { to: "/loans", label: t("nav.onLoan"), icon: <BookUp size={18} />, badge: overdueCount || undefined },
     { to: "/wishlist", label: t("nav.wishlist"), icon: <Bookmark size={18} /> },
     { to: "/locations", label: t("nav.rooms"), icon: <MapPin size={18} /> },
     { to: "/stats", label: t("nav.stats"), icon: <BarChart3 size={18} /> },
@@ -88,6 +98,11 @@ export function AppShell() {
             >
               <span aria-hidden="true" className="text-base">{item.icon}</span>
               {item.label}
+              {item.badge ? (
+                <span className="ml-auto rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  {item.badge}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>
@@ -102,10 +117,16 @@ export function AppShell() {
           </a>
         )}
         {user && (
-          <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-ink">{user.email}</p>
-              <p className="text-xs capitalize text-ink-soft">{user.role}</p>
+          <div className="flex items-center gap-3 border-t border-line px-4 py-3">
+            <Avatar
+              name={me.data?.full_name ?? user.email}
+              src={me.data?.avatar_url}
+              className="h-9 w-9 shrink-0 text-sm"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-ink">{me.data?.full_name ?? user.email}</p>
+              {family.data?.name && <p className="truncate text-xs text-ink-soft">{family.data.name}</p>}
+              <p className="truncate text-xs capitalize text-stone">{user.role}</p>
             </div>
             <IconButton label={t("common.logout")} loading={logout.isPending} onClick={() => logout.mutate()}>
               <LogOut size={16} />
@@ -142,7 +163,13 @@ export function AppShell() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         items={items}
-        user={user}
+        user={user ? {
+          email: user.email,
+          role: user.role,
+          full_name: me.data?.full_name ?? user.email,
+          avatar_url: me.data?.avatar_url ?? null,
+          family_name: family.data?.name ?? null,
+        } : null}
         onLogout={() => logout.mutate()}
         loggingOut={logout.isPending}
       />

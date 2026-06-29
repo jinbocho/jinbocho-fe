@@ -71,6 +71,32 @@ export function useUpdateUser() {
   });
 }
 
+export function useUploadAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return api.post(`${USERS}/me/avatar`, { body: form }).json<User>();
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: userKeys.me });
+      void qc.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
+
+export function useDeleteAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.delete(`${USERS}/me/avatar`),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: userKeys.me });
+      void qc.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
+
 export function useResendInvite() {
   return useMutation({
     mutationFn: (userId: string) => api.post(`${USERS}/${userId}/resend-invite`),

@@ -72,6 +72,7 @@ function user(id: string, name: string, annualGoal?: number): User {
     theme_name: null,
     theme_mode: null,
     password_set_at: null,
+      avatar_url: null,
   };
 }
 

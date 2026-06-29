@@ -4,6 +4,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { BookPresentation } from "@/components/books/BookPresentation";
+import { BookRatingForm } from "@/components/books/BookRatingForm";
+import { BookRatingsList } from "@/components/books/BookRatingsList";
+import { FamilyRatingSummary } from "@/components/books/FamilyRatingSummary";
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
 import { LocationPicker, type LocationSelection } from "@/components/locations/LocationPicker";
 import { BookCover } from "@/components/ui/BookCover";
@@ -31,9 +34,10 @@ import {
   useUpdateBookPosition,
 } from "@/features/books/hooks";
 import { useRecord, useSuggestTags, useUpdateRecord } from "@/features/records/hooks";
-import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
+import { useRooms } from "@/features/locations/hooks";
 import { useAiUsable } from "@/features/system/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
+import { useBookRatings, useBookRatingStats } from "@/features/ratings/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { isAiFeatureDisabledError } from "@/lib/api";
 import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel, genreOptions } from "@/lib/format";
@@ -73,7 +77,10 @@ export function BookDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(false);
+  const [ratingFormOpen, setRatingFormOpen] = useState(false);
+
+  const ratings = useBookRatings(id);
+  const ratingStats = useBookRatingStats(id);
 
   if (book.isError) return <ErrorState message="Couldn't load this book." onRetry={book.refetch} />;
   if (book.isLoading || !book.data) {
@@ -115,10 +122,15 @@ export function BookDetailPage() {
             <div className="mt-3 flex items-center gap-2">
               <ReadingStatusControl bookId={b.id} status={b.reading_status} />
               {reader && <span className="inline-flex items-center gap-1 text-sm text-amber"><BookOpen size={14} />{reader}</span>}
-              {activeLoan && <span className="inline-flex items-center gap-1 text-sm text-amber"><BookUp size={14} />{t("books.detail.onLoanTo")} {activeLoan.borrower_name}</span>}
             </div>
+            {activeLoan && (
+              <p className="mt-1.5 flex items-center gap-1 text-sm text-amber">
+                <BookUp size={14} className="shrink-0" />
+                {t("books.detail.onLoanTo")} {activeLoan.borrower_name}
+              </p>
+            )}
             {canEdit && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 hidden gap-2 sm:flex">
                 <Button size="sm" variant="secondary" onClick={() => setEditOpen(true)}>
                   {t("common.edit")}
                 </Button>
@@ -133,6 +145,20 @@ export function BookDetailPage() {
           </div>
         </div>
 
+        {canEdit && (
+          <div className="mt-4 flex gap-2 sm:hidden">
+            <Button size="sm" className="flex-1" variant="secondary" onClick={() => setEditOpen(true)}>
+              {t("common.edit")}
+            </Button>
+            <Button size="sm" className="flex-1" variant="secondary" onClick={() => setMoveOpen(true)}>
+              {t("books.detail.moveButton")}
+            </Button>
+            <Button size="sm" className="flex-1" variant="danger" onClick={() => setConfirmOpen(true)}>
+              {t("common.delete")}
+            </Button>
+          </div>
+        )}
+
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
           <Field label={t("books.detail.isbn")} value={r?.isbn} />
           <Field label={t("books.detail.publisher")} value={r?.publisher} />
@@ -142,23 +168,7 @@ export function BookDetailPage() {
           <Field label={t("books.detail.condition")} value={b.condition} />
           <Field label={t("books.detail.source")} value={b.source} />
           <Field label={t("books.detail.purchaseDate")} value={b.purchase_date ? formatDate(b.purchase_date) : null} />
-          <div>
-            <dt className="text-xs font-medium uppercase text-ink-soft">{t("books.detail.location")}</dt>
-            <dd className="mt-0.5">
-              {b.room_id ? (
-                <button
-                  type="button"
-                  className="group inline-flex items-center gap-1 text-left text-ink hover:text-brand"
-                  onClick={() => setLocationOpen(true)}
-                >
-                  <span>{roomName ?? t("books.detail.locationAssigned")}</span>
-                  <span className="text-xs opacity-40 transition-opacity group-hover:opacity-100">›</span>
-                </button>
-              ) : (
-                <span className="text-ink">—</span>
-              )}
-            </dd>
-          </div>
+          <Field label={t("books.detail.location")} value={b.room_id ? (roomName ?? t("books.detail.locationAssigned")) : null} />
           <Field label={t("books.detail.added")} value={formatDate(b.created_at)} />
           <Field
             label={t("books.detail.owner")}
@@ -260,10 +270,22 @@ export function BookDetailPage() {
         )}
       </Card>
 
+      <RatingsCard
+        bookId={b.id}
+        ratings={ratings.data ?? []}
+        stats={ratingStats.data ?? null}
+        isLoading={ratings.isLoading || ratingStats.isLoading}
+        currentUserId={currentUserId}
+        users={users.data ?? []}
+        canRate={canEdit}
+        ratingFormOpen={ratingFormOpen}
+        onOpenRatingForm={() => setRatingFormOpen(true)}
+        onCloseRatingForm={() => setRatingFormOpen(false)}
+      />
+
       <LoanCard bookId={b.id} activeLoan={activeLoan} loans={loans.data ?? []} canEdit={canEdit} lendBook={lendBook} returnBook={returnBook} />
 
       {editOpen && <EditBookModal book={b} record={r} onClose={() => setEditOpen(false)} />}
-      {locationOpen && <ShelfLocationModal book={b} onClose={() => setLocationOpen(false)} />}
       {moveOpen && (
         <MoveModal
           bookId={b.id}
@@ -287,6 +309,62 @@ export function BookDetailPage() {
         onClose={() => setConfirmOpen(false)}
       />
     </>
+  );
+}
+
+interface RatingsCardProps {
+  bookId: string;
+  ratings: import("@/types/api").BookRating[];
+  stats: import("@/types/api").FamilyRatingStats | null;
+  isLoading: boolean;
+  currentUserId: string | undefined;
+  users: import("@/types/api").User[];
+  canRate: boolean;
+  ratingFormOpen: boolean;
+  onOpenRatingForm: () => void;
+  onCloseRatingForm: () => void;
+}
+
+function RatingsCard({
+  bookId, ratings, stats, isLoading, currentUserId, users, canRate,
+  ratingFormOpen, onOpenRatingForm, onCloseRatingForm,
+}: RatingsCardProps) {
+  const hasOwnRating = ratings.some((r) => r.user_id === currentUserId);
+
+  return (
+    <Card className="mt-6 p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-lg font-semibold">Recensioni</h2>
+        {canRate && !hasOwnRating && (
+          <button
+            type="button"
+            className="text-sm text-brand hover:underline"
+            onClick={onOpenRatingForm}
+          >
+            + Aggiungi recensione
+          </button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <Skeleton className="h-20" />
+      ) : (
+        <div className="space-y-6">
+          {stats && stats.total > 0 && <FamilyRatingSummary stats={stats} />}
+          <BookRatingsList
+            bookId={bookId}
+            ratings={ratings}
+            currentUserId={currentUserId}
+            users={users}
+            canRate={canRate}
+          />
+        </div>
+      )}
+
+      <Modal open={ratingFormOpen} title="Scrivi una recensione" onClose={onCloseRatingForm}>
+        <BookRatingForm bookId={bookId} onDone={onCloseRatingForm} />
+      </Modal>
+    </Card>
   );
 }
 
@@ -404,12 +482,7 @@ function EditBookModal({
   async function handleSuggestTags() {
     if (!record) return;
     try {
-      const result = await suggestTags.mutateAsync({
-        bibliographic_record_id: record.id,
-        title: watch("title").trim() || record.title,
-        main_author: watch("main_author").trim() || null,
-        genre: watch("genre").trim() || null,
-      });
+      const result = await suggestTags.mutateAsync(record.id);
       if (result.tags.length === 0) {
         toast.error(t("common.defaultErrorMessage"));
         return;
@@ -548,6 +621,7 @@ function LoanCard({
 }) {
   const { t } = useTranslation();
   const toast = useToast();
+  const [loanFormOpen, setLoanFormOpen] = useState(false);
   const [borrowerName, setBorrowerName] = useState("");
   const [dueDate, setDueDate] = useState("");
 
@@ -557,6 +631,7 @@ function LoanCard({
       await lendBook.mutateAsync({ bookId, body: { borrower_name: borrowerName.trim(), due_date: dueDate || null } });
       setBorrowerName("");
       setDueDate("");
+      setLoanFormOpen(false);
       toast.success(t("books.detail.lendSuccess"));
     } catch {
       toast.error(t("books.detail.lendFailed"));
@@ -574,9 +649,20 @@ function LoanCard({
 
   return (
     <Card className="mt-6 p-5">
-      <h2 className="mb-3 font-display text-lg font-semibold">{t("books.detail.loans")}</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="font-display text-lg font-semibold">{t("books.detail.loans")}</h2>
+        {canEdit && !activeLoan && (
+          <button
+            type="button"
+            className="text-sm text-brand hover:underline"
+            onClick={() => setLoanFormOpen(true)}
+          >
+            + Registra prestito
+          </button>
+        )}
+      </div>
 
-      {activeLoan ? (
+      {activeLoan && (
         <div className="mb-4 rounded-md bg-amber/10 p-3 text-sm">
           <p className="font-medium text-ink">
             {t("books.detail.onLoanTo")} <span className="text-amber">{activeLoan.borrower_name}</span>
@@ -588,33 +674,20 @@ function LoanCard({
             </p>
           )}
           {canEdit && (
-            <Button size="sm" className="mt-2" loading={returnBook.isPending} onClick={onReturn}>
+            <button
+              type="button"
+              disabled={returnBook.isPending}
+              className="mt-2 inline-flex items-center gap-1.5 text-sm text-brand hover:underline disabled:opacity-50"
+              onClick={onReturn}
+            >
+              {returnBook.isPending && (
+                <span aria-hidden="true" className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
               {t("books.detail.markReturned")}
-            </Button>
+            </button>
           )}
         </div>
-      ) : canEdit ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Input
-            label={t("books.detail.borrowerName")}
-            value={borrowerName}
-            onChange={(e) => setBorrowerName(e.target.value)}
-            className="flex-1"
-          />
-          <Input
-            label={t("books.detail.dueDate")}
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="flex-1"
-          />
-          <div className="flex w-full items-end">
-            <Button size="sm" disabled={!borrowerName.trim()} loading={lendBook.isPending} onClick={onLend}>
-              {t("books.detail.lendButton")}
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      )}
 
       {loans.length > 0 && (
         <>
@@ -633,9 +706,37 @@ function LoanCard({
         </>
       )}
 
-      {loans.length === 0 && !activeLoan && !canEdit && (
+      {loans.length === 0 && !activeLoan && (
         <p className="text-sm text-ink-soft">{t("books.detail.noLoanHistory")}</p>
       )}
+
+      <Modal open={loanFormOpen} title="Registra prestito" onClose={() => setLoanFormOpen(false)}>
+        <div className="space-y-4">
+          <Input
+            label={t("books.detail.borrowerName")}
+            value={borrowerName}
+            onChange={(e) => setBorrowerName(e.target.value)}
+          />
+          <Input
+            label={t("books.detail.dueDate")}
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setLoanFormOpen(false)} disabled={lendBook.isPending}>
+              Annulla
+            </Button>
+            <Button
+              disabled={!borrowerName.trim() || lendBook.isPending}
+              loading={lendBook.isPending}
+              onClick={() => void onLend()}
+            >
+              {t("books.detail.lendButton")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }
@@ -685,63 +786,3 @@ function MoveModal({
   );
 }
 
-function ShelfLocationModal({ book, onClose }: { book: OwnedBook; onClose: () => void }) {
-  const { t } = useTranslation();
-  const rooms = useRooms();
-  const bookcases = useBookcases(book.room_id ?? undefined);
-  const sections = useSections(book.bookcase_id ?? undefined);
-  const shelves = useShelves(book.section_id ?? undefined);
-
-  const room = rooms.data?.find((r) => r.id === book.room_id);
-  const bookcase = bookcases.data?.find((bc) => bc.id === book.bookcase_id);
-  const section = sections.data?.find((s) => s.id === book.section_id);
-  const shelf = shelves.data?.find((sh) => sh.id === book.shelf_id);
-
-  const isLoading =
-    rooms.isLoading ||
-    (Boolean(book.bookcase_id) && bookcases.isLoading) ||
-    (Boolean(book.section_id) && sections.isLoading) ||
-    (Boolean(book.shelf_id) && shelves.isLoading);
-
-  const crumbs: string[] = [
-    room?.name,
-    bookcase?.name,
-    section
-      ? (section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`)
-      : undefined,
-    shelf ? `${t("locations.shelfLabel")} ${shelf.shelf_index + 1}` : undefined,
-  ].filter((x): x is string => x != null);
-
-  return (
-    <Modal open onClose={onClose} title={t("books.detail.shelfLocationTitle")}>
-      {isLoading ? (
-        <Skeleton className="h-8" />
-      ) : (
-        <div className="space-y-3">
-          {crumbs.length > 0 ? (
-            <>
-              <div className="flex flex-wrap items-center gap-1.5 rounded-md bg-paper px-3 py-2.5 text-sm">
-                {crumbs.map((crumb, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="select-none text-ink-soft">›</span>}
-                    <span className={i === crumbs.length - 1 ? "font-medium text-ink" : "text-ink-soft"}>
-                      {crumb}
-                    </span>
-                  </span>
-                ))}
-              </div>
-              {book.shelf_position != null && (
-                <p className="text-sm text-ink-soft">
-                  {t("books.detail.shelfPosition")}:{" "}
-                  <span className="font-medium text-ink">{book.shelf_position}</span>
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-ink-soft">{t("books.detail.locationNotPlaced")}</p>
-          )}
-        </div>
-      )}
-    </Modal>
-  );
-}

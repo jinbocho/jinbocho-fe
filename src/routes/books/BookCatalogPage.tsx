@@ -32,6 +32,10 @@ export function BookCatalogPage() {
     () => new Set((activeLoans.data ?? []).map((l) => l.owned_book_id)),
     [activeLoans.data],
   );
+  const loanBorrowerByBook = useMemo(
+    () => new Map((activeLoans.data ?? []).map((l) => [l.owned_book_id, l.borrower_name])),
+    [activeLoans.data],
+  );
   const readersByBook = useMemo(
     () => buildReadersByBook(reads.data ?? [], users.data ?? []),
     [reads.data, users.data],
@@ -43,6 +47,7 @@ export function BookCatalogPage() {
   const statusFilter = params.get("status") ?? "";
   const ownerFilter = params.get("owner") ?? "";
   const genreFilter = params.get("genre") ?? "";
+  const loanFilter = params.get("loan") ?? "";
   // "loc" is a deep-link-only filter set from the Rooms & Bookcases page
   // (bookcase/section/shelf granularity isn't exposed as a dropdown here).
   const locFilter = params.get("loc") ?? "";
@@ -51,9 +56,9 @@ export function BookCatalogPage() {
   const [query, setQuery] = useState(params.get("q") ?? "");
   const debouncedQuery = useDebounce(query, 250);
   const [filtersOpen, setFiltersOpen] = useState(
-    () => Boolean(roomFilter || statusFilter || ownerFilter || genreFilter),
+    () => Boolean(roomFilter || statusFilter || ownerFilter || genreFilter || loanFilter),
   );
-  const activeFilterCount = [roomFilter, statusFilter, ownerFilter, genreFilter].filter(Boolean).length;
+  const activeFilterCount = [roomFilter, statusFilter, ownerFilter, genreFilter, loanFilter].filter(Boolean).length;
 
   const roomNames = useMemo(
     () => new Map((rooms.data ?? []).map((r) => [r.id, r.name])),
@@ -78,6 +83,7 @@ export function BookCatalogPage() {
       if (statusFilter && book.reading_status !== statusFilter) return false;
       if (ownerFilter && book.owner_id !== ownerFilter) return false;
       if (genreFilter && record?.genre !== genreFilter) return false;
+      if (loanFilter && !onLoanIds.has(book.id)) return false;
       if (locFilter && locType === "bookcase" && book.bookcase_id !== locFilter) return false;
       if (locFilter && locType === "section" && book.section_id !== locFilter) return false;
       if (locFilter && locType === "shelf" && book.shelf_id !== locFilter) return false;
@@ -87,7 +93,7 @@ export function BookCatalogPage() {
       }
       return true;
     });
-  }, [data, roomFilter, statusFilter, ownerFilter, genreFilter, locFilter, locType, debouncedQuery]);
+  }, [data, roomFilter, statusFilter, ownerFilter, genreFilter, loanFilter, onLoanIds, locFilter, locType, debouncedQuery]);
 
   function setParam(key: string, value: string) {
     setParams((prev) => {
@@ -105,6 +111,7 @@ export function BookCatalogPage() {
       next.delete("status");
       next.delete("owner");
       next.delete("genre");
+      next.delete("loan");
       return next;
     });
   }
@@ -214,6 +221,15 @@ export function BookCatalogPage() {
               options={genreOptions}
               onChange={(e) => setParam("genre", e.target.value)}
             />
+            <label className="flex cursor-pointer items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-ink-soft hover:border-brand-soft">
+              <input
+                type="checkbox"
+                className="accent-brand"
+                checked={loanFilter === "1"}
+                onChange={(e) => setParam("loan", e.target.checked ? "1" : "")}
+              />
+              {t("books.catalog.filterOnLoan")}
+            </label>
             {activeFilterCount > 0 && (
               <button
                 type="button"
@@ -258,6 +274,7 @@ export function BookCatalogPage() {
                 view={view}
                 roomName={view.book.room_id ? roomNames.get(view.book.room_id) : undefined}
                 onLoan={onLoanIds.has(view.book.id)}
+                loanBorrower={loanBorrowerByBook.get(view.book.id)}
                 readers={readersByBook.get(view.book.id)}
               />
             </li>

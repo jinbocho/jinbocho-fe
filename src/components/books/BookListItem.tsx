@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { BookOpen, BookUp, Check, MapPin } from "lucide-react";
 
 import { ReadingStatusControl } from "@/components/books/ReadingStatusControl";
@@ -10,14 +11,17 @@ export function BookListItem({
   view,
   roomName,
   onLoan,
+  loanBorrower,
   readers,
 }: {
   view: BookView;
   roomName?: string;
   onLoan?: boolean;
+  loanBorrower?: string;
   // Family members who have read this book — only relevant for reading_status "read".
   readers?: string[];
 }) {
+  const { t } = useTranslation();
   const { book, record } = view;
   const title = record?.title ?? "Untitled";
   const author = record?.main_author;
@@ -39,7 +43,12 @@ export function BookListItem({
           {roomName && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-stone"><MapPin size={11} className="shrink-0" />{roomName}</p>}
           {reader && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-amber"><BookOpen size={11} className="shrink-0" />{reader}</p>}
           {readBy && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-sage" title={readBy}><Check size={11} className="shrink-0" />{readBy}</p>}
-          {onLoan && <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-amber"><BookUp size={11} className="shrink-0" />In prestito</p>}
+          {onLoan && (
+            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-amber">
+              <BookUp size={11} className="shrink-0" />
+              {loanBorrower ? `${t("books.detail.onLoanTo")} ${loanBorrower}` : t("common.onLoan")}
+            </p>
+          )}
         </div>
       </Link>
       <div className="shrink-0">

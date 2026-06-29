@@ -192,15 +192,17 @@ export function OnLoanPage() {
                         )}
                       </div>
                       {canEdit && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="shrink-0"
-                          loading={isReturning}
+                        <button
+                          type="button"
+                          disabled={isReturning}
+                          className="shrink-0 inline-flex items-center gap-1.5 text-sm text-brand hover:underline disabled:opacity-50"
                           onClick={() => void onBookBack(loan.owned_book_id)}
                         >
+                          {isReturning && (
+                            <span aria-hidden="true" className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          )}
                           {t("loans.markReturnedAction")}
-                        </Button>
+                        </button>
                       )}
                     </Card>
                   </li>

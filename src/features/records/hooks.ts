@@ -5,14 +5,12 @@ import {
 } from "@tanstack/react-query";
 
 import { AI_REQUEST_TIMEOUT_MS, api } from "@/lib/api";
-import { AI, RECORDS } from "@/lib/paths";
+import { RECORDS } from "@/lib/paths";
 import type {
   BibliographicRecord,
   BibliographicRecordCreate,
   BibliographicRecordUpdate,
   Incipit,
-  IncipitGenerateResult,
-  TagSuggestionRequest,
   TagSuggestionResult,
 } from "@/types/api";
 
@@ -90,26 +88,27 @@ export function useSetIncipit() {
   });
 }
 
-// Calls the optional AI service. Returns { text: null } when the LLM is disabled.
+// Asks catalog to generate and persist an AI presentation for the given record.
+// Catalog enriches context (Open Library description, publisher, year) before
+// calling ai-service internally. Returns { text: null } when the LLM is disabled.
 export function useGenerateIncipitAI() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: {
-      title: string;
-      main_author?: string | null;
-      genre?: string | null;
-      language?: string | null;
-    }) =>
+    mutationFn: (id: string) =>
       api
-        .post(`${AI}/incipit`, { json: body, timeout: AI_REQUEST_TIMEOUT_MS })
-        .json<IncipitGenerateResult>(),
+        .post(`${RECORDS}/${id}/incipit/generate`, { timeout: AI_REQUEST_TIMEOUT_MS })
+        .json<Incipit>(),
+    onSuccess: (incipit, id) => {
+      qc.setQueryData(recordKeys.incipit(id), incipit);
+    },
   });
 }
 
 export function useSuggestTags() {
   return useMutation({
-    mutationFn: (body: TagSuggestionRequest) =>
+    mutationFn: (id: string) =>
       api
-        .post(`${AI}/tags`, { json: body, timeout: AI_REQUEST_TIMEOUT_MS })
+        .post(`${RECORDS}/${id}/tags/suggest`, { timeout: AI_REQUEST_TIMEOUT_MS })
         .json<TagSuggestionResult>(),
   });
 }

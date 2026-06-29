@@ -173,6 +173,7 @@ export function buildUsersImportPayload(backup: FullBackupExport): { users: User
       theme_name: null,
       theme_mode: null,
       password_set_at: null,
+      avatar_url: null,
     });
   }
 

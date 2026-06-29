@@ -4,6 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LogOut, X } from "lucide-react";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { IconButton } from "@/components/ui/IconButton";
 import { useAiFeatureEnabled } from "@/features/system/hooks";
 
@@ -12,13 +13,14 @@ interface NavItem {
   label: string;
   icon: ReactNode;
   end?: boolean;
+  badge?: number;
 }
 
 interface MobileDrawerProps {
   open: boolean;
   onClose: () => void;
   items: NavItem[];
-  user: { email: string; role: string } | null | undefined;
+  user: { email: string; role: string; full_name: string; avatar_url: string | null; family_name: string | null } | null | undefined;
   onLogout: () => void;
   loggingOut?: boolean;
 }
@@ -127,6 +129,11 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
             >
               <span aria-hidden="true" className="text-base">{item.icon}</span>
               {item.label}
+              {item.badge ? (
+                <span className="ml-auto rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  {item.badge}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>
@@ -142,10 +149,16 @@ export function MobileDrawer({ open, onClose, items, user, onLogout, loggingOut 
           </a>
         )}
         {user && (
-          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line px-4 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-ink">{user.email}</p>
-              <p className="text-xs capitalize text-ink-soft">{user.role}</p>
+          <div className="flex shrink-0 items-center gap-3 border-t border-line px-4 py-3">
+            <Avatar
+              name={user.full_name}
+              src={user.avatar_url}
+              className="h-9 w-9 shrink-0 text-sm"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-ink">{user.full_name}</p>
+              {user.family_name && <p className="truncate text-xs text-ink-soft">{user.family_name}</p>}
+              <p className="truncate text-xs capitalize text-ink-soft">{user.role}</p>
             </div>
             <IconButton label={t("common.logout")} loading={loggingOut} onClick={onLogout}>
               <LogOut size={16} />

@@ -101,7 +101,7 @@ export function UsersPage() {
             return (
               <Card key={u.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                 <div className="flex min-w-0 items-center gap-3 sm:flex-1">
-                  <Avatar name={u.full_name} className="shrink-0" />
+                  <Avatar name={u.full_name} src={u.avatar_url} className="shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-ink">
                       {u.full_name}

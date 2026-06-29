@@ -176,7 +176,11 @@
       "title": "Your profile",
       "annualReadingGoal": "Annual reading goal",
       "annualReadingGoalHint": "Number of books you want to read this year",
-      "updated": "Profile updated."
+      "updated": "Profile updated.",
+      "changeAvatar": "Change photo",
+      "removeAvatar": "Remove photo",
+      "avatarUploaded": "Profile photo updated.",
+      "avatarRemoved": "Profile photo removed."
     }
   },
   "enums": {
@@ -262,6 +266,7 @@
       "filterStatuses": "All statuses",
       "filterOwners": "All owners",
       "filterGenres": "All genres",
+      "filterOnLoan": "On loan",
       "filtersToggle": "Filters",
       "clearFilters": "Clear filters",
       "clearLocationFilter": "Clear location filter",
@@ -343,7 +348,10 @@
         "cancel": "Cancel",
         "placeholder": "Write a short, spoiler-free presentation…",
         "generated": "Presentation generated.",
-        "saved": "Presentation saved."
+        "saved": "Presentation saved.",
+        "overwriteTitle": "Overwrite presentation?",
+        "overwriteMessage": "AI will generate a new presentation, replacing the current one.",
+        "overwriteConfirm": "Overwrite"
       },
       "isbn": "ISBN",
       "publisher": "Publisher",
@@ -653,7 +661,23 @@
     "sharedFavoritesSection": "Family favorites",
     "sharedFavoritesReadBy": "members",
     "byLanguageSection": "By language",
-    "byDecadeSection": "By publication decade"
+    "byDecadeSection": "By publication decade",
+    "ratingsSection": "Reviews",
+    "ratingsAverage": "Family average rating",
+    "ratingsTotal": "total reviews",
+    "ratingsDistribution": "Rating distribution",
+    "ratingsByMember": "Ratings by member",
+    "ratingsAvgLabel": "Avg. rating",
+    "ratingsCountLabel": "Reviews",
+    "ratingsByGenre": "Highest rated genres",
+    "ratingsUnrated": "Not yet reviewed",
+    "ratingsUnratedEmpty": "Every book has at least one review!",
+    "categoryActivity": "What's happening",
+    "categoryFamily": "The family reads",
+    "categoryTastes": "Tastes & Reviews",
+    "categoryCollection": "The collection",
+    "currentlyReadingSection": "Currently reading",
+    "currentlyReadingEmpty": "Nobody is currently reading."
   },
   "wishlist": {
     "title": "Wishlist",

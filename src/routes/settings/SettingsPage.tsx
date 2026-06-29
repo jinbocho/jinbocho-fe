@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
+import { Avatar } from "@/components/ui/Avatar";
 import { useLogout } from "@/features/auth/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useExportFullBackup } from "@/features/export/useExport";
@@ -20,7 +21,7 @@ import { type Lang, SUPPORTED_LANGS } from "@/features/i18n/config";
 import { useLangStore } from "@/features/i18n/store";
 import { useFamily, useUpdateFamily } from "@/features/family/hooks";
 import { type ThemeName, type ThemePref, useThemeStore } from "@/features/theme/store";
-import { useCurrentUser, useUpdateMe } from "@/features/users/hooks";
+import { useCurrentUser, useDeleteAvatar, useUpdateMe, useUploadAvatar } from "@/features/users/hooks";
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -318,6 +319,8 @@ function ProfileSection() {
   const { t } = useTranslation();
   const me = useCurrentUser();
   const update = useUpdateMe();
+  const uploadAvatar = useUploadAvatar();
+  const deleteAvatar = useDeleteAvatar();
   const toast = useToast();
   const setLang = useLangStore((s) => s.setLang);
   const { register, handleSubmit, reset } = useForm<{ full_name: string; annual_reading_goal: string }>();
@@ -328,7 +331,6 @@ function ProfileSection() {
         full_name: me.data.full_name,
         annual_reading_goal: me.data.annual_reading_goal?.toString() ?? "",
       });
-      // Sync language from backend on load (cross-device sync).
       if (me.data.language) setLang(me.data.language);
     }
   }, [me.data, reset, setLang]);
@@ -346,26 +348,79 @@ function ProfileSection() {
     }
   });
 
+  function handleAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadAvatar.mutate(file, {
+      onSuccess: () => toast.success(t("settings.profile.avatarUploaded")),
+      onError: () => toast.error(t("common.saveFailed")),
+    });
+    e.target.value = "";
+  }
+
+  function handleAvatarDelete() {
+    deleteAvatar.mutate(undefined, {
+      onSuccess: () => toast.success(t("settings.profile.avatarRemoved")),
+      onError: () => toast.error(t("common.saveFailed")),
+    });
+  }
+
+  const avatarBusy = uploadAvatar.isPending || deleteAvatar.isPending;
+
   return (
     <Card className="p-5">
       <h2 className="mb-4 font-display text-lg font-semibold">{t("settings.profile.title")}</h2>
       {me.isLoading ? (
         <Skeleton className="h-20" />
       ) : (
-        <form onSubmit={submit} className="space-y-3">
-          <Input label={t("common.fullName")} {...register("full_name")} />
-          <Input label={t("common.email")} value={me.data?.email ?? ""} disabled readOnly />
-          <Input
-            label={t("settings.profile.annualReadingGoal")}
-            type="number"
-            min={1}
-            hint={t("settings.profile.annualReadingGoalHint")}
-            {...register("annual_reading_goal")}
-          />
-          <Button type="submit" size="sm" loading={update.isPending}>
-            {t("common.save")}
-          </Button>
-        </form>
+        <>
+          <div className="mb-5 flex items-center gap-4">
+            <Avatar
+              name={me.data?.full_name ?? ""}
+              src={me.data?.avatar_url}
+              className="h-16 w-16 text-xl"
+            />
+            <div className="flex flex-wrap gap-2">
+              <label
+                className={`cursor-pointer rounded-md border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-paper ${avatarBusy ? "pointer-events-none opacity-50" : ""}`}
+              >
+                {uploadAvatar.isPending ? t("common.saving") : t("settings.profile.changeAvatar")}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={handleAvatarPick}
+                  disabled={avatarBusy}
+                />
+              </label>
+              {me.data?.avatar_url && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={deleteAvatar.isPending}
+                  onClick={handleAvatarDelete}
+                  disabled={avatarBusy}
+                >
+                  {t("settings.profile.removeAvatar")}
+                </Button>
+              )}
+            </div>
+          </div>
+          <form onSubmit={submit} className="space-y-3">
+            <Input label={t("common.fullName")} {...register("full_name")} />
+            <Input label={t("common.email")} value={me.data?.email ?? ""} disabled readOnly />
+            <Input
+              label={t("settings.profile.annualReadingGoal")}
+              type="number"
+              min={1}
+              hint={t("settings.profile.annualReadingGoalHint")}
+              {...register("annual_reading_goal")}
+            />
+            <Button type="submit" size="sm" loading={update.isPending}>
+              {t("common.save")}
+            </Button>
+          </form>
+        </>
       )}
     </Card>
   );

@@ -64,6 +64,7 @@ export interface User {
   language: Lang | null;
   theme_name: "pergamena" | "akabeni" | "sumi" | null;
   theme_mode: "light" | "dark" | "system" | null;
+  avatar_url: string | null;
   /** Null means the user hasn't set their own password yet — invite still pending. */
   password_set_at: string | null;
 }
@@ -164,11 +165,6 @@ export interface Incipit {
   generated_at: string | null;
 }
 
-export interface IncipitGenerateResult {
-  text: string | null;
-  model: string | null;
-}
-
 // AI: personalized "what to read next" — see features/recommendations/hooks.ts.
 // Each member carries their own unread_catalog (books that specific member hasn't
 // read yet) — a book already read by one family member can still be a valid
@@ -203,13 +199,6 @@ export interface RecommendationsResponse {
 }
 
 // AI: tag suggestions for a book — see useSuggestTags in features/records/hooks.ts.
-export interface TagSuggestionRequest {
-  bibliographic_record_id: string;
-  title: string;
-  main_author?: string | null;
-  genre?: string | null;
-}
-
 export interface TagSuggestionResult {
   tags: string[];
 }
@@ -335,6 +324,33 @@ export interface BookRead {
   owned_book_id: string;
   user_id: string;
   read_at: string;
+}
+
+export interface BookRating {
+  id: string;
+  owned_book_id: string;
+  user_id: string;
+  rating: number;  // 1-5
+  review: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookRatingCreate {
+  rating: number;
+  review?: string | null;
+}
+
+export interface BookRatingUpdate {
+  rating?: number | null;
+  review?: string | null;
+}
+
+export interface FamilyRatingStats {
+  owned_book_id: string;
+  total: number;
+  average: number | null;
+  distribution: Record<string, number>;  // keys "1".."5"
 }
 
 export interface WishlistItem {

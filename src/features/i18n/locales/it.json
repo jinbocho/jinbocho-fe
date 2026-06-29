@@ -176,7 +176,11 @@
       "title": "Il tuo profilo",
       "annualReadingGoal": "Obiettivo lettura annuale",
       "annualReadingGoalHint": "Numero di libri che vuoi leggere quest'anno",
-      "updated": "Profilo aggiornato."
+      "updated": "Profilo aggiornato.",
+      "changeAvatar": "Cambia foto",
+      "removeAvatar": "Rimuovi foto",
+      "avatarUploaded": "Foto profilo aggiornata.",
+      "avatarRemoved": "Foto profilo rimossa."
     }
   },
   "enums": {
@@ -262,6 +266,7 @@
       "filterStatuses": "Tutti gli stati",
       "filterOwners": "Tutti i possessori",
       "filterGenres": "Tutti i generi",
+      "filterOnLoan": "In prestito",
       "filtersToggle": "Filtri",
       "clearFilters": "Rimuovi filtri",
       "clearLocationFilter": "Rimuovi filtro posizione",
@@ -343,7 +348,10 @@
         "cancel": "Annulla",
         "placeholder": "Scrivi una breve presentazione, senza spoiler…",
         "generated": "Presentazione generata.",
-        "saved": "Presentazione salvata."
+        "saved": "Presentazione salvata.",
+        "overwriteTitle": "Sovrascrivere la presentazione?",
+        "overwriteMessage": "L'AI genererà una nuova presentazione, sostituendo quella attuale.",
+        "overwriteConfirm": "Sovrascrivi"
       },
       "isbn": "ISBN",
       "publisher": "Editore",
@@ -653,7 +661,23 @@
     "sharedFavoritesSection": "Preferiti di famiglia",
     "sharedFavoritesReadBy": "membri",
     "byLanguageSection": "Per lingua",
-    "byDecadeSection": "Per decennio di pubblicazione"
+    "byDecadeSection": "Per decennio di pubblicazione",
+    "ratingsSection": "Recensioni",
+    "ratingsAverage": "Voto medio familiare",
+    "ratingsTotal": "recensioni totali",
+    "ratingsDistribution": "Distribuzione voti",
+    "ratingsByMember": "Voti per membro",
+    "ratingsAvgLabel": "Voto medio",
+    "ratingsCountLabel": "Recensioni",
+    "ratingsByGenre": "Generi più apprezzati",
+    "ratingsUnrated": "Non ancora recensiti",
+    "ratingsUnratedEmpty": "Tutti i libri hanno almeno una recensione!",
+    "categoryActivity": "Cosa sta succedendo",
+    "categoryFamily": "La famiglia legge",
+    "categoryTastes": "Gusti & Giudizi",
+    "categoryCollection": "La collezione",
+    "currentlyReadingSection": "In lettura adesso",
+    "currentlyReadingEmpty": "Nessuno sta leggendo nulla in questo momento."
   },
   "wishlist": {
     "title": "Wishlist",
