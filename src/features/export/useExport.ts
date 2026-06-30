@@ -79,6 +79,7 @@ export function useExportFullBackup() {
         book_reads: library.book_reads,
         book_loans: library.book_loans,
         book_history: library.book_history,
+        wishlist_items: library.wishlist_items,
         removed_members: library.removed_members,
       };
 
@@ -207,6 +208,7 @@ export function useImportFullBackup() {
         book_reads: backup.book_reads,
         book_loans: backup.book_loans,
         book_history: backup.book_history,
+        wishlist_items: backup.wishlist_items ?? [],
         user_id_map: usersResult.user_id_map,
       };
 

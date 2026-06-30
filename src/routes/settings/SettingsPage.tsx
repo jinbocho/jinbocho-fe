@@ -64,19 +64,21 @@ export function SettingsPage() {
 
         <SettingsGroup label={t("settings.groups.data")}>
           <Card className="space-y-4 p-5">
-            <div>
-              <h2 className="font-display text-lg font-semibold">{t("settings.backup.title")}</h2>
-              <p className="text-sm text-ink-soft">{t("settings.backup.description")}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {isAdmin && (
-                <Button loading={fullBackup.isExporting} onClick={() => void handleFullBackup()}>
-                  {t("settings.backup.exportButton")}
-                </Button>
-              )}
-              {isAdmin && <ImportBackupDialog />}
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+            {isAdmin && (
+              <>
+                <div>
+                  <h2 className="font-display text-lg font-semibold">{t("settings.backup.title")}</h2>
+                  <p className="text-sm text-ink-soft">{t("settings.backup.description")}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button loading={fullBackup.isExporting} onClick={() => void handleFullBackup()}>
+                    {t("settings.backup.exportButton")}
+                  </Button>
+                  <ImportBackupDialog />
+                </div>
+              </>
+            )}
+            <div className={`flex flex-wrap items-center justify-between gap-3 ${isAdmin ? "border-t border-line pt-4" : ""}`}>
               <div>
                 <h3 className="font-medium text-ink">{t("settings.exportLibrary.title")}</h3>
                 <p className="text-sm text-ink-soft">{t("settings.exportLibrary.description")}</p>

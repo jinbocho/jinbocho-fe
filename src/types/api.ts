@@ -578,6 +578,15 @@ export interface BookHistory {
   created_at: string;
 }
 
+export interface WishlistItemExportItem {
+  id: string;
+  user_id: string;
+  bibliographic_record_id: string;
+  added_at: string;
+  notes: string | null;
+  priority: number | null;
+}
+
 // A former family member's identity, captured the moment they're removed
 // from the family (POST v1/catalog/members/removed) — auth-service hard-
 // deletes the row, so this is the only place their name/email survive for
@@ -617,6 +626,7 @@ export interface FullLibraryExport {
   book_reads: BookRead[];
   book_loans: BookLoan[];
   book_history: BookHistory[];
+  wishlist_items: WishlistItemExportItem[];
   removed_members: RemovedMember[];
 }
 
@@ -635,6 +645,7 @@ export interface FullBackupExport {
   book_reads: BookRead[];
   book_loans: BookLoan[];
   book_history: BookHistory[];
+  wishlist_items: WishlistItemExportItem[];
   removed_members: RemovedMember[];
 }
 
@@ -663,6 +674,7 @@ export interface ImportFullLibraryRequest {
   book_reads: BookRead[];
   book_loans: BookLoan[];
   book_history: BookHistory[];
+  wishlist_items: WishlistItemExportItem[];
   user_id_map: Record<string, string>;
 }
 
@@ -682,6 +694,7 @@ export interface ImportFullLibraryResponse {
   book_reads_imported: number;
   book_loans_imported: number;
   book_history_imported: number;
+  wishlist_items_imported: number;
 }
 
 // ----- System -----
