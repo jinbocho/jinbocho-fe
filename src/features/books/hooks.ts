@@ -252,8 +252,10 @@ export function useBookReads(bookId: string | undefined) {
 export function useMarkBookRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookId, userId }: { bookId: string; userId: string }) =>
-      api.post(`${BOOKS}/${bookId}/reads`, { json: { user_id: userId } }).json<BookRead>(),
+    mutationFn: ({ bookId, userId, readAt }: { bookId: string; userId: string; readAt?: string }) =>
+      api.post(`${BOOKS}/${bookId}/reads`, {
+        json: { user_id: userId, ...(readAt ? { read_at: `${readAt}-01T00:00:00Z` } : {}) },
+      }).json<BookRead>(),
     onSuccess: (_data, { bookId }) => {
       void qc.invalidateQueries({ queryKey: bookReadKeys.book(bookId) });
       void qc.invalidateQueries({ queryKey: bookReadKeys.family });

@@ -35,6 +35,11 @@ export interface MonthlyPace {
   count: number;
 }
 
+export interface ReadingHistogram {
+  year: number;
+  months: number[]; // 12 entries, index 0=Jan..11=Dec
+}
+
 export interface MemberRatingStat {
   userId: string;
   name: string;
@@ -75,6 +80,7 @@ export interface LibraryStats {
   pctLibraryRead: number;
   goalProgress: GoalProgress[];
   readingPaceByMonth: MonthlyPace[];
+  readingHistogram: ReadingHistogram[];
   ratings: RatingStats | null;
 }
 
@@ -314,7 +320,7 @@ export function computeLibraryStats(
     .sort((a, b) => b.readCount - a.readCount)
     .slice(0, 5);
 
-  // Books read per month for the last 12 months (including current month).
+  // Books read per month for the last 12 months (rolling window).
   const paceCounts = new Map<string, number>();
   for (const r of reads) {
     const d = new Date(r.read_at);
@@ -327,6 +333,20 @@ export function computeLibraryStats(
     const m = d.getMonth();
     return { year: y, month: m, count: paceCounts.get(`${y}-${m}`) ?? 0 };
   });
+
+  // Full histogram: one entry per calendar year, 12 monthly buckets.
+  const histogramMap = new Map<number, number[]>();
+  for (const r of reads) {
+    const d = new Date(r.read_at);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    if (!histogramMap.has(y)) histogramMap.set(y, Array(12).fill(0) as number[]);
+    const bucket = histogramMap.get(y);
+    if (bucket) bucket[m] = (bucket[m] ?? 0) + 1;
+  }
+  const readingHistogram: ReadingHistogram[] = [...histogramMap.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([year, months]) => ({ year, months }));
 
   return {
     total: views.length,
@@ -346,6 +366,7 @@ export function computeLibraryStats(
     pctLibraryRead,
     goalProgress,
     readingPaceByMonth,
+    readingHistogram,
     ratings: computeRatingStats(allRatings, views, users),
   };
 }

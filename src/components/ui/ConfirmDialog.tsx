@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 
@@ -11,6 +12,7 @@ interface ConfirmDialogProps {
   loading?: boolean;
   onConfirm: () => void;
   onClose: () => void;
+  children?: ReactNode;
 }
 
 export function ConfirmDialog({
@@ -23,6 +25,7 @@ export function ConfirmDialog({
   loading = false,
   onConfirm,
   onClose,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Modal
@@ -46,6 +49,7 @@ export function ConfirmDialog({
       }
     >
       <p className="text-sm text-ink-soft">{message}</p>
+      {children}
     </Modal>
   );
 }

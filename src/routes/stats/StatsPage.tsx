@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -35,6 +36,7 @@ export function StatsPage() {
   const { t, i18n } = useTranslation();
   const { data: stats, isLoading, isError } = useLibraryStats();
   const users = useUsers();
+  const [selectedHistogramYear, setSelectedHistogramYear] = useState<number | null>(null);
 
   if (isError) return <ErrorState message={t("stats.loadError")} />;
 
@@ -52,7 +54,12 @@ export function StatsPage() {
   }
 
   const maxAuthorCount = stats.topAuthors[0]?.count ?? 1;
-  const maxPaceCount = Math.max(...stats.readingPaceByMonth.map((m) => m.count), 1);
+
+  const histogramYears = stats.readingHistogram.map((h) => h.year);
+  const defaultHistogramYear = histogramYears[histogramYears.length - 1] ?? null;
+  const activeYear = selectedHistogramYear ?? defaultHistogramYear;
+  const activeHistogram = stats.readingHistogram.find((h) => h.year === activeYear);
+  const histogramMax = activeHistogram ? Math.max(...activeHistogram.months, 1) : 1;
 
   const memberCards = (users.data ?? []).map((u) => {
     const readEntry = stats.readByMember.find((m) => m.userId === u.id);
@@ -76,9 +83,7 @@ export function StatsPage() {
       />
 
       {/* ── 1. COSA STA SUCCEDENDO ─────────────────────────────────────── */}
-      {(stats.currentlyReading.length > 0 ||
-        stats.readingPaceByMonth.some((m) => m.count > 0) ||
-        stats.goalProgress.length > 0) && (
+      {(stats.currentlyReading.length > 0 || stats.goalProgress.length > 0) && (
         <div className="space-y-8">
           <CategoryDivider label={t("stats.categoryActivity")} />
 
@@ -89,7 +94,7 @@ export function StatsPage() {
               <Card className="p-4">
                 <ul className="space-y-3">
                   {stats.currentlyReading.map(({ book, record }) => {
-                    const owner = book.owner_id ? userById.get(book.owner_id) : null;
+                    const reader = book.current_reader_id ? userById.get(book.current_reader_id) : null;
                     return (
                       <li key={book.id} className="flex min-w-0 items-center gap-3">
                         <BookCover url={record?.cover_url} title={record?.title} className="h-12 w-9 shrink-0" />
@@ -101,42 +106,13 @@ export function StatsPage() {
                             <p className="truncate text-sm text-ink-soft">{record.main_author}</p>
                           )}
                         </div>
-                        {owner && (
-                          <span className="shrink-0 text-xs text-ink-soft">{owner.full_name}</span>
+                        {reader && (
+                          <span className="shrink-0 text-xs text-ink-soft">{reader.full_name}</span>
                         )}
                       </li>
                     );
                   })}
                 </ul>
-              </Card>
-            </section>
-          )}
-
-          {/* Reading pace by month */}
-          {stats.readingPaceByMonth.some((m) => m.count > 0) && (
-            <section>
-              <h2 className="mb-4 text-lg font-medium text-ink">{t("stats.monthlyPaceSection")}</h2>
-              <Card className="p-4">
-                <div className="space-y-2">
-                  {stats.readingPaceByMonth.map(({ year, month, count }) => {
-                    const label = new Date(year, month).toLocaleString(i18n.language, {
-                      month: "short",
-                      year: "numeric",
-                    });
-                    return (
-                      <div key={`${year}-${month}`} className="flex items-center gap-3">
-                        <span className="w-20 shrink-0 text-right text-xs text-ink-soft capitalize">{label}</span>
-                        <div className="flex-1 overflow-hidden rounded-full bg-line h-2">
-                          <div
-                            className="h-full rounded-full bg-brand transition-all duration-500"
-                            style={{ width: `${Math.round((count / maxPaceCount) * 100)}%` }}
-                          />
-                        </div>
-                        <span className="w-6 shrink-0 text-right text-xs font-medium text-ink">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
               </Card>
             </section>
           )}
@@ -273,6 +249,59 @@ export function StatsPage() {
                   </Card>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* Reading histogram by month/year */}
+          {stats.readingHistogram.length > 0 && (
+            <section>
+              <div className="mb-4">
+                <h2 className="text-lg font-medium text-ink">{t("stats.readingHistogramSection")}</h2>
+                <p className="mt-1 text-sm text-ink-soft">{t("stats.readingHistogramDescription")}</p>
+              </div>
+              <Card className="p-4">
+                {histogramYears.length > 0 && (
+                  <div className="mb-5 flex flex-wrap gap-2">
+                    {[...histogramYears].reverse().map((year) => (
+                      <button
+                        key={year}
+                        onClick={() => setSelectedHistogramYear(year)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                          year === activeYear
+                            ? "bg-brand text-paper"
+                            : "bg-line text-ink-soft hover:text-ink"
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {activeHistogram ? (
+                  <div className="flex items-end gap-1 h-40">
+                    {activeHistogram.months.map((count, monthIndex) => {
+                      const label = new Date(activeYear!, monthIndex).toLocaleString(i18n.language, { month: "short" });
+                      const barHeight = Math.round((count / histogramMax) * 128);
+                      return (
+                        <div key={monthIndex} className="flex flex-1 flex-col items-center gap-1">
+                          {count > 0 && (
+                            <span className="text-[10px] font-medium text-brand leading-none">{count}</span>
+                          )}
+                          <div className="w-full flex items-end" style={{ height: "128px" }}>
+                            <div
+                              className="w-full rounded-t bg-brand transition-all duration-500"
+                              style={{ height: barHeight > 0 ? `${barHeight}px` : "2px", opacity: barHeight > 0 ? 1 : 0.15 }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-ink-soft capitalize leading-none">{label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-ink-soft">{t("stats.readingHistogramNoReads")}</p>
+                )}
+              </Card>
             </section>
           )}
         </div>

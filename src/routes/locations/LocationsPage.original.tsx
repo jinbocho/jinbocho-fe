@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Icon } from "@/components/ui/Icon";
@@ -33,7 +35,7 @@ import {
   useUpdateShelf,
 } from "@/features/locations/hooks";
 import type { BookView, OwnedBook } from "@/types/api";
-import { AlignJustify, BookOpen, Folder, FolderOpen, Home, Library, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 // Direct id equality is enough here: every placed book carries room_id,
 // bookcase_id, section_id and shelf_id together (see PositionValidationService
@@ -49,17 +51,25 @@ function countByLocation(views: BookView[], key: keyof OwnedBook): Map<string, n
   return map;
 }
 
+// Builds the "N books here will lose their position" suffix appended to
+// delete-confirmation messages — empty string when nothing is at stake.
 function bookCountWarning(t: (key: string) => string, count: number): string {
   if (count === 0) return "";
   const label = count === 1 ? t("loans.bookLabel") : t("loans.booksLabel");
   return ` ${t("locations.deleteBooksWarningPrefix")} ${count} ${label} ${t("locations.deleteBooksWarningSuffix")}`;
 }
 
+// Builds a "/books?..." link that both filters (room is a real filter the
+// Filtri panel understands; loc/locType/locName is the deeper-than-room
+// filter) and carries the full breadcrumb for display on the books page.
 function booksLink(opts: { room: string; loc: string; locType: string; locName: string }): string {
   const qs = new URLSearchParams({ room: opts.room, loc: opts.loc, locType: opts.locType, locName: opts.locName });
   return `/books?${qs.toString()}`;
 }
 
+// Plain text action link. "Mostra libri qui" stays brand-coloured (the
+// primary action on a row); "Visualizza mappa" uses `muted` so the two don't
+// read as one undifferentiated cluster when they sit side by side.
 function ActionLink({ to, muted = false, children }: { to: string; muted?: boolean; children: React.ReactNode }) {
   return (
     <Link
@@ -69,20 +79,6 @@ function ActionLink({ to, muted = false, children }: { to: string; muted?: boole
       }`}
     >
       {children}
-    </Link>
-  );
-}
-
-function CountBadgeLink({ to, count, tone }: { to: string; count: number; tone: string }) {
-  if (count === 0) return null;
-  return (
-    <Link
-      to={to}
-      title="Vai ai libri in questa posizione"
-      className={`group shrink-0 inline-flex items-center gap-1 rounded-full border border-transparent px-2 py-0.5 text-xs font-medium transition-all hover:border-current hover:underline ${tone}`}
-    >
-      <BookOpen size={10} strokeWidth={2} className="opacity-70" />
-      {count}
     </Link>
   );
 }
@@ -117,9 +113,9 @@ export function LocationsPage() {
       />
 
       {rooms.isLoading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 rounded-xl" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-16" />
           ))}
         </div>
       ) : (rooms.data?.length ?? 0) === 0 ? (
@@ -130,7 +126,7 @@ export function LocationsPage() {
           action={canEdit && <Button onClick={() => setRoomModal(true)}>{t("locations.emptyAction")}</Button>}
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {rooms.data!.map((room) => (
             <RoomNode
               key={room.id}
@@ -190,48 +186,26 @@ function RoomNode({
   const toast = useToast();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-line bg-surface">
-      {/* Card header */}
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            className="flex min-w-0 flex-1 items-center gap-3 text-left"
-          >
-            <Home size={20} strokeWidth={1.5} className="mt-0.5 shrink-0 text-ink-soft" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate text-lg font-semibold text-ink">{room.name}</span>
-                <CountBadgeLink
-                  to={booksLink({ room: room.id, loc: room.id, locType: "room", locName: room.name })}
-                  count={bookCount}
-                  tone="bg-brand/10 text-brand"
-                />
-              </div>
-              {room.description && (
-                <p className="mt-0.5 truncate text-sm text-ink-soft">{room.description}</p>
-              )}
-            </div>
-          </button>
-          {canEdit && (
-            <div className="flex shrink-0 items-center gap-0.5">
-              <IconButton label={t("common.edit")} onClick={() => setEdit(true)}>
-                <Icon name="edit" className="text-[18px]" />
-              </IconButton>
-              <IconButton label={t("common.delete")} onClick={() => setConfirm(true)}>
-                <Icon name="delete" className="text-[18px]" />
-              </IconButton>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Bookcases */}
+    <Card className="overflow-hidden">
+      <Row
+        title={room.name}
+        subtitle={room.description ?? undefined}
+        count={bookCount}
+        open={open}
+        onToggle={() => setOpen((o) => !o)}
+        canEdit={canEdit}
+        onEdit={() => setEdit(true)}
+        onDelete={() => setConfirm(true)}
+        extra={
+          <ActionLink to={booksLink({ room: room.id, loc: room.id, locType: "room", locName: room.name })}>
+            {t("locations.viewBooksLink")}
+          </ActionLink>
+        }
+      />
       {open && (
-        <div className="space-y-2 border-t border-line bg-paper/40 p-4">
+        <div className="space-y-2 border-t border-line bg-paper/40 px-4 py-3 pl-8">
           {bookcases.isLoading ? (
-            <Skeleton className="h-14" />
+            <Skeleton className="h-10" />
           ) : (bookcases.data?.length ?? 0) === 0 ? (
             <p className="text-sm text-ink-soft">{t("locations.noBookcases")}</p>
           ) : (
@@ -301,7 +275,7 @@ function RoomNode({
           setConfirm(false);
         }}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -346,87 +320,61 @@ function BookcaseNode({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border-l-4 border-stone bg-paper">
-      {/* Bookcase header */}
-      <div className="px-3 pt-2.5 pb-2">
-        {/* Row 1: name + badge — full width, toggle on click, no competition */}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex w-full items-start gap-2 text-left"
-        >
-          <Library size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-ink-soft" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-sm font-medium text-ink">{bookcase.name}</span>
-              <CountBadgeLink
-                to={booksLink({ room: roomId, loc: bookcase.id, locType: "bookcase", locName: `${roomName} › ${bookcase.name}` })}
-                count={bookCount}
-                tone="bg-line text-ink-soft"
-              />
-            </div>
-            {bookcase.type && <span className="text-xs text-ink-soft">{bookcase.type}</span>}
-          </div>
-        </button>
-
-        {/* Row 2: chevron on the far left (clearly belongs to this library) — actions on the right */}
-        <div className="mt-2 flex items-center justify-between border-t border-line/30 pt-1.5">
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            className="flex min-h-[44px] items-center gap-1 text-xs text-ink-soft transition-colors hover:text-ink"
-          >
-            <Icon name={open ? "expand_less" : "expand_more"} className="text-[16px]" />
-            <span>{open ? t("common.collapse") : t("common.expand")}</span>
-          </button>
-          <div className="flex items-center gap-1">
+    <div className="rounded-md border border-line bg-surface">
+      <Row
+        title={bookcase.name}
+        subtitle={bookcase.type ?? undefined}
+        count={bookCount}
+        open={open}
+        onToggle={() => setOpen((o) => !o)}
+        canEdit={canEdit}
+        onEdit={() => setEdit(true)}
+        onDelete={() => setConfirm(true)}
+        extra={
+          <div className="flex items-center gap-2">
+            <ActionLink
+              to={booksLink({
+                room: roomId,
+                loc: bookcase.id,
+                locType: "bookcase",
+                locName: `${roomName} › ${bookcase.name}`,
+              })}
+            >
+              {t("locations.viewBooksLink")}
+            </ActionLink>
+            <span aria-hidden="true" className="text-line">·</span>
             <ActionLink to={`/locations/bookcase/${bookcase.id}`} muted>
               {t("locations.viewMapLink")}
             </ActionLink>
-            {canEdit && (
-              <>
-                <IconButton label={t("common.edit")} onClick={() => setEdit(true)}>
-                  <Icon name="edit" className="text-[16px]" />
-                </IconButton>
-                <IconButton label={t("common.delete")} onClick={() => setConfirm(true)}>
-                  <Icon name="delete" className="text-[16px]" />
-                </IconButton>
-              </>
-            )}
           </div>
-        </div>
-      </div>
-
-      {/* Sections as chips */}
+        }
+      />
       {open && (
-        <div className="border-t border-line/60 px-3 py-3">
+        <div className="space-y-2 border-t border-line px-4 py-3 pl-8">
           {sections.isLoading ? (
             <Skeleton className="h-8" />
           ) : (sections.data?.length ?? 0) === 0 ? (
-            <p className="text-xs text-ink-soft">{t("locations.noSections")}</p>
+            <p className="text-sm text-ink-soft">{t("locations.noSections")}</p>
           ) : (
-            <div className="space-y-2">
-              {sections.data!.map((s) => (
-                <SectionNode
-                  key={s.id}
-                  section={s}
-                  canEdit={canEdit}
-                  bookCount={countsBySection.get(s.id) ?? 0}
-                  countsByShelf={countsByShelf}
-                  roomId={roomId}
-                  roomName={roomName}
-                  bookcaseName={bookcase.name}
-                />
-              ))}
-            </div>
+            sections.data!.map((s) => (
+              <SectionNode
+                key={s.id}
+                section={s}
+                canEdit={canEdit}
+                bookCount={countsBySection.get(s.id) ?? 0}
+                countsByShelf={countsByShelf}
+                roomId={roomId}
+                roomName={roomName}
+                bookcaseName={bookcase.name}
+              />
+            ))
           )}
           {canEdit && (
-            <div className="mt-3">
-              <BulkAddControl
-                buttonLabel={t("locations.addSectionButton")}
-                onAdd={onAddSections}
-              />
-            </div>
+            <BulkAddControl
+              quantityLabel={t("locations.sectionCountLabel")}
+              buttonLabel={t("locations.addSectionButton")}
+              onAdd={onAddSections}
+            />
           )}
         </div>
       )}
@@ -467,13 +415,6 @@ function BookcaseNode({
   );
 }
 
-const SECTION_ACCENTS = [
-  { border: "border-brand",  header: "bg-brand/5",  body: "bg-brand/[0.03]"  },
-  { border: "border-sage",   header: "bg-sage/5",   body: "bg-sage/[0.03]"   },
-  { border: "border-amber",  header: "bg-amber/5",  body: "bg-amber/[0.03]"  },
-  { border: "border-stone",  header: "bg-stone/5",  body: "bg-stone/[0.03]"  },
-] as const;
-
 // ---- Section ----
 function SectionNode({
   section,
@@ -504,11 +445,6 @@ function SectionNode({
 
   const sectionName = section.label ?? `${t("locations.sectionLabel")} ${section.section_index + 1}`;
 
-  const maxShelfCount = useMemo(() => {
-    if (!shelves.data) return 1;
-    return Math.max(1, ...shelves.data.map((sh) => countsByShelf.get(sh.id) ?? 0));
-  }, [shelves.data, countsByShelf]);
-
   async function onAddShelves(count: number) {
     const startIndex = shelves.data?.length ?? 0;
     try {
@@ -521,50 +457,39 @@ function SectionNode({
     }
   }
 
-  const accent = SECTION_ACCENTS[section.section_index % SECTION_ACCENTS.length]!;
-
   return (
-    <div className={`overflow-hidden rounded-lg border-l-4 ${accent.border}`}>
-      {/* Section header — full width, name never truncated, only icon actions on the right */}
-      <div className={`flex items-center gap-2 px-3 py-2 ${accent.header}`}>
-        {/* Chevron: fixed position, always same column across all sections */}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex shrink-0 items-center text-ink-soft hover:opacity-100"
-          aria-label={open ? t("common.collapse") : t("common.expand")}
-        >
-          <Icon name={open ? "expand_less" : "expand_more"} className="text-[18px]" />
+    <div className="rounded-md bg-paper/60 px-3 py-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="flex min-w-0 items-center gap-2 text-left text-sm font-medium text-ink">
+          <Icon name={open ? "expand_more" : "chevron_right"} className="shrink-0 text-[18px]" />
+          <span className="truncate">{sectionName}</span>
+          {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
         </button>
-        {/* Name area: clicks also toggle */}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex min-h-[44px] min-w-0 flex-1 items-center gap-1.5 text-left text-xs font-medium text-ink"
-        >
-          {open ? <FolderOpen size={14} strokeWidth={1.5} className="shrink-0" /> : <Folder size={14} strokeWidth={1.5} className="shrink-0" />}
-          <span className="min-w-0 flex-1">{sectionName}</span>
-        </button>
-        <CountBadgeLink
-          to={booksLink({ room: roomId, loc: section.id, locType: "section", locName: `${roomName} › ${bookcaseName} › ${sectionName}` })}
-          count={bookCount}
-          tone="bg-line text-ink-soft"
-        />
-        {canEdit && (
-          <div className="flex shrink-0 items-center gap-0.5">
-            <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>
-              <Icon name="edit" className="text-[16px]" />
-            </IconButton>
-            <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>
-              <Icon name="delete" className="text-[16px]" />
-            </IconButton>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-3 pl-5 sm:shrink-0 sm:pl-0">
+          <ActionLink
+            to={booksLink({
+              room: roomId,
+              loc: section.id,
+              locType: "section",
+              locName: `${roomName} › ${bookcaseName} › ${sectionName}`,
+            })}
+          >
+            {t("locations.viewBooksLink")}
+          </ActionLink>
+          {canEdit && (
+            <div className="flex shrink-0 items-center gap-1">
+              <IconButton label={t("locations.renameSectionButton")} onClick={() => setEdit(true)}>
+                <Icon name="edit" className="text-[18px]" />
+              </IconButton>
+              <IconButton label={t("locations.deleteSectionButton")} onClick={() => setConfirm(true)}>
+                <Icon name="delete" className="text-[18px]" />
+              </IconButton>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Shelves — same tinted container as the section header, clearly inside it */}
       {open && (
-        <div className={`space-y-1.5 px-3 pb-2 pt-1 ${accent.body}`}>
+        <div className="mt-2 space-y-1 pl-5">
           {shelves.isLoading ? (
             <Skeleton className="h-6" />
           ) : (shelves.data?.length ?? 0) === 0 ? (
@@ -576,7 +501,6 @@ function SectionNode({
                 shelf={sh}
                 canEdit={canEdit}
                 bookCount={countsByShelf.get(sh.id) ?? 0}
-                maxCount={maxShelfCount}
                 roomId={roomId}
                 roomName={roomName}
                 bookcaseName={bookcaseName}
@@ -585,12 +509,11 @@ function SectionNode({
             ))
           )}
           {canEdit && (
-            <div className="pt-1">
-              <BulkAddControl
-                buttonLabel={t("locations.addShelfButton")}
-                onAdd={onAddShelves}
-              />
-            </div>
+            <BulkAddControl
+              quantityLabel={t("locations.shelfCountLabel")}
+              buttonLabel={t("locations.addShelfButton")}
+              onAdd={onAddShelves}
+            />
           )}
         </div>
       )}
@@ -636,7 +559,6 @@ function ShelfRow({
   shelf,
   canEdit,
   bookCount,
-  maxCount,
   roomId,
   roomName,
   bookcaseName,
@@ -645,7 +567,6 @@ function ShelfRow({
   shelf: { id: string; shelf_index: number; notes: string | null };
   canEdit: boolean;
   bookCount: number;
-  maxCount: number;
   roomId: string;
   roomName: string;
   bookcaseName: string;
@@ -659,43 +580,38 @@ function ShelfRow({
   const toast = useToast();
 
   const shelfName = `${t("locations.shelfLabel")} ${shelf.shelf_index + 1}`;
-  const fillPct = maxCount > 0 ? Math.round((bookCount / maxCount) * 100) : 0;
 
   return (
-    <div className="rounded-md bg-paper/60 px-2 py-1.5 text-sm text-ink">
-      {/* Line 1: name + badge-link */}
-      <div className="flex items-center gap-1.5">
-        <AlignJustify size={13} strokeWidth={1.5} className="shrink-0 text-ink-soft" />
-        <span className="min-w-0 flex-1 text-xs font-medium">
+    <div className="flex flex-col gap-2 text-sm text-ink sm:flex-row sm:items-center sm:justify-between">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="min-w-0 truncate">
           {shelfName}
-          {shelf.notes && <span className="font-normal text-ink-soft"> — {shelf.notes}</span>}
+          {shelf.notes && <span className="text-ink-soft"> — {shelf.notes}</span>}
         </span>
-        <CountBadgeLink
-          to={booksLink({ room: roomId, loc: shelf.id, locType: "shelf", locName: `${roomName} › ${bookcaseName} › ${sectionName} › ${shelfName}` })}
-          count={bookCount}
-          tone="bg-line text-ink-soft"
-        />
+        {bookCount > 0 && <Badge tone="bg-line text-ink-soft" className="shrink-0">{bookCount}</Badge>}
+      </span>
+      <div className="flex flex-wrap items-center gap-3 pl-0 sm:shrink-0">
+        <ActionLink
+          to={booksLink({
+            room: roomId,
+            loc: shelf.id,
+            locType: "shelf",
+            locName: `${roomName} › ${bookcaseName} › ${sectionName} › ${shelfName}`,
+          })}
+        >
+          {t("locations.viewBooksLink")}
+        </ActionLink>
+        {canEdit && (
+          <div className="flex shrink-0 items-center gap-1">
+            <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>
+              <Icon name="edit" className="text-[18px]" />
+            </IconButton>
+            <IconButton label={t("locations.deleteShelfButton")} onClick={() => setConfirm(true)}>
+              <Icon name="delete" className="text-[18px]" />
+            </IconButton>
+          </div>
+        )}
       </div>
-
-      {/* Line 2: occupancy bar */}
-      <div className="my-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line">
-        <div
-          className="h-full rounded-full bg-brand/40 transition-all"
-          style={{ width: `${fillPct}%` }}
-        />
-      </div>
-
-      {/* Line 3: edit/delete only — no competing text link */}
-      {canEdit && (
-        <div className="flex items-center gap-0.5">
-          <IconButton label={t("locations.renameShelfButton")} onClick={() => setEdit(true)}>
-            <Icon name="edit" className="text-[14px]" />
-          </IconButton>
-          <IconButton label={t("locations.deleteShelfButton")} onClick={() => setConfirm(true)}>
-            <Icon name="delete" className="text-[14px]" />
-          </IconButton>
-        </div>
-      )}
 
       {edit && (
         <EntityModal
@@ -735,37 +651,93 @@ function ShelfRow({
 
 // ---- Shared bulk-add control ----
 function BulkAddControl({
+  quantityLabel,
   buttonLabel,
   onAdd,
 }: {
+  quantityLabel: string;
   buttonLabel: string;
   onAdd: (count: number) => Promise<void>;
 }) {
+  const [count, setCount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleAdd(n: number) {
+  async function handleClick() {
     setSubmitting(true);
     try {
-      await onAdd(n);
+      await onAdd(count);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs text-ink-soft">{buttonLabel}:</span>
-      {[1, 3, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          disabled={submitting}
-          onClick={() => void handleAdd(n)}
-          className="rounded-full border border-line bg-paper px-2.5 py-0.5 text-xs text-ink-soft transition-colors hover:border-brand/40 hover:text-brand disabled:opacity-40"
-        >
-          +{n}
-        </button>
-      ))}
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        min={1}
+        max={20}
+        value={count}
+        disabled={submitting}
+        onChange={(e) => setCount(Math.min(20, Math.max(1, Number(e.target.value) || 1)))}
+        aria-label={quantityLabel}
+        className="h-9 w-14 rounded-md border border-line bg-paper px-2 text-center text-sm text-ink disabled:opacity-60"
+      />
+      <Button size="sm" variant="ghost" loading={submitting} onClick={() => void handleClick()}>
+        {buttonLabel}
+      </Button>
+    </div>
+  );
+}
+
+// ---- Shared row + entity modal ----
+function Row({
+  title,
+  subtitle,
+  count,
+  open,
+  onToggle,
+  canEdit,
+  onEdit,
+  onDelete,
+  extra,
+}: {
+  title: string;
+  subtitle?: string;
+  count?: number;
+  open: boolean;
+  onToggle: () => void;
+  canEdit: boolean;
+  onEdit?: () => void;
+  onDelete: () => void;
+  extra?: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <button type="button" onClick={onToggle} className="flex min-w-0 items-center gap-2 text-left sm:flex-1">
+        <Icon name={open ? "expand_more" : "chevron_right"} className="shrink-0 text-ink-soft text-[20px]" />
+        <span className="min-w-0">
+          <span className="flex items-center gap-2">
+            <span className="min-w-0 truncate font-medium text-ink">{title}</span>
+            {Boolean(count) && <Badge tone="bg-line text-ink-soft" className="shrink-0">{count}</Badge>}
+          </span>
+          {subtitle && <span className="block truncate text-sm text-ink-soft">{subtitle}</span>}
+        </span>
+      </button>
+      <div className="flex flex-wrap items-center gap-2 pl-6 sm:shrink-0 sm:pl-0">
+        {extra}
+        {canEdit && onEdit && (
+          <IconButton label={t("common.edit")} onClick={onEdit}>
+            <Icon name="edit" className="text-[18px]" />
+          </IconButton>
+        )}
+        {canEdit && (
+          <IconButton label={t("common.delete")} onClick={onDelete}>
+            <Icon name="delete" className="text-[18px]" />
+          </IconButton>
+        )}
+      </div>
     </div>
   );
 }

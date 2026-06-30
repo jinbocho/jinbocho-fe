@@ -34,7 +34,7 @@ import {
   useUpdateBookPosition,
 } from "@/features/books/hooks";
 import { useRecord, useSuggestTags, useUpdateRecord } from "@/features/records/hooks";
-import { useRooms } from "@/features/locations/hooks";
+import { useBookcases, useRooms, useSections, useShelves } from "@/features/locations/hooks";
 import { useAiUsable } from "@/features/system/hooks";
 import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useBookRatings, useBookRatingStats } from "@/features/ratings/hooks";
@@ -42,7 +42,7 @@ import { useAuthStore } from "@/features/auth/store";
 import { isAiFeatureDisabledError } from "@/lib/api";
 import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel, genreOptions } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
-import { BookOpen, BookUp } from "lucide-react";
+import { BookOpen, BookUp, Calendar, PencilLine } from "lucide-react";
 
 interface HistoryEntry {
   event_type?: string;
@@ -78,6 +78,10 @@ export function BookDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
   const [ratingFormOpen, setRatingFormOpen] = useState(false);
+  const [addDateOpen, setAddDateOpen] = useState(false);
+  const [addDateUserId, setAddDateUserId] = useState<string | null>(null);
+  const [addDateValue, setAddDateValue] = useState("");
+  const [locationOpen, setLocationOpen] = useState(false);
 
   const ratings = useBookRatings(id);
   const ratingStats = useBookRatingStats(id);
@@ -168,7 +172,23 @@ export function BookDetailPage() {
           <Field label={t("books.detail.condition")} value={b.condition} />
           <Field label={t("books.detail.source")} value={b.source} />
           <Field label={t("books.detail.purchaseDate")} value={b.purchase_date ? formatDate(b.purchase_date) : null} />
-          <Field label={t("books.detail.location")} value={b.room_id ? (roomName ?? t("books.detail.locationAssigned")) : null} />
+          <div>
+            <dt className="text-xs font-medium uppercase text-ink-soft">{t("books.detail.location")}</dt>
+            <dd className="mt-0.5">
+              {b.room_id ? (
+                <button
+                  type="button"
+                  className="group inline-flex items-center gap-1 text-left text-ink hover:text-brand"
+                  onClick={() => setLocationOpen(true)}
+                >
+                  <span>{roomName ?? t("books.detail.locationAssigned")}</span>
+                  <span className="text-xs opacity-40 transition-opacity group-hover:opacity-100">›</span>
+                </button>
+              ) : (
+                <span className="text-ink">—</span>
+              )}
+            </dd>
+          </div>
           <Field label={t("books.detail.added")} value={formatDate(b.created_at)} />
           <Field
             label={t("books.detail.owner")}
@@ -227,7 +247,33 @@ export function BookDetailPage() {
                 <li key={u.id} className="flex items-center justify-between gap-3 text-sm">
                   <span className={hasRead ? "font-medium text-ink" : "text-ink-soft"}>
                     {u.full_name}
-                    {hasRead && readEntry && (
+                    {hasRead && u.id === currentUserId && (
+                      <button
+                        type="button"
+                        title={readEntry?.read_at ? t("books.detail.editReadDate") : t("books.detail.addDate")}
+                        className={`ml-2 inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                          readEntry?.read_at
+                            ? "border border-line bg-paper text-ink-soft hover:bg-brand/5 hover:text-brand"
+                            : "border border-dashed border-brand/50 bg-brand/5 text-brand hover:bg-brand/10"
+                        }`}
+                        onClick={() => {
+                          setAddDateUserId(u.id);
+                          setAddDateValue(readEntry?.read_at ? readEntry.read_at.slice(0, 7) : "");
+                          setAddDateOpen(true);
+                        }}
+                      >
+                        <Calendar size={11} />
+                        {readEntry?.read_at ? (
+                          <>
+                            {formatDate(readEntry.read_at)}
+                            <PencilLine size={10} className="opacity-50" />
+                          </>
+                        ) : (
+                          t("books.detail.addDate")
+                        )}
+                      </button>
+                    )}
+                    {hasRead && u.id !== currentUserId && readEntry?.read_at && (
                       <span className="ml-1 text-xs text-ink-soft">
                         · {formatDate(readEntry.read_at)}
                       </span>
@@ -246,7 +292,10 @@ export function BookDetailPage() {
                         if (hasRead) {
                           void unmarkRead.mutate({ bookId: b.id, userId: u.id });
                         } else {
-                          void markRead.mutate({ bookId: b.id, userId: u.id });
+                          void markRead.mutate(
+                            { bookId: b.id, userId: u.id, readAt: undefined },
+                            { onSuccess: () => toast.success(t("books.detail.markedAsRead")) },
+                          );
                         }
                       }}
                     >
@@ -286,6 +335,7 @@ export function BookDetailPage() {
       <LoanCard bookId={b.id} activeLoan={activeLoan} loans={loans.data ?? []} canEdit={canEdit} lendBook={lendBook} returnBook={returnBook} />
 
       {editOpen && <EditBookModal book={b} record={r} onClose={() => setEditOpen(false)} />}
+      {locationOpen && <ShelfLocationModal book={b} onClose={() => setLocationOpen(false)} />}
       {moveOpen && (
         <MoveModal
           bookId={b.id}
@@ -308,6 +358,37 @@ export function BookDetailPage() {
         onConfirm={onDelete}
         onClose={() => setConfirmOpen(false)}
       />
+      <ConfirmDialog
+        open={addDateOpen}
+        title={t("books.detail.markReadModalTitle")}
+        message={t("books.detail.markReadMonthLabel")}
+        confirmLabel={t("common.save")}
+        cancelLabel={t("common.cancel")}
+        loading={markRead.isPending}
+        onConfirm={() => {
+          if (!addDateUserId) return;
+          void markRead.mutate(
+            { bookId: b.id, userId: addDateUserId, readAt: addDateValue ? addDateValue.slice(0, 7) : undefined },
+            {
+              onSuccess: () => {
+                setAddDateOpen(false);
+                setAddDateValue("");
+              },
+            },
+          );
+        }}
+        onClose={() => {
+          setAddDateOpen(false);
+          setAddDateValue("");
+        }}
+      >
+        <input
+          type="date"
+          value={addDateValue}
+          onChange={(e) => setAddDateValue(e.target.value)}
+          className="mt-3 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+        />
+      </ConfirmDialog>
     </>
   );
 }
@@ -782,6 +863,67 @@ function MoveModal({
       }
     >
       <LocationPicker value={selection} onChange={setSelection} />
+    </Modal>
+  );
+}
+
+function ShelfLocationModal({ book, onClose }: { book: OwnedBook; onClose: () => void }) {
+  const { t } = useTranslation();
+  const rooms = useRooms();
+  const bookcases = useBookcases(book.room_id ?? undefined);
+  const sections = useSections(book.bookcase_id ?? undefined);
+  const shelves = useShelves(book.section_id ?? undefined);
+
+  const room = rooms.data?.find((r) => r.id === book.room_id);
+  const bookcase = bookcases.data?.find((bc) => bc.id === book.bookcase_id);
+  const section = sections.data?.find((s) => s.id === book.section_id);
+  const shelf = shelves.data?.find((sh) => sh.id === book.shelf_id);
+
+  const isLoading =
+    rooms.isLoading ||
+    (Boolean(book.bookcase_id) && bookcases.isLoading) ||
+    (Boolean(book.section_id) && sections.isLoading) ||
+    (Boolean(book.shelf_id) && shelves.isLoading);
+
+  const crumbs: string[] = [
+    room?.name,
+    bookcase?.name,
+    section
+      ? (section.label ?? `${t("locations.sectionLabel")} ${section.section_index}`)
+      : undefined,
+    shelf ? `${t("locations.shelfLabel")} ${shelf.shelf_index}` : undefined,
+  ].filter((x): x is string => x != null);
+
+  return (
+    <Modal open onClose={onClose} title={t("books.detail.shelfLocationTitle")}>
+      {isLoading ? (
+        <Skeleton className="h-8" />
+      ) : (
+        <div className="space-y-3">
+          {crumbs.length > 0 ? (
+            <>
+              <div className="flex flex-wrap items-center gap-1.5 rounded-md bg-paper px-3 py-2.5 text-sm">
+                {crumbs.map((crumb, i) => (
+                  <span key={i} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="select-none text-ink-soft">›</span>}
+                    <span className={i === crumbs.length - 1 ? "font-medium text-ink" : "text-ink-soft"}>
+                      {crumb}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              {book.shelf_position != null && (
+                <p className="text-sm text-ink-soft">
+                  {t("books.detail.shelfPosition")}:{" "}
+                  <span className="font-medium text-ink">{book.shelf_position}</span>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-ink-soft">{t("books.detail.locationNotPlaced")}</p>
+          )}
+        </div>
+      )}
     </Modal>
   );
 }
