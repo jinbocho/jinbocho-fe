@@ -686,7 +686,15 @@
     "categoryTastes": "Gustos & Opiniones",
     "categoryCollection": "La colección",
     "currentlyReadingSection": "Leyendo ahora",
-    "currentlyReadingEmpty": "Nadie está leyendo en este momento."
+    "currentlyReadingEmpty": "Nadie está leyendo en este momento.",
+    "histogramFilterAll": "Todos",
+    "memberModal": {
+      "totalReads": "libros leídos en total",
+      "recentlyRead": "Leídos recientemente",
+      "viewAll": "Ver todos los libros leídos",
+      "viewStats": "Estadísticas",
+      "noReads": "Ningún libro leído todavía."
+    }
   },
   "wishlist": {
     "title": "Lista de deseos",

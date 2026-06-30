@@ -84,6 +84,89 @@ export interface LibraryStats {
   ratings: RatingStats | null;
 }
 
+export function computeReadingHistogram(reads: BookRead[]): ReadingHistogram[] {
+  const histogramMap = new Map<number, number[]>();
+  for (const r of reads) {
+    const d = new Date(r.read_at);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    if (!histogramMap.has(y)) histogramMap.set(y, Array(12).fill(0) as number[]);
+    const bucket = histogramMap.get(y);
+    if (bucket) bucket[m] = (bucket[m] ?? 0) + 1;
+  }
+  return [...histogramMap.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([year, months]) => ({ year, months }));
+}
+
+export interface MemberStats {
+  totalReads: number;
+  readThisYear: number;
+  goalProgress: GoalProgress | null;
+  readingHistogram: ReadingHistogram[];
+  favoriteGenres: { genre: string; count: number; pct: number }[];
+  topAuthors: { author: string; count: number }[];
+  currentlyReading: BookView[];
+  recentlyRead: { view: BookView; readAt: string }[];
+}
+
+export function computeMemberStats(
+  userId: string,
+  reads: BookRead[],
+  views: BookView[],
+  users: User[],
+  currentYear: number = new Date().getFullYear(),
+): MemberStats {
+  const myReads = reads.filter((r) => r.user_id === userId);
+  const user = users.find((u) => u.id === userId);
+  const viewByBookId = new Map(views.map((v) => [v.book.id, v]));
+
+  const totalReads = myReads.length;
+  const readThisYear = myReads.filter(
+    (r) => new Date(r.read_at).getFullYear() === currentYear,
+  ).length;
+
+  const goalProgress: GoalProgress | null =
+    user?.annual_reading_goal
+      ? { userId, name: user.full_name, goal: user.annual_reading_goal, readThisYear }
+      : null;
+
+  const readingHistogram = computeReadingHistogram(myReads);
+
+  const genreCounts = new Map<string, number>();
+  for (const r of myReads) {
+    const genre = viewByBookId.get(r.owned_book_id)?.record?.genre;
+    if (genre) genreCounts.set(genre, (genreCounts.get(genre) ?? 0) + 1);
+  }
+  const genreTotal = [...genreCounts.values()].reduce((s, c) => s + c, 0) || 1;
+  const favoriteGenres = [...genreCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([genre, count]) => ({ genre, count, pct: Math.round((count / genreTotal) * 100) }));
+
+  const authorCounts = new Map<string, number>();
+  for (const r of myReads) {
+    const author = viewByBookId.get(r.owned_book_id)?.record?.main_author;
+    if (author) authorCounts.set(author, (authorCounts.get(author) ?? 0) + 1);
+  }
+  const topAuthors = [...authorCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([author, count]) => ({ author, count }));
+
+  const currentlyReading = views.filter((v) => v.book.current_reader_id === userId);
+
+  const recentlyRead = [...myReads]
+    .sort((a, b) => b.read_at.localeCompare(a.read_at))
+    .slice(0, 5)
+    .flatMap((r) => {
+      const view = viewByBookId.get(r.owned_book_id);
+      return view ? [{ view, readAt: r.read_at }] : [];
+    });
+
+  return { totalReads, readThisYear, goalProgress, readingHistogram, favoriteGenres, topAuthors, currentlyReading, recentlyRead };
+}
+
 const EMPTY_STATUS: Record<ReadingStatus, number> = {
   to_read: 0,
   reading: 0,
@@ -334,19 +417,7 @@ export function computeLibraryStats(
     return { year: y, month: m, count: paceCounts.get(`${y}-${m}`) ?? 0 };
   });
 
-  // Full histogram: one entry per calendar year, 12 monthly buckets.
-  const histogramMap = new Map<number, number[]>();
-  for (const r of reads) {
-    const d = new Date(r.read_at);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    if (!histogramMap.has(y)) histogramMap.set(y, Array(12).fill(0) as number[]);
-    const bucket = histogramMap.get(y);
-    if (bucket) bucket[m] = (bucket[m] ?? 0) + 1;
-  }
-  const readingHistogram: ReadingHistogram[] = [...histogramMap.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([year, months]) => ({ year, months }));
+  const readingHistogram = computeReadingHistogram(reads);
 
   return {
     total: views.length,

@@ -689,7 +689,15 @@
     "categoryTastes": "Goûts & Avis",
     "categoryCollection": "La collection",
     "currentlyReadingSection": "En lecture actuellement",
-    "currentlyReadingEmpty": "Personne ne lit en ce moment."
+    "currentlyReadingEmpty": "Personne ne lit en ce moment.",
+    "histogramFilterAll": "Tous",
+    "memberModal": {
+      "totalReads": "livres lus au total",
+      "recentlyRead": "Lus récemment",
+      "viewAll": "Voir tous les livres lus",
+      "viewStats": "Statistiques",
+      "noReads": "Aucun livre lu pour l'instant."
+    }
   },
   "wishlist": {
     "title": "Liste de souhaits",

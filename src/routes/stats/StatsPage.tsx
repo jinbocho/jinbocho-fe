@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -9,9 +9,13 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StarRating } from "@/components/ui/StarRating";
-import { useLibraryStats } from "@/features/stats/useLibraryStats";
+import { useFamilyReads } from "@/features/books/hooks";
+import { useAuthStore } from "@/features/auth/store";
+import { useLibraryStats, computeReadingHistogram } from "@/features/stats/useLibraryStats";
 import { useUsers } from "@/features/users/hooks";
 import { genreLabel } from "@/lib/format";
+import { MemberStatsModal } from "./MemberStatsModal";
+import type { User } from "@/types/api";
 
 function decadeLabel(decade: number, lang: string): string {
   const short = String(decade % 100).padStart(2, "0");
@@ -36,7 +40,22 @@ export function StatsPage() {
   const { t, i18n } = useTranslation();
   const { data: stats, isLoading, isError } = useLibraryStats();
   const users = useUsers();
+  const allReads = useFamilyReads();
+  const currentUserId = useAuthStore((s) => s.user?.id);
+
   const [selectedHistogramYear, setSelectedHistogramYear] = useState<number | null>(null);
+  const [histogramUserId, setHistogramUserId] = useState<string | "all">(currentUserId ?? "all");
+  const [selectedMember, setSelectedMember] = useState<User | null>(null);
+
+  const filteredHistogram = useMemo(
+    () =>
+      computeReadingHistogram(
+        (histogramUserId === "all"
+          ? allReads.data
+          : allReads.data?.filter((r) => r.user_id === histogramUserId)) ?? [],
+      ),
+    [allReads.data, histogramUserId],
+  );
 
   if (isError) return <ErrorState message={t("stats.loadError")} />;
 
@@ -55,10 +74,10 @@ export function StatsPage() {
 
   const maxAuthorCount = stats.topAuthors[0]?.count ?? 1;
 
-  const histogramYears = stats.readingHistogram.map((h) => h.year);
+  const histogramYears = filteredHistogram.map((h) => h.year);
   const defaultHistogramYear = histogramYears[histogramYears.length - 1] ?? null;
   const activeYear = selectedHistogramYear ?? defaultHistogramYear;
-  const activeHistogram = stats.readingHistogram.find((h) => h.year === activeYear);
+  const activeHistogram = filteredHistogram.find((h) => h.year === activeYear);
   const histogramMax = activeHistogram ? Math.max(...activeHistogram.months, 1) : 1;
 
   const memberCards = (users.data ?? []).map((u) => {
@@ -232,7 +251,13 @@ export function StatsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 flex gap-3 text-xs">
+                    <div className="mt-4 flex flex-wrap gap-3 text-xs">
+                      <button
+                        onClick={() => setSelectedMember(user)}
+                        className="text-brand hover:underline"
+                      >
+                        {t("stats.memberModal.viewStats")} →
+                      </button>
                       <Link
                         to={`/stats/books?filter=read&user=${user.id}`}
                         className="text-brand hover:underline"
@@ -259,6 +284,36 @@ export function StatsPage() {
                 <h2 className="text-lg font-medium text-ink">{t("stats.readingHistogramSection")}</h2>
                 <p className="mt-1 text-sm text-ink-soft">{t("stats.readingHistogramDescription")}</p>
               </div>
+
+              {/* Member filter — only when family has ≥ 2 members */}
+              {(users.data?.length ?? 0) >= 2 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => { setHistogramUserId("all"); setSelectedHistogramYear(null); }}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      histogramUserId === "all"
+                        ? "bg-brand text-paper"
+                        : "bg-line text-ink-soft hover:text-ink"
+                    }`}
+                  >
+                    {t("stats.histogramFilterAll")}
+                  </button>
+                  {(users.data ?? []).map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => { setHistogramUserId(u.id); setSelectedHistogramYear(null); }}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        histogramUserId === u.id
+                          ? "bg-brand text-paper"
+                          : "bg-line text-ink-soft hover:text-ink"
+                      }`}
+                    >
+                      {u.full_name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <Card className="p-4">
                 {histogramYears.length > 0 && (
                   <div className="mb-5 flex flex-wrap gap-2">
@@ -582,6 +637,8 @@ export function StatsPage() {
           )}
         </div>
       )}
+
+      <MemberStatsModal user={selectedMember} onClose={() => setSelectedMember(null)} />
     </div>
   );
 }

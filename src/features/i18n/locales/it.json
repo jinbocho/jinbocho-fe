@@ -689,7 +689,15 @@
     "categoryTastes": "Gusti & Giudizi",
     "categoryCollection": "La collezione",
     "currentlyReadingSection": "In lettura adesso",
-    "currentlyReadingEmpty": "Nessuno sta leggendo nulla in questo momento."
+    "currentlyReadingEmpty": "Nessuno sta leggendo nulla in questo momento.",
+    "histogramFilterAll": "Tutti",
+    "memberModal": {
+      "totalReads": "libri letti in totale",
+      "recentlyRead": "Letti di recente",
+      "viewAll": "Vedi tutti i libri letti",
+      "viewStats": "Statistiche",
+      "noReads": "Nessun libro letto ancora."
+    }
   },
   "wishlist": {
     "title": "Wishlist",

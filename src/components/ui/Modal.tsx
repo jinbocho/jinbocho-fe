@@ -7,12 +7,15 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  size?: "md" | "xl" | "2xl";
 }
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+const SIZE_CLASS = { md: "max-w-md", xl: "max-w-xl", "2xl": "max-w-2xl" } as const;
+
+export function Modal({ open, onClose, title, children, footer, size = "md" }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -91,7 +94,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
       />
       <div
         ref={panelRef}
-        className="relative z-10 max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-lg bg-surface p-5 shadow-card sm:rounded-lg"
+        className={`relative z-10 max-h-[90dvh] w-full ${SIZE_CLASS[size]} overflow-y-auto rounded-t-lg bg-surface p-5 shadow-card sm:rounded-lg`}
       >
         <h2 className="mb-4 text-lg font-semibold">{title}</h2>
         <div>{children}</div>

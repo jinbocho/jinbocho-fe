@@ -689,7 +689,15 @@
     "categoryTastes": "Tastes & Reviews",
     "categoryCollection": "The collection",
     "currentlyReadingSection": "Currently reading",
-    "currentlyReadingEmpty": "Nobody is currently reading."
+    "currentlyReadingEmpty": "Nobody is currently reading.",
+    "histogramFilterAll": "All members",
+    "memberModal": {
+      "totalReads": "total books read",
+      "recentlyRead": "Recently read",
+      "viewAll": "View all read books",
+      "viewStats": "Stats",
+      "noReads": "No books read yet."
+    }
   },
   "wishlist": {
     "title": "Wishlist",
