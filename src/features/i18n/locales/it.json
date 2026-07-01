@@ -424,7 +424,7 @@
     },
     "shelfAdd": {
       "title": "Modalità scaffale",
-      "subtitle": "Imposta una posizione sullo scaffale una volta, poi aggiunge i libri uno per uno.",
+      "subtitle": "Aggiungi rapidamente più libri a un singolo scaffale.",
       "setupSelectShelf": "Seleziona uno scaffale",
       "setupOwner": "Proprietario (opzionale)",
       "setupNoOwner": "Nessun proprietario",
@@ -455,7 +455,65 @@
       "ocrScanButton": "Scansiona copertina con OCR",
       "ocrScanning": "Scansione in corso…",
       "ocrSuccess": "Copertina scansionata — campi precompilati.",
-      "ocrFailed": "Impossibile leggere la copertina."
+      "ocrFailed": "Impossibile leggere la copertina.",
+      "chooseMethodTitle": "Come vuoi aggiungere i libri?",
+      "methodPhotoTitle": "Fotografa lo scaffale",
+      "methodPhotoDesc": "L'AI legge i dorsi e cataloga tutto lo scaffale in una volta.",
+      "methodPhotoAction": "Fotografa",
+      "methodBarcodeTitle": "Scansiona i codici a barre",
+      "methodBarcodeDesc": "Aggiungi un libro alla volta scansionando il codice ISBN.",
+      "methodBarcodeAction": "Inizia"
+    },
+    "shelfScan": {
+      "title": "Scansione ripiano",
+      "subtitle": "Fotografa un ripiano e lascia che l'AI legga i dorsi — i libri vengono catalogati già posizionati qui.",
+      "selectShelf": "Quale ripiano stai fotografando?",
+      "captureButton": "Scatta foto al ripiano",
+      "setupHint": "Scegli prima un ripiano, poi scatta la foto.",
+      "reading": "Sto leggendo i dorsi…",
+      "unavailable": "La visione AI non è disponibile al momento. Riprova più tardi o aggiungi i libri manualmente.",
+      "noSpines": "Non è stato letto alcun dorso da quella foto. Prova uno scatto più nitido e ravvicinato.",
+      "scanFailed": "La scansione del ripiano è fallita. Riprova.",
+      "reviewSubtitle": "Controlla ciò che è stato riconosciuto, poi conferma.",
+      "retakeLink": "Rifai la foto",
+      "reviewCount": "{{selected}} di {{total}} selezionati",
+      "confirmButton": "Aggiungi {{count}} libri",
+      "spineLabel": "Dorso",
+      "alreadyOwned": "Già posseduto",
+      "selectAria": "Seleziona {{title}}",
+      "status": {
+        "matched": "Trovato",
+        "uncertain": "Verifica",
+        "not_found": "Nessun match"
+      },
+      "nothingSelected": "Seleziona almeno un libro da aggiungere.",
+      "confirmed": "Aggiunti {{created}} libri al ripiano.",
+      "confirmedWithSkips": "Aggiunti {{created}} libri; saltati {{skipped}} già posseduti.",
+      "confirmFailed": "Impossibile aggiungere i libri. Riprova.",
+      "scanThisShelf": "Scansiona",
+      "unsupportedModel": "Il modello AI configurato non può leggere le foto. Chiedi all'amministratore di impostare un modello con supporto immagini.",
+      "notConfigured": "La scansione AI delle foto non è configurata per questa libreria."
+    },
+    "shelfAudit": {
+      "title": "Verifica ripiano",
+      "subtitle": "Fotografa un ripiano catalogato per riconciliarlo con ciò che è registrato — individua libri mancanti o mal posizionati.",
+      "selectShelf": "Quale ripiano stai verificando?",
+      "captureButton": "Scatta foto al ripiano",
+      "setupHint": "Scegli prima un ripiano, poi scatta la foto.",
+      "reading": "Confronto con il catalogo…",
+      "unavailable": "La visione AI non è disponibile al momento. Riprova più tardi.",
+      "failed": "La verifica è fallita. Riprova.",
+      "retakeLink": "Rifai la foto",
+      "allMatch": "Tutto sul ripiano corrisponde al catalogo.",
+      "presentCount": "{{count}} libri catalogati confermati sul ripiano.",
+      "missingTitle": "{{count}} mancanti",
+      "missingHint": "Catalogati su questo ripiano ma non visti nella foto — spostati, prestati o persi.",
+      "unexpectedTitle": "{{count}} inattesi",
+      "unexpectedHint": "Visti nella foto ma non catalogati su questo ripiano — mal posizionati o non ancora aggiunti.",
+      "viewBook": "Apri",
+      "auditThisShelf": "Verifica",
+      "unsupportedModel": "Il modello AI configurato non può leggere le foto. Chiedi all'amministratore di impostare un modello con supporto immagini.",
+      "notConfigured": "La scansione AI delle foto non è configurata per questa libreria."
     }
   },
   "loans": {
@@ -546,7 +604,14 @@
     "noSectionsDescription": "Aggiungi sezioni e scaffali a questa libreria dalla pagina delle stanze.",
     "goToRoomsLink": "Vai alle stanze",
     "bookcaseEmpty": "Questa libreria non ha ancora libri.",
-    "bookcaseTitle": "Libreria"
+    "bookcaseTitle": "Libreria",
+    "picker": {
+      "room": "Stanza",
+      "bookcase": "Libreria",
+      "section": "Sezione",
+      "shelf": "Scaffale",
+      "select": "— Seleziona —"
+    }
   },
   "users": {
     "title": "Utenti",

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 // import { useRef } from "react"; // re-add when cover OCR scan is resumed
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,6 +17,8 @@ import { DuplicateBookDialog } from "@/components/books/DuplicateBookDialog";
 // import { useExtractBookCover } from "@/features/books/hooks"; // OCR paused, see hooks.ts
 import { useShelfAddSession } from "@/features/books/useShelfAddSession";
 import { useLocationLabel } from "@/features/locations/hooks";
+import { shelfLocationSearch } from "@/features/shelfscan/deeplink";
+import { useAiUsable } from "@/features/system/hooks";
 import { useUsers } from "@/features/users/hooks";
 import {
   isValidIsbn,
@@ -261,8 +263,11 @@ export function ShelfAddPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const lookup = useIsbnLookup();
+  const aiUsable = useAiUsable();
 
   const users = useUsers();
+
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [phase, setPhase] = useState<Phase>("setup");
   const [location, setLocation] = useState<LocationSelection>({});
@@ -347,42 +352,82 @@ export function ShelfAddPage() {
           title={t("books.shelfAdd.title")}
           description={t("books.shelfAdd.subtitle")}
         />
-        <Card className="space-y-5 p-5">
-          <div>
-            <h2 className="mb-3 font-display text-base font-semibold">{t("books.shelfAdd.setupSelectShelf")}</h2>
-            <LocationPicker value={location} onChange={setLocation} />
-          </div>
-          <Select
-            label={t("books.shelfAdd.setupOwner")}
-            placeholder={t("books.shelfAdd.setupNoOwner")}
-            value={ownerId}
-            options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
-            onChange={(e) => setOwnerId(e.target.value)}
-            className="sm:max-w-xs"
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              disabled={!location.shelf_id}
-              onClick={() => {
-                setLockedLocation(location);
-                setPhase("scan");
-              }}
-            >
-              {t("books.shelfAdd.setupStartButton")}
-            </Button>
-            <Link to="/books/add">
-              <Button type="button" variant="secondary">
-                {t("common.cancel")}
-              </Button>
-            </Link>
-          </div>
-          {!location.shelf_id && (
-            <p className="text-xs text-ink-soft">
-              {t("books.shelfAdd.setupHint")}
-            </p>
-          )}
+        <Card className="space-y-3 p-5">
+          <h2 className="font-display text-base font-semibold">{t("books.shelfAdd.setupSelectShelf")}</h2>
+          <LocationPicker value={location} onChange={setLocation} />
+          {!location.shelf_id && <p className="text-xs text-ink-soft">{t("books.shelfAdd.setupHint")}</p>}
         </Card>
+
+        {location.shelf_id && (
+          <div className="mt-4">
+            <h2 className="mb-3 font-display text-base font-semibold">{t("books.shelfAdd.chooseMethodTitle")}</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {aiUsable && (
+                <Card className="flex flex-col gap-3 p-5">
+                  <div>
+                    <h3 className="font-display text-base font-semibold">{t("books.shelfAdd.methodPhotoTitle")}</h3>
+                    <p className="mt-1 text-sm text-ink-soft">{t("books.shelfAdd.methodPhotoDesc")}</p>
+                  </div>
+                  {/* Open the camera on this direct tap (a real user gesture, so it
+                      works on iOS Safari), then hand the photo to the scan page. */}
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      navigate(`/books/add/shelf-scan?${shelfLocationSearch(location)}`, {
+                        state: { capturedFile: file },
+                      });
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    className="mt-auto"
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    {t("books.shelfAdd.methodPhotoAction")}
+                  </Button>
+                </Card>
+              )}
+              <Card className="flex flex-col gap-3 p-5">
+                <div>
+                  <h3 className="font-display text-base font-semibold">{t("books.shelfAdd.methodBarcodeTitle")}</h3>
+                  <p className="mt-1 text-sm text-ink-soft">{t("books.shelfAdd.methodBarcodeDesc")}</p>
+                </div>
+                <Select
+                  label={t("books.shelfAdd.setupOwner")}
+                  placeholder={t("books.shelfAdd.setupNoOwner")}
+                  value={ownerId}
+                  options={(users.data ?? []).map((u) => ({ value: u.id, label: u.full_name }))}
+                  onChange={(e) => setOwnerId(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  className="mt-auto"
+                  onClick={() => {
+                    setLockedLocation(location);
+                    setPhase("scan");
+                  }}
+                >
+                  {t("books.shelfAdd.methodBarcodeAction")}
+                </Button>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4">
+          <Link to="/books/add">
+            <Button type="button" variant="secondary">
+              {t("common.cancel")}
+            </Button>
+          </Link>
+        </div>
       </>
     );
   }

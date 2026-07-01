@@ -15,6 +15,8 @@ import { DashboardPage } from "@/routes/DashboardPage";
 import { BookCatalogPage } from "@/routes/books/BookCatalogPage";
 import { AddBookPage } from "@/routes/books/AddBookPage";
 import { ShelfAddPage } from "@/routes/books/ShelfAddPage";
+import { ShelfScanPage } from "@/routes/books/ShelfScanPage";
+import { ShelfAuditPage } from "@/routes/books/ShelfAuditPage";
 import { BookDetailPage } from "@/routes/books/BookDetailPage";
 import { LocationsPage } from "@/routes/locations/LocationsPage";
 import { BookcaseMapPage } from "@/routes/locations/BookcaseMapPage";
@@ -70,6 +72,22 @@ const router = createBrowserRouter([
         element: (
           <RequireRole roles={["admin", "editor"]}>
             <ShelfAddPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/books/add/shelf-scan",
+        element: (
+          <RequireRole roles={["admin", "editor"]}>
+            <ShelfScanPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/books/audit/shelf",
+        element: (
+          <RequireRole roles={["admin", "editor"]}>
+            <ShelfAuditPage />
           </RequireRole>
         ),
       },

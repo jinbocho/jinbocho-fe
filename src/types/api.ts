@@ -518,6 +518,7 @@ export interface SectionMap {
 export interface BookcaseMap {
   bookcase_id: string;
   bookcase_name: string;
+  room_id: string;
   sections: SectionMap[];
 }
 
@@ -710,4 +711,98 @@ export interface SystemHealth {
 // licensed/enabled (see SystemHealth.features).
 export interface AiStatus {
   llm_enabled: boolean;
+}
+
+// ----- Shelf Scan (COMP-13 / ADR-010) -----
+
+// POST /v1/catalog/ingestion/shelf-scan — vision LLM reads book spines from a
+// shelf photo, matched against the free metadata providers. Nothing is created
+// until /shelf-scan/confirm. `image_base64` excludes the data-URL prefix.
+export interface ShelfScanRequest {
+  shelf_id: string;
+  image_base64: string;
+  media_type: "image/jpeg" | "image/png" | "image/webp";
+}
+
+// Confidence of the provider match for a single spine. `not_found` means the
+// spine was read but no provider result was close enough — the user can still
+// keep it (with the raw transcription) or drop it.
+export type ShelfScanStatus = "matched" | "uncertain" | "not_found";
+
+export interface ShelfScanCandidate {
+  spine_title: string;
+  spine_author: string | null;
+  position: number;
+  status: ShelfScanStatus;
+  already_owned: boolean;
+  // Best provider metadata match (same shape metadataToRecordDraft consumes),
+  // or null for `not_found`.
+  metadata: Record<string, unknown> | null;
+}
+
+// Why a scan/audit came back unavailable: the AI module is off, the configured
+// model can't read images, or a transient failure (worth retrying).
+export type ShelfScanReason = "ok" | "disabled" | "unsupported" | "error";
+
+export interface ShelfScanResponse {
+  // False when the vision LLM is disabled or the AI service is unreachable.
+  available: boolean;
+  reason: ShelfScanReason;
+  candidates: ShelfScanCandidate[];
+}
+
+export interface ShelfScanConfirmItem {
+  title: string;
+  main_author?: string | null;
+  isbn?: string | null;
+  publisher?: string | null;
+  publication_year?: number | null;
+  language?: string | null;
+  genre?: string | null;
+  cover_url?: string | null;
+  // Left-to-right order of the spine on the shelf.
+  position: number;
+  is_intentional_duplicate?: boolean;
+}
+
+export interface ShelfScanConfirmRequest {
+  shelf_id: string;
+  items: ShelfScanConfirmItem[];
+}
+
+export interface ShelfScanConfirmResponse {
+  created_book_ids: string[];
+  // Titles skipped because the family already owns them (not flagged as duplicate).
+  skipped_titles: string[];
+}
+
+// POST /v1/catalog/ingestion/shelf-scan/audit — read-only reconciliation of a
+// shelf's catalogued books against a fresh photo (ADR-010, phase 3).
+export interface ShelfAuditRequest {
+  shelf_id: string;
+  image_base64: string;
+  media_type: "image/jpeg" | "image/png" | "image/webp";
+}
+
+export interface AuditBook {
+  owned_book_id: string;
+  title: string;
+  main_author: string | null;
+}
+
+export interface AuditUnexpected {
+  title: string;
+  author: string | null;
+  position: number;
+}
+
+export interface ShelfAuditResponse {
+  available: boolean;
+  reason: ShelfScanReason;
+  // Catalogued here and seen in the photo.
+  present: AuditBook[];
+  // Catalogued here but not seen — likely moved, lent, or lost.
+  missing: AuditBook[];
+  // Seen in the photo but not catalogued here — likely misfiled or uncatalogued.
+  unexpected: AuditUnexpected[];
 }

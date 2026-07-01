@@ -7,6 +7,8 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useBookcaseMap } from "@/features/map/hooks";
+import { shelfLocationSearch } from "@/features/shelfscan/deeplink";
+import { useAiUsable } from "@/features/system/hooks";
 import { readingStatusLabel } from "@/lib/format";
 import type { BookOnShelf } from "@/types/api";
 
@@ -21,6 +23,7 @@ export function BookcaseMapPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const map = useBookcaseMap(id);
+  const aiUsable = useAiUsable();
 
   if (map.isError) return <ErrorState message="Couldn't load this bookcase." onRetry={map.refetch} />;
   if (map.isLoading || !map.data) {
@@ -89,7 +92,35 @@ export function BookcaseMapPage() {
                               ))
                             )}
                           </div>
-                          <p className="mt-1 text-xs text-stone">{t("locations.shelfLabel")} {shelf.shelf_index + 1}</p>
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            <p className="text-xs text-stone">{t("locations.shelfLabel")} {shelf.shelf_index + 1}</p>
+                            {aiUsable && (() => {
+                              const q = shelfLocationSearch({
+                                room_id: data.room_id,
+                                bookcase_id: data.bookcase_id,
+                                section_id: section.section_id,
+                                shelf_id: shelf.shelf_id,
+                              });
+                              return (
+                                <div className="flex shrink-0 gap-3">
+                                  <Link
+                                    to={`/books/add/shelf-scan?${q}`}
+                                    className="text-xs text-brand hover:underline"
+                                  >
+                                    {t("books.shelfScan.scanThisShelf")}
+                                  </Link>
+                                  {shelf.books.length > 0 && (
+                                    <Link
+                                      to={`/books/audit/shelf?${q}`}
+                                      className="text-xs text-brand hover:underline"
+                                    >
+                                      {t("books.shelfAudit.auditThisShelf")}
+                                    </Link>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                       ))}
                   </div>

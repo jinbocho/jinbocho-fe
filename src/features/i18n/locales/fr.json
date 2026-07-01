@@ -424,7 +424,7 @@
     },
     "shelfAdd": {
       "title": "Mode étagère",
-      "subtitle": "Fixez une position sur l'étagère une fois, puis scannez les livres un par un.",
+      "subtitle": "Ajoutez rapidement plusieurs livres à une seule étagère.",
       "setupSelectShelf": "Sélectionnez une étagère",
       "setupOwner": "Propriétaire (optionnel)",
       "setupNoOwner": "Aucun propriétaire",
@@ -455,7 +455,65 @@
       "ocrScanButton": "Scanner la couverture avec OCR",
       "ocrScanning": "Scan en cours…",
       "ocrSuccess": "Couverture scannée — champs pré-remplis.",
-      "ocrFailed": "Impossible de lire la couverture."
+      "ocrFailed": "Impossible de lire la couverture.",
+      "chooseMethodTitle": "Comment voulez-vous ajouter les livres ?",
+      "methodPhotoTitle": "Photographier l'étagère",
+      "methodPhotoDesc": "L'IA lit les dos et catalogue toute l'étagère d'un coup.",
+      "methodPhotoAction": "Photographier",
+      "methodBarcodeTitle": "Scanner les codes-barres",
+      "methodBarcodeDesc": "Ajoutez un livre à la fois en scannant son code ISBN.",
+      "methodBarcodeAction": "Commencer"
+    },
+    "shelfScan": {
+      "title": "Scan d'étagère",
+      "subtitle": "Photographiez une étagère et laissez l'IA lire les dos — les livres sont catalogués déjà placés ici.",
+      "selectShelf": "Quelle étagère photographiez-vous ?",
+      "captureButton": "Prendre la photo de l'étagère",
+      "setupHint": "Choisissez d'abord une étagère, puis prenez la photo.",
+      "reading": "Lecture des dos…",
+      "unavailable": "La vision IA n'est pas disponible pour le moment. Réessayez plus tard ou ajoutez les livres manuellement.",
+      "noSpines": "Aucun dos de livre n'a pu être lu sur cette photo. Essayez une prise plus nette et plus proche.",
+      "scanFailed": "Le scan de l'étagère a échoué. Veuillez réessayer.",
+      "reviewSubtitle": "Vérifiez ce qui a été reconnu, puis confirmez.",
+      "retakeLink": "Reprendre la photo",
+      "reviewCount": "{{selected}} sur {{total}} sélectionnés",
+      "confirmButton": "Ajouter {{count}} livres",
+      "spineLabel": "Dos",
+      "alreadyOwned": "Déjà possédé",
+      "selectAria": "Sélectionner {{title}}",
+      "status": {
+        "matched": "Trouvé",
+        "uncertain": "À vérifier",
+        "not_found": "Aucune correspondance"
+      },
+      "nothingSelected": "Sélectionnez au moins un livre à ajouter.",
+      "confirmed": "{{created}} livres ajoutés à l'étagère.",
+      "confirmedWithSkips": "{{created}} livres ajoutés ; {{skipped}} ignorés car déjà possédés.",
+      "confirmFailed": "Impossible d'ajouter les livres. Veuillez réessayer.",
+      "scanThisShelf": "Scanner",
+      "unsupportedModel": "Le modèle d'IA configuré ne peut pas lire les photos. Demandez à l'administrateur de choisir un modèle compatible avec les images.",
+      "notConfigured": "La numérisation photo par IA n'est pas configurée pour cette bibliothèque."
+    },
+    "shelfAudit": {
+      "title": "Audit d'étagère",
+      "subtitle": "Photographiez une étagère cataloguée pour la réconcilier avec ce qui est enregistré — repérez les livres manquants ou mal rangés.",
+      "selectShelf": "Quelle étagère auditez-vous ?",
+      "captureButton": "Prendre la photo de l'étagère",
+      "setupHint": "Choisissez d'abord une étagère, puis prenez la photo.",
+      "reading": "Comparaison avec le catalogue…",
+      "unavailable": "La vision IA n'est pas disponible pour le moment. Réessayez plus tard.",
+      "failed": "L'audit a échoué. Veuillez réessayer.",
+      "retakeLink": "Reprendre la photo",
+      "allMatch": "Tout sur cette étagère correspond au catalogue.",
+      "presentCount": "{{count}} livres catalogués confirmés sur l'étagère.",
+      "missingTitle": "{{count}} manquants",
+      "missingHint": "Catalogués sur cette étagère mais non vus sur la photo — déplacés, prêtés ou perdus.",
+      "unexpectedTitle": "{{count}} inattendus",
+      "unexpectedHint": "Vus sur la photo mais non catalogués sur cette étagère — mal rangés ou pas encore ajoutés.",
+      "viewBook": "Ouvrir",
+      "auditThisShelf": "Auditer",
+      "unsupportedModel": "Le modèle d'IA configuré ne peut pas lire les photos. Demandez à l'administrateur de choisir un modèle compatible avec les images.",
+      "notConfigured": "La numérisation photo par IA n'est pas configurée pour cette bibliothèque."
     }
   },
   "loans": {
@@ -546,7 +604,14 @@
     "noSectionsDescription": "Ajoutez des sections et des étagères à cette bibliothèque depuis la page des pièces.",
     "goToRoomsLink": "Aller aux pièces",
     "bookcaseEmpty": "Cette bibliothèque n'a pas encore de livres.",
-    "bookcaseTitle": "Bibliothèque"
+    "bookcaseTitle": "Bibliothèque",
+    "picker": {
+      "room": "Pièce",
+      "bookcase": "Bibliothèque",
+      "section": "Section",
+      "shelf": "Étagère",
+      "select": "— Sélectionner —"
+    }
   },
   "users": {
     "title": "Utilisateurs",

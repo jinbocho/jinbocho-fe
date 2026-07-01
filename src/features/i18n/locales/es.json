@@ -421,7 +421,7 @@
     },
     "shelfAdd": {
       "title": "Modo estantería",
-      "subtitle": "Fija una posición en la estantería una vez, luego escanea libros uno a uno.",
+      "subtitle": "Añade rápidamente muchos libros a una sola balda.",
       "setupSelectShelf": "Selecciona una estantería",
       "setupOwner": "Propietario (opcional)",
       "setupNoOwner": "Sin propietario",
@@ -452,7 +452,65 @@
       "ocrScanButton": "Escanear portada con OCR",
       "ocrScanning": "Escaneando…",
       "ocrSuccess": "Portada escaneada — campos precargados.",
-      "ocrFailed": "No se pudo leer la portada."
+      "ocrFailed": "No se pudo leer la portada.",
+      "chooseMethodTitle": "¿Cómo quieres añadir los libros?",
+      "methodPhotoTitle": "Fotografía la balda",
+      "methodPhotoDesc": "La IA lee los lomos y cataloga toda la balda de una vez.",
+      "methodPhotoAction": "Fotografiar",
+      "methodBarcodeTitle": "Escanea los códigos de barras",
+      "methodBarcodeDesc": "Añade un libro a la vez escaneando su código ISBN.",
+      "methodBarcodeAction": "Empezar"
+    },
+    "shelfScan": {
+      "title": "Escaneo de estante",
+      "subtitle": "Fotografía un estante y deja que la IA lea los lomos — los libros se catalogan ya colocados aquí.",
+      "selectShelf": "¿Qué estante estás fotografiando?",
+      "captureButton": "Hacer foto al estante",
+      "setupHint": "Elige primero un estante y luego haz la foto.",
+      "reading": "Leyendo los lomos…",
+      "unavailable": "La visión de IA no está disponible ahora mismo. Inténtalo más tarde o añade libros manualmente.",
+      "noSpines": "No se pudo leer ningún lomo de esa foto. Prueba una toma más nítida y cercana.",
+      "scanFailed": "El escaneo del estante falló. Inténtalo de nuevo.",
+      "reviewSubtitle": "Revisa lo reconocido y luego confirma.",
+      "retakeLink": "Repetir la foto",
+      "reviewCount": "{{selected}} de {{total}} seleccionados",
+      "confirmButton": "Añadir {{count}} libros",
+      "spineLabel": "Lomo",
+      "alreadyOwned": "Ya en propiedad",
+      "selectAria": "Seleccionar {{title}}",
+      "status": {
+        "matched": "Encontrado",
+        "uncertain": "Revisar",
+        "not_found": "Sin coincidencia"
+      },
+      "nothingSelected": "Selecciona al menos un libro para añadir.",
+      "confirmed": "Se añadieron {{created}} libros al estante.",
+      "confirmedWithSkips": "Se añadieron {{created}} libros; se omitieron {{skipped}} ya en propiedad.",
+      "confirmFailed": "No se pudieron añadir los libros. Inténtalo de nuevo.",
+      "scanThisShelf": "Escanear",
+      "unsupportedModel": "El modelo de IA configurado no puede leer fotos. Pide al administrador que configure un modelo con soporte de imágenes.",
+      "notConfigured": "El escaneo de fotos con IA no está configurado para esta biblioteca."
+    },
+    "shelfAudit": {
+      "title": "Auditoría de estante",
+      "subtitle": "Fotografía un estante catalogado para conciliarlo con lo registrado — detecta libros que faltan o mal colocados.",
+      "selectShelf": "¿Qué estante estás auditando?",
+      "captureButton": "Hacer foto al estante",
+      "setupHint": "Elige primero un estante y luego haz la foto.",
+      "reading": "Comparando con el catálogo…",
+      "unavailable": "La visión de IA no está disponible ahora mismo. Inténtalo más tarde.",
+      "failed": "La auditoría falló. Inténtalo de nuevo.",
+      "retakeLink": "Repetir la foto",
+      "allMatch": "Todo en este estante coincide con el catálogo.",
+      "presentCount": "{{count}} libros catalogados confirmados en el estante.",
+      "missingTitle": "{{count}} faltan",
+      "missingHint": "Catalogados en este estante pero no vistos en la foto — movidos, prestados o perdidos.",
+      "unexpectedTitle": "{{count}} inesperados",
+      "unexpectedHint": "Vistos en la foto pero no catalogados en este estante — mal colocados o aún no añadidos.",
+      "viewBook": "Ver",
+      "auditThisShelf": "Auditar",
+      "unsupportedModel": "El modelo de IA configurado no puede leer fotos. Pide al administrador que configure un modelo con soporte de imágenes.",
+      "notConfigured": "El escaneo de fotos con IA no está configurado para esta biblioteca."
     }
   },
   "loans": {
@@ -543,7 +601,14 @@
     "noSectionsDescription": "Añade secciones y baldas a esta estantería desde la página de habitaciones.",
     "goToRoomsLink": "Ir a habitaciones",
     "bookcaseEmpty": "Esta estantería aún no tiene libros.",
-    "bookcaseTitle": "Estantería"
+    "bookcaseTitle": "Estantería",
+    "picker": {
+      "room": "Habitación",
+      "bookcase": "Estantería",
+      "section": "Sección",
+      "shelf": "Balda",
+      "select": "— Seleccionar —"
+    }
   },
   "users": {
     "title": "Usuarios",

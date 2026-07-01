@@ -175,13 +175,8 @@ export function AddBookPage() {
         title={t("books.add.pageTitle")}
         description={t("books.add.subtitle")}
         actions={
-          <Link to="/books/add/shelf">
-            <button
-              type="button"
-              className="text-sm text-brand hover:underline"
-            >
-              {t("books.add.shelfModeLink")}
-            </button>
+          <Link to="/books/add/shelf" className="text-sm text-brand hover:underline">
+            {t("books.add.shelfModeLink")}
           </Link>
         }
       />

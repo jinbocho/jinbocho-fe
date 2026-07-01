@@ -424,7 +424,7 @@
     },
     "shelfAdd": {
       "title": "Shelf mode",
-      "subtitle": "Fix a shelf position once, then scan books into it one by one.",
+      "subtitle": "Quickly add many books to a single shelf.",
       "setupSelectShelf": "Select a shelf",
       "setupOwner": "Owner (optional)",
       "setupNoOwner": "No owner",
@@ -455,7 +455,65 @@
       "ocrScanButton": "Scan cover with OCR",
       "ocrScanning": "Scanning…",
       "ocrSuccess": "Cover scanned — fields pre-filled.",
-      "ocrFailed": "Couldn't read the cover."
+      "ocrFailed": "Couldn't read the cover.",
+      "chooseMethodTitle": "How do you want to add books?",
+      "methodPhotoTitle": "Photograph the shelf",
+      "methodPhotoDesc": "AI reads the spines and catalogs the whole shelf at once.",
+      "methodPhotoAction": "Photograph shelf",
+      "methodBarcodeTitle": "Scan barcodes",
+      "methodBarcodeDesc": "Add one book at a time by scanning its ISBN barcode.",
+      "methodBarcodeAction": "Start scanning"
+    },
+    "shelfScan": {
+      "title": "Shelf scan",
+      "subtitle": "Photograph a shelf and let AI read the spines — the books are cataloged already positioned here.",
+      "selectShelf": "Which shelf are you photographing?",
+      "captureButton": "Take shelf photo",
+      "setupHint": "Pick a shelf first, then take the photo.",
+      "reading": "Reading the spines…",
+      "unavailable": "AI vision isn't available right now. Try again later or add books manually.",
+      "noSpines": "No book spines could be read from that photo. Try a sharper, closer shot.",
+      "scanFailed": "The shelf scan failed. Please try again.",
+      "reviewSubtitle": "Review what was recognized, then confirm.",
+      "retakeLink": "Retake photo",
+      "reviewCount": "{{selected}} of {{total}} selected",
+      "confirmButton": "Add {{count}} books",
+      "spineLabel": "Spine",
+      "alreadyOwned": "Already owned",
+      "selectAria": "Select {{title}}",
+      "status": {
+        "matched": "Matched",
+        "uncertain": "Check",
+        "not_found": "No match"
+      },
+      "nothingSelected": "Select at least one book to add.",
+      "confirmed": "Added {{created}} books to the shelf.",
+      "confirmedWithSkips": "Added {{created}} books; skipped {{skipped}} already owned.",
+      "confirmFailed": "Could not add the books. Please try again.",
+      "scanThisShelf": "Scan",
+      "unsupportedModel": "The configured AI model can't read photos. Ask your admin to select a vision-capable model.",
+      "notConfigured": "AI photo scanning isn't configured for this library."
+    },
+    "shelfAudit": {
+      "title": "Shelf audit",
+      "subtitle": "Photograph a catalogued shelf to reconcile it with what's recorded — spot missing or misfiled books.",
+      "selectShelf": "Which shelf are you auditing?",
+      "captureButton": "Take shelf photo",
+      "setupHint": "Pick a shelf first, then take the photo.",
+      "reading": "Comparing with the catalog…",
+      "unavailable": "AI vision isn't available right now. Try again later.",
+      "failed": "The audit failed. Please try again.",
+      "retakeLink": "Retake photo",
+      "allMatch": "Everything on this shelf matches the catalog.",
+      "presentCount": "{{count}} catalogued books confirmed on the shelf.",
+      "missingTitle": "{{count}} missing",
+      "missingHint": "Catalogued on this shelf but not seen in the photo — moved, lent, or lost.",
+      "unexpectedTitle": "{{count}} unexpected",
+      "unexpectedHint": "Seen in the photo but not catalogued on this shelf — misfiled or not yet added.",
+      "viewBook": "View",
+      "auditThisShelf": "Audit",
+      "unsupportedModel": "The configured AI model can't read photos. Ask your admin to select a vision-capable model.",
+      "notConfigured": "AI photo scanning isn't configured for this library."
     }
   },
   "loans": {
@@ -546,7 +604,14 @@
     "noSectionsDescription": "Add sections and shelves to this bookcase from the rooms page.",
     "goToRoomsLink": "Go to rooms",
     "bookcaseEmpty": "This bookcase has no books yet.",
-    "bookcaseTitle": "Bookcase"
+    "bookcaseTitle": "Bookcase",
+    "picker": {
+      "room": "Room",
+      "bookcase": "Bookcase",
+      "section": "Section",
+      "shelf": "Shelf",
+      "select": "— Select —"
+    }
   },
   "users": {
     "title": "Users",
