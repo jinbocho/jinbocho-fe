@@ -105,7 +105,8 @@ export interface MemberStats {
   goalProgress: GoalProgress | null;
   readingHistogram: ReadingHistogram[];
   favoriteGenres: { genre: string; count: number; pct: number }[];
-  topAuthors: { author: string; count: number }[];
+  topAuthorsRead: { author: string; count: number }[];
+  topAuthorsOwned: { author: string; count: number }[];
   currentlyReading: BookView[];
   recentlyRead: { view: BookView; readAt: string }[];
 }
@@ -144,12 +145,23 @@ export function computeMemberStats(
     .slice(0, 5)
     .map(([genre, count]) => ({ genre, count, pct: Math.round((count / genreTotal) * 100) }));
 
-  const authorCounts = new Map<string, number>();
+  const readAuthorCounts = new Map<string, number>();
   for (const r of myReads) {
     const author = viewByBookId.get(r.owned_book_id)?.record?.main_author;
-    if (author) authorCounts.set(author, (authorCounts.get(author) ?? 0) + 1);
+    if (author) readAuthorCounts.set(author, (readAuthorCounts.get(author) ?? 0) + 1);
   }
-  const topAuthors = [...authorCounts.entries()]
+  const topAuthorsRead = [...readAuthorCounts.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([author, count]) => ({ author, count }));
+
+  const ownedAuthorCounts = new Map<string, number>();
+  for (const { book, record } of views) {
+    if (book.owner_id === userId && record?.main_author) {
+      ownedAuthorCounts.set(record.main_author, (ownedAuthorCounts.get(record.main_author) ?? 0) + 1);
+    }
+  }
+  const topAuthorsOwned = [...ownedAuthorCounts.entries()]
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
     .map(([author, count]) => ({ author, count }));
@@ -164,7 +176,7 @@ export function computeMemberStats(
       return view ? [{ view, readAt: r.read_at }] : [];
     });
 
-  return { totalReads, readThisYear, goalProgress, readingHistogram, favoriteGenres, topAuthors, currentlyReading, recentlyRead };
+  return { totalReads, readThisYear, goalProgress, readingHistogram, favoriteGenres, topAuthorsRead, topAuthorsOwned, currentlyReading, recentlyRead };
 }
 
 const EMPTY_STATUS: Record<ReadingStatus, number> = {

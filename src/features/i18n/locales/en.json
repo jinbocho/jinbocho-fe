@@ -696,7 +696,9 @@
       "recentlyRead": "Recently read",
       "viewAll": "View all read books",
       "viewStats": "Stats",
-      "noReads": "No books read yet."
+      "noReads": "No books read yet.",
+      "topAuthorsReadSection": "Most read authors",
+      "topAuthorsOwnedSection": "Most owned authors"
     }
   },
   "wishlist": {

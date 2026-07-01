@@ -211,15 +211,35 @@ export function MemberStatsModal({ user, onClose }: MemberStatsModalProps) {
             </div>
           )}
 
-          {/* Top authors */}
-          {stats.topAuthors.length > 0 && (
+          {/* Top authors read */}
+          {stats.topAuthorsRead.length > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                {t("stats.topAuthorsSection")}
+                {t("stats.memberModal.topAuthorsReadSection")}
               </p>
               <Card className="p-4">
                 <div className="space-y-2">
-                  {stats.topAuthors.map(({ author, count }, idx) => (
+                  {stats.topAuthorsRead.map(({ author, count }, idx) => (
+                    <div key={author} className="flex items-center gap-3 text-sm">
+                      <span className="w-4 shrink-0 text-center font-display text-base text-ink-soft/50">{idx + 1}</span>
+                      <span className="min-w-0 flex-1 truncate font-medium text-ink">{author}</span>
+                      <span className="shrink-0 text-ink-soft">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Top authors owned */}
+          {stats.topAuthorsOwned.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                {t("stats.memberModal.topAuthorsOwnedSection")}
+              </p>
+              <Card className="p-4">
+                <div className="space-y-2">
+                  {stats.topAuthorsOwned.map(({ author, count }, idx) => (
                     <div key={author} className="flex items-center gap-3 text-sm">
                       <span className="w-4 shrink-0 text-center font-display text-base text-ink-soft/50">{idx + 1}</span>
                       <span className="min-w-0 flex-1 truncate font-medium text-ink">{author}</span>

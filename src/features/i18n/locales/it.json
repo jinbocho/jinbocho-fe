@@ -696,7 +696,9 @@
       "recentlyRead": "Letti di recente",
       "viewAll": "Vedi tutti i libri letti",
       "viewStats": "Statistiche",
-      "noReads": "Nessun libro letto ancora."
+      "noReads": "Nessun libro letto ancora.",
+      "topAuthorsReadSection": "Autori più letti",
+      "topAuthorsOwnedSection": "Autori più posseduti"
     }
   },
   "wishlist": {

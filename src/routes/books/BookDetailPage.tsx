@@ -40,7 +40,7 @@ import { useReaderName, useUsers } from "@/features/users/hooks";
 import { useBookRatings, useBookRatingStats } from "@/features/ratings/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { isAiFeatureDisabledError } from "@/lib/api";
-import { bookConditions, bookSources, formatDate, formatDateTime, genreLabel, genreOptions } from "@/lib/format";
+import { bookConditionLabel, bookConditions, bookSourceLabel, bookSources, formatDate, formatDateTime, genreLabel, genreOptions } from "@/lib/format";
 import type { BibliographicRecord, BookCondition, BookLoan, BookSource, OwnedBook } from "@/types/api";
 import { BookOpen, BookUp, Calendar, PencilLine } from "lucide-react";
 
@@ -169,8 +169,8 @@ export function BookDetailPage() {
           <Field label={t("books.detail.year")} value={r?.publication_year?.toString()} />
           <Field label={t("books.detail.genre")} value={r?.genre ? genreLabel(r.genre, t) : null} />
           <Field label={t("books.detail.language")} value={r?.language} />
-          <Field label={t("books.detail.condition")} value={b.condition} />
-          <Field label={t("books.detail.source")} value={b.source} />
+          <Field label={t("books.detail.condition")} value={b.condition ? bookConditionLabel(b.condition as BookCondition, t) : null} />
+          <Field label={t("books.detail.source")} value={b.source ? bookSourceLabel(b.source as BookSource, t) : null} />
           <Field label={t("books.detail.purchaseDate")} value={b.purchase_date ? formatDate(b.purchase_date) : null} />
           <div>
             <dt className="text-xs font-medium uppercase text-ink-soft">{t("books.detail.location")}</dt>

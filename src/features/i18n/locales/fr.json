@@ -696,7 +696,9 @@
       "recentlyRead": "Lus récemment",
       "viewAll": "Voir tous les livres lus",
       "viewStats": "Statistiques",
-      "noReads": "Aucun livre lu pour l'instant."
+      "noReads": "Aucun livre lu pour l'instant.",
+      "topAuthorsReadSection": "Auteurs les plus lus",
+      "topAuthorsOwnedSection": "Auteurs les plus possédés"
     }
   },
   "wishlist": {
